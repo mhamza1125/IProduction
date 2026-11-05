@@ -16,5 +16,9 @@ final readonly class DocumentType
         public string $prefix,
         /** Whether approval is required before posting, until changed in Settings. */
         public bool $approvalByDefault = true,
+        /** False for master-data codes (customer codes...), which have numbering but no approval. */
+        public bool $approvable = true,
+        /** Default year part: YY (SO-26-0001), YYYY, or none (CUS-0001). */
+        public string $yearFormat = 'YY',
     ) {}
 }

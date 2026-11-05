@@ -12,9 +12,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 interface Attachable extends PermissionScoped
 {
-    /** @return MorphMany<Attachment, Model> */
+    /** @return MorphMany<Attachment, covariant Model> */
     public function attachments(): MorphMany;
 
-    /** @return MorphMany<Note, Model> */
+    /** @return MorphMany<Note, covariant Model> */
     public function notes(): MorphMany;
 }

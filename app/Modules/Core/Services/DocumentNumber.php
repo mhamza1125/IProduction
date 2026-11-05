@@ -122,7 +122,7 @@ class DocumentNumber
             'document_type' => $documentType,
             'prefix' => $type->prefix,
             'separator' => '-',
-            'year_format' => 'YY',
+            'year_format' => $type->yearFormat,
             'padding' => 4,
         ]);
     }

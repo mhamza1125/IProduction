@@ -3,8 +3,11 @@
 use App\Modules\Core\Http\AttachmentController;
 use App\Modules\Core\Livewire\AuditLog;
 use App\Modules\Core\Livewire\Currencies;
+use App\Modules\Core\Livewire\Lookups;
 use App\Modules\Core\Livewire\Roles;
 use App\Modules\Core\Livewire\Settings;
+use App\Modules\Core\Livewire\Stages;
+use App\Modules\Core\Livewire\Units;
 use App\Modules\Core\Livewire\Users;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +28,10 @@ Route::middleware('auth')->name('core.')->group(function () {
         Route::get('company', Settings\Company::class)->middleware('can:settings.view')->name('settings.company');
         Route::get('approvals', Settings\Approvals::class)->middleware('can:settings.view')->name('settings.approvals');
         Route::get('period-lock', Settings\PeriodLock::class)->middleware('can:settings.view')->name('settings.period-lock');
+        Route::get('payroll', Settings\Payroll::class)->middleware('can:settings.view')->name('settings.payroll');
+        Route::get('units', Units\Index::class)->middleware('can:units.view')->name('units.index');
+        Route::get('stages', Stages\Index::class)->middleware('can:stages.view')->name('stages.index');
+        Route::get('lookups', Lookups\Index::class)->middleware('can:lookups.view')->name('lookups.index');
         Route::get('numbering', Settings\Numbering::class)->middleware('can:settings.view')->name('numbering');
 
         Route::get('audit-log', AuditLog::class)->middleware('can:audit_log.view')->name('audit-log');

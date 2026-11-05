@@ -13,7 +13,7 @@
                 @endif
                 @if ($props->has('attributes'))
                     <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 text-xs text-zinc-500">
-                        @foreach (\Illuminate\Support\Arr::except($props->get('attributes'), $hidden) as $field => $new)
+                        @foreach (collect($props->get('attributes'))->except([...$hidden, 'party_id', 'id'])->reject(fn ($v) => $activity->event === 'created' && ($v === null || $v === '')) as $field => $new)
                             <dt class="font-medium">{{ str_replace('_', ' ', $field) }}</dt>
                             <dd>
                                 @if (isset($props->get('old')[$field]))

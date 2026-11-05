@@ -1,6 +1,8 @@
 <?php
 
 use App\Modules\Core\CoreServiceProvider;
+use App\Modules\Finance\FinanceServiceProvider;
+use App\Modules\People\PeopleServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\HorizonServiceProvider;
@@ -12,4 +14,6 @@ return [
 
     // Business modules (app/Modules). Add each new module's provider here.
     CoreServiceProvider::class,
+    PeopleServiceProvider::class,
+    FinanceServiceProvider::class,
 ];

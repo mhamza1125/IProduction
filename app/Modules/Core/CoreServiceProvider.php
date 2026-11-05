@@ -52,6 +52,9 @@ class CoreServiceProvider extends ModuleServiceProvider
             new PermissionSet('users', 'Users', ['view', 'create', 'edit', 'export'], 'Settings'),
             new PermissionSet('roles', 'Roles', ['view', 'create', 'edit', 'delete'], 'Settings'),
             new PermissionSet('currencies', 'Currencies', ['view', 'create', 'edit'], 'Settings'),
+            new PermissionSet('units', 'Units', ['view', 'create', 'edit', 'delete'], 'Settings'),
+            new PermissionSet('stages', 'Production stages', ['view', 'create', 'edit', 'delete'], 'Settings'),
+            new PermissionSet('lookups', 'Lookups', ['view', 'create', 'edit', 'delete'], 'Settings'),
             new PermissionSet('audit_log', 'Audit log', ['view', 'export'], 'Settings'),
             new PermissionSet('period_lock', 'Period lock', ['edit', 'override'], 'Settings'),
             // Sensitive data: hidden everywhere unless the user has these.
@@ -68,7 +71,10 @@ class CoreServiceProvider extends ModuleServiceProvider
             new NavItem('Company', 'core.settings.company', 'cog', 'settings.view', 'Settings', 900, 'core.settings.*'),
             new NavItem('Users', 'core.users.index', 'users', 'users.view', 'Settings', 910, 'core.users.*'),
             new NavItem('Roles', 'core.roles.index', 'shield', 'roles.view', 'Settings', 920, 'core.roles.*'),
+            new NavItem('Units', 'core.units.index', 'scale', 'units.view', 'Settings', 930),
             new NavItem('Currencies', 'core.currencies.index', 'currency', 'currencies.view', 'Settings', 940),
+            new NavItem('Stages', 'core.stages.index', 'arrows', 'stages.view', 'Settings', 950),
+            new NavItem('Lookups', 'core.lookups.index', 'list', 'lookups.view', 'Settings', 960),
             new NavItem('Numbering', 'core.numbering', 'hashtag', 'settings.view', 'Settings', 970),
             new NavItem('Audit Log', 'core.audit-log', 'clock', 'audit_log.view', 'Settings', 990),
         ];

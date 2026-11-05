@@ -4,6 +4,7 @@
         'core.settings.company' => 'Company',
         'core.settings.approvals' => 'Approvals',
         'core.settings.period-lock' => 'Period lock',
+        'core.settings.payroll' => 'Payroll',
     ];
     foreach (app(\App\Support\Modules\ModuleRegistry::class)->all() as $module) {
         if (method_exists($module, 'settingsTabs')) {

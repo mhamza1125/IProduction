@@ -14,13 +14,10 @@ use Maatwebsite\Excel\Concerns\WithMapping;
  *
  *   new QueryExport($query, ['Code' => fn ($row) => $row->code, 'Name' => 'name']);
  */
-/**
- * @template TModel of \Illuminate\Database\Eloquent\Model
- */
 class QueryExport implements FromQuery, WithHeadings, WithMapping
 {
     /**
-     * @param  Builder<TModel>  $query
+     * @param  Builder<covariant \Illuminate\Database\Eloquent\Model>  $query
      * @param  array<string, string|Closure(mixed): mixed>  $columns  heading => attribute name or closure
      */
     public function __construct(
@@ -29,7 +26,7 @@ class QueryExport implements FromQuery, WithHeadings, WithMapping
     ) {}
 
     /**
-     * @return Builder<TModel>
+     * @return Builder<covariant \Illuminate\Database\Eloquent\Model>
      */
     public function query(): Builder
     {

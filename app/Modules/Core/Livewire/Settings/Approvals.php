@@ -20,7 +20,9 @@ class Approvals extends Component
     public function mount(ModuleRegistry $modules, ApprovalSettings $approvals): void
     {
         foreach ($modules->documentTypes() as $key => $type) {
-            $this->required[$key] = $approvals->required($key);
+            if ($type->approvable) {
+                $this->required[$key] = $approvals->required($key);
+            }
         }
     }
 
@@ -28,8 +30,10 @@ class Approvals extends Component
     {
         $this->authorize('settings.edit');
 
-        foreach (array_keys($modules->documentTypes()) as $key) {
-            $approvals->set($key, (bool) ($this->required[$key] ?? true));
+        foreach ($modules->documentTypes() as $key => $type) {
+            if ($type->approvable) {
+                $approvals->set($key, (bool) ($this->required[$key] ?? true));
+            }
         }
 
         activity('settings')->event('updated')->withProperties(['approvals' => $this->required])->log('Changed approval settings');
@@ -38,6 +42,8 @@ class Approvals extends Component
 
     public function render(ModuleRegistry $modules): View
     {
-        return view('core::livewire.settings.approvals', ['types' => $modules->documentTypes()]);
+        return view('core::livewire.settings.approvals', [
+            'types' => array_filter($modules->documentTypes(), fn ($type) => $type->approvable),
+        ]);
     }
 }
