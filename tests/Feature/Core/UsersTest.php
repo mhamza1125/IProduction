@@ -3,13 +3,15 @@
 use App\Models\User;
 use App\Modules\Core\Livewire\Users\Form;
 use App\Modules\Core\Livewire\Users\Index;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 
 it('creates a user with roles', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
     Role::create(['name' => 'Store Keeper']);
 
     Livewire::test(Form::class)
@@ -28,7 +30,7 @@ it('creates a user with roles', function () {
 });
 
 it('validates the user form', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
     $existing = User::factory()->create();
 
     Livewire::test(Form::class)
@@ -39,7 +41,7 @@ it('validates the user form', function () {
 });
 
 it('keeps the password when it is left blank on edit', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
     $user = User::factory()->create();
     $hash = $user->password;
 
@@ -52,7 +54,7 @@ it('keeps the password when it is left blank on edit', function () {
 });
 
 it('stops admins from deactivating themselves', function () {
-    $admin = superAdmin();
+    $admin = admin();
     $this->actingAs($admin);
 
     Livewire::test(Form::class, ['user' => $admin])
@@ -66,7 +68,7 @@ it('stops admins from deactivating themselves', function () {
 });
 
 it('deactivates another user from the list', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
     $user = User::factory()->create();
 
     Livewire::test(Index::class)->call('toggleActive', $user->id);
@@ -75,7 +77,7 @@ it('deactivates another user from the list', function () {
 });
 
 it('searches and sorts the user list', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
     User::factory()->create(['name' => 'Zainab Khan']);
     User::factory()->create(['name' => 'Bilal Ahmed']);
 
@@ -91,14 +93,14 @@ it('searches and sorts the user list', function () {
 });
 
 it('rejects actions from users without the manage permission', function () {
-    $this->actingAs(userWith(['core.users.view']));
+    $this->actingAs(userWith(['users.view']));
     $user = User::factory()->create();
 
     Livewire::test(Index::class)->call('toggleActive', $user->id)->assertForbidden();
 });
 
 it('records changes in the activity log', function () {
-    $this->actingAs($admin = superAdmin());
+    $this->actingAs($admin = admin());
     $user = User::factory()->create();
 
     $user->update(['name' => 'Changed Name']);
@@ -107,4 +109,21 @@ it('records changes in the activity log', function () {
     expect($activity->description)->toBe('updated')
         ->and($activity->causer_id)->toBe($admin->id)
         ->and($activity->properties['attributes']['name'])->toBe('Changed Name');
+});
+
+it('emails a password reset link and exports the list', function () {
+    Notification::fake();
+    $this->actingAs(admin());
+    $user = User::factory()->create();
+
+    Livewire::test(Index::class)->call('sendResetLink', $user->id);
+    Notification::assertSentTo($user, ResetPassword::class);
+
+    Livewire::test(Index::class)->call('export', 'csv')->assertFileDownloaded();
+});
+
+it('does not let users without users.export download the list', function () {
+    $this->actingAs(userWith(['users.view']));
+
+    Livewire::test(Index::class)->call('export', 'xlsx')->assertForbidden();
 });

@@ -45,7 +45,7 @@ return [
     |
     */
 
-    'username' => 'email',
+    'username' => 'login', // the login form accepts an email address or a username
 
     'email' => 'email',
 

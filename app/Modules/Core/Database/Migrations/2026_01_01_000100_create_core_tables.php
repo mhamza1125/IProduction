@@ -25,22 +25,57 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('document_sequences', function (Blueprint $table) {
+        // Numbering format per document type, e.g. SO-26-0001.
+        Schema::create('number_sequences', function (Blueprint $table) {
             $table->id();
-            $table->string('key', 50);
-            // Fiscal year label ("2026-27"), or '' for sequences that never reset.
+            $table->string('document_type', 50)->unique();
+            $table->string('prefix', 20);
+            $table->string('separator', 3)->default('-');
+            $table->string('year_format', 10)->default('YY'); // YY | YYYY | none
+            $table->unsignedTinyInteger('padding')->default(4);
+            $table->timestamps();
+        });
+
+        // One counter per document type and year. Locked while a number is issued.
+        Schema::create('number_sequence_counters', function (Blueprint $table) {
+            $table->id();
+            $table->string('document_type', 50);
+            // Year part ("26", "2026") or '' when numbers never reset.
             // Not nullable, because MySQL unique indexes allow repeated NULLs.
-            $table->string('period', 20)->default('');
+            $table->string('period', 10)->default('');
             $table->unsignedBigInteger('next_number')->default(1);
             $table->timestamps();
 
-            $table->unique(['key', 'period']);
+            $table->unique(['document_type', 'period']);
+        });
+
+        Schema::create('attachments', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('attachable');
+            $table->string('disk', 30);
+            $table->string('path');
+            $table->string('original_name');
+            $table->string('mime_type', 150)->nullable();
+            $table->unsignedBigInteger('size');
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('notes', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('notable');
+            $table->text('body');
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('document_sequences');
+        Schema::dropIfExists('notes');
+        Schema::dropIfExists('attachments');
+        Schema::dropIfExists('number_sequence_counters');
+        Schema::dropIfExists('number_sequences');
         Schema::dropIfExists('currencies');
         Schema::dropIfExists('settings');
     }

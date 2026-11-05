@@ -27,7 +27,10 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Deactivated users cannot sign in, even with the right password.
         Fortify::authenticateUsing(function (Request $request): ?User {
-            $user = User::query()->where('email', $request->string(Fortify::username()))->first();
+            $login = trim($request->string(Fortify::username())->toString());
+            $user = User::query()
+                ->where(fn ($q) => $q->where('email', $login)->orWhere('username', $login))
+                ->first();
 
             if ($user === null || ! Hash::check($request->string('password')->toString(), $user->password)) {
                 return null;

@@ -13,12 +13,12 @@ class Index extends Component
 {
     public function delete(int $id): void
     {
-        $this->authorize('core.roles.manage');
+        $this->authorize('roles.delete');
 
         $role = Role::query()->withCount('users')->findOrFail($id);
 
-        if ($role->name === SyncPermissions::SUPER_ADMIN) {
-            $this->dispatch('toast', type: 'error', message: 'The Super Admin role cannot be deleted.');
+        if ($role->name === SyncPermissions::ADMIN) {
+            $this->dispatch('toast', type: 'error', message: 'The Admin role cannot be deleted.');
 
             return;
         }
@@ -38,7 +38,7 @@ class Index extends Component
     {
         return view('core::livewire.roles.index', [
             'roles' => Role::query()->withCount(['users', 'permissions'])->orderBy('name')->get(),
-            'superAdmin' => SyncPermissions::SUPER_ADMIN,
+            'adminRole' => SyncPermissions::ADMIN,
         ]);
     }
 }

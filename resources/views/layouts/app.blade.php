@@ -29,15 +29,21 @@
             </button>
         </div>
 
-        <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Main">
+        <nav class="flex-1 space-y-4 overflow-y-auto px-3 py-4" aria-label="Main">
             <div class="space-y-0.5">
                 <x-nav.link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="home">Dashboard</x-nav.link>
             </div>
 
             @foreach ($navigation as $group => $items)
-                <div>
-                    <p class="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $group }}</p>
-                    <div class="space-y-0.5">
+                @php($groupActive = collect($items)->contains(fn ($i) => $i->isActive()))
+                <div x-data="{ open: $persist({{ $groupActive ? 'true' : 'false' }}).as('nav-{{ \Illuminate\Support\Str::slug($group) }}') }"
+                     @if ($groupActive) x-init="open = true" @endif>
+                    <button type="button" x-on:click="open = ! open" :aria-expanded="open"
+                            class="flex w-full items-center justify-between px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300">
+                        {{ $group }}
+                        <x-icon name="chevron-down" class="size-3.5 transition" ::class="open ? '' : '-rotate-90'" />
+                    </button>
+                    <div x-show="open" x-collapse class="space-y-0.5">
                         @foreach ($items as $item)
                             <x-nav.link :href="route($item->route)" :active="$item->isActive()" :icon="$item->icon">{{ $item->label }}</x-nav.link>
                         @endforeach

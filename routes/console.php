@@ -1,8 +1,12 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Requires the cron entry: * * * * * php /path/to/artisan schedule:run
+
+Schedule::command('db:backup')
+    ->dailyAt((string) config('iproduction.backup.time'))
+    ->onOneServer()
+    ->withoutOverlapping();
+
+Schedule::command('horizon:snapshot')->everyFiveMinutes();

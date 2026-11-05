@@ -3,7 +3,7 @@
 
     <form method="POST" action="{{ route('login.store') }}" class="space-y-4">
         @csrf
-        <x-input label="Email" name="email" type="email" :value="old('email')" required autofocus autocomplete="username" />
+        <x-input label="Email or username" name="login" :value="old('login')" required autofocus autocomplete="username" />
         <x-input label="Password" name="password" type="password" required autocomplete="current-password" />
 
         <div class="flex items-center justify-between">

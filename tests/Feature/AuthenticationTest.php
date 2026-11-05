@@ -13,17 +13,25 @@ it('shows the login page', function () {
 it('signs in an active user and records the login time', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+    $this->post('/login', ['login' => $user->email, 'password' => 'password'])
         ->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($user);
     expect($user->fresh()->last_login_at)->not->toBeNull();
 });
 
+it('signs in with a username instead of an email', function () {
+    $user = User::factory()->create(['username' => 'store.keeper']);
+
+    $this->post('/login', ['login' => 'store.keeper', 'password' => 'password'])->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user);
+});
+
 it('rejects a wrong password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', ['email' => $user->email, 'password' => 'wrong'])->assertSessionHasErrors('email');
+    $this->post('/login', ['login' => $user->email, 'password' => 'wrong'])->assertSessionHasErrors('login');
 
     $this->assertGuest();
 });
@@ -31,8 +39,8 @@ it('rejects a wrong password', function () {
 it('does not let a deactivated user sign in', function () {
     $user = User::factory()->inactive()->create();
 
-    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
-        ->assertSessionHasErrors(['email' => 'This account has been deactivated. Contact your administrator.']);
+    $this->post('/login', ['login' => $user->email, 'password' => 'password'])
+        ->assertSessionHasErrors(['login' => 'This account has been deactivated. Contact your administrator.']);
 
     $this->assertGuest();
 });

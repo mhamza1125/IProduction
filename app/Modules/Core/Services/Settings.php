@@ -27,8 +27,16 @@ class Settings
         'company.ntn' => null,
         'company.strn' => null,
         'company.logo_path' => null,
+        'company.cnic' => null,
+        'company.invoice_terms' => null,
+        'company.print_header' => null,
+        'company.print_footer' => null,
         'base_currency' => 'PKR',
         'fiscal_year.start_month' => 7,
+        'period_lock.date' => null,
+        'period_lock.reason' => null,
+        // Over-receipt tolerance in percent (Purchasing, contractor jobs, PTC over-output).
+        'tolerance.over_receipt_percent' => '0',
     ];
 
     /** @var array<string, mixed>|null */

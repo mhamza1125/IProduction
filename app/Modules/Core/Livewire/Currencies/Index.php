@@ -46,7 +46,7 @@ class Index extends Component
 
     public function save(): void
     {
-        $this->authorize('core.currencies.manage');
+        $this->authorize($this->editingId ? 'currencies.edit' : 'currencies.create');
 
         $this->code = strtoupper(trim($this->code));
 
@@ -74,7 +74,7 @@ class Index extends Component
 
     public function toggleActive(int $id): void
     {
-        $this->authorize('core.currencies.manage');
+        $this->authorize('currencies.edit');
 
         $currency = Currency::query()->findOrFail($id);
 

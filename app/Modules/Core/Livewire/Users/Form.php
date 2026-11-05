@@ -21,6 +21,8 @@ class Form extends Component
 
     public string $email = '';
 
+    public string $username = '';
+
     public string $password = '';
 
     public string $password_confirmation = '';
@@ -36,6 +38,7 @@ class Form extends Component
             $this->user = $user;
             $this->name = $user->name;
             $this->email = $user->email;
+            $this->username = (string) $user->username;
             $this->is_active = $user->is_active;
             $this->roles = $user->roles->pluck('name')->values()->all();
         }
@@ -49,6 +52,7 @@ class Form extends Component
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user?->id)],
+            'username' => ['nullable', 'string', 'max:50', 'alpha_dash', Rule::unique('users', 'username')->ignore($this->user?->id)],
             'password' => [$this->user ? 'nullable' : 'required', 'confirmed', Password::defaults()],
             'is_active' => ['boolean'],
             'roles' => ['array'],
@@ -58,7 +62,7 @@ class Form extends Component
 
     public function save(): void
     {
-        $this->authorize('core.users.manage');
+        $this->authorize($this->user ? 'users.edit' : 'users.create');
 
         $data = $this->validate();
         $editingSelf = $this->user?->is(auth()->user()) ?? false;
@@ -69,8 +73,8 @@ class Form extends Component
             return;
         }
 
-        if ($editingSelf && $this->user->hasRole(SyncPermissions::SUPER_ADMIN) && ! in_array(SyncPermissions::SUPER_ADMIN, $data['roles'], true)) {
-            $this->addError('roles', 'You cannot remove the Super Admin role from yourself.');
+        if ($editingSelf && $this->user->hasRole(SyncPermissions::ADMIN) && ! in_array(SyncPermissions::ADMIN, $data['roles'], true)) {
+            $this->addError('roles', 'You cannot remove the Admin role from yourself.');
 
             return;
         }
@@ -80,6 +84,7 @@ class Form extends Component
             $user->fill([
                 'name' => $data['name'],
                 'email' => $data['email'],
+                'username' => $data['username'] ?: null,
                 'is_active' => $data['is_active'],
             ]);
 

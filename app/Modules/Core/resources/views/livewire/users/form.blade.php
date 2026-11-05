@@ -5,7 +5,8 @@
         <x-card>
             <div class="grid gap-4 sm:grid-cols-2">
                 <x-input label="Name" wire:model="name" required autofocus class="sm:col-span-2" />
-                <x-input label="Email" type="email" wire:model="email" required class="sm:col-span-2" autocomplete="off" />
+                <x-input label="Email" type="email" wire:model="email" required autocomplete="off" />
+                <x-input label="Username" wire:model="username" autocomplete="off" help="Optional. Can be used instead of the email to sign in." />
                 <x-input label="{{ $user ? 'New password' : 'Password' }}" type="password" wire:model="password"
                          :required="! $user" autocomplete="new-password"
                          :help="$user ? 'Leave blank to keep the current password.' : null" />

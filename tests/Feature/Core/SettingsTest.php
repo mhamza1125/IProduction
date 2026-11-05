@@ -16,7 +16,7 @@ it('returns defaults for settings that were never saved', function () {
 
 it('saves company settings and resizes the logo', function () {
     Storage::fake('public');
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
 
     Livewire::test(Company::class)
         ->set('name', 'Acme Textiles (Pvt) Ltd')
@@ -41,7 +41,7 @@ it('saves company settings and resizes the logo', function () {
 });
 
 it('validates company settings', function () {
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
 
     Livewire::test(Company::class)
         ->set('name', '')

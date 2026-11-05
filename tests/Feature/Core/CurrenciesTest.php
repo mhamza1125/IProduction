@@ -7,7 +7,7 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(CoreSeeder::class);
-    $this->actingAs(superAdmin());
+    $this->actingAs(admin());
 });
 
 it('seeds PKR as the only base currency', function () {

@@ -19,12 +19,13 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $username
  * @property string $password
  * @property bool $is_active
  * @property Carbon|null $last_login_at
  * @property Carbon|null $two_factor_confirmed_at
  */
-#[Fillable(['name', 'email', 'password', 'is_active'])]
+#[Fillable(['name', 'email', 'username', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
@@ -62,7 +63,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'is_active'])
+            ->logOnly(['name', 'email', 'username', 'is_active'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

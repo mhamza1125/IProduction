@@ -5,17 +5,17 @@ use Spatie\Permission\Models\Permission;
 
 it('blocks users without permission from admin pages', function (string $url) {
     $this->actingAs(userWith())->get($url)->assertForbidden();
-})->with(['/admin/users', '/admin/roles', '/admin/currencies', '/admin/settings/company']);
+})->with(['/settings/users', '/settings/roles', '/settings/currencies', '/settings/company', '/settings/numbering', '/settings/audit-log', '/settings/approvals', '/settings/period-lock']);
 
-it('lets a Super Admin open every admin page', function (string $url) {
-    $this->actingAs(superAdmin())->get($url)->assertOk();
-})->with(['/admin/users', '/admin/users/create', '/admin/roles', '/admin/roles/create', '/admin/currencies', '/admin/settings/company']);
+it('lets a Admin open every admin page', function (string $url) {
+    $this->actingAs(admin())->get($url)->assertOk();
+})->with(['/settings/users', '/settings/users/create', '/settings/roles', '/settings/roles/create', '/settings/currencies', '/settings/company', '/settings/numbering', '/settings/audit-log', '/settings/approvals', '/settings/period-lock']);
 
 it('allows read-only access with only the view permission', function () {
-    $this->actingAs(userWith(['core.users.view']));
+    $this->actingAs(userWith(['users.view']));
 
-    $this->get('/admin/users')->assertOk()->assertDontSee('New user');
-    $this->get('/admin/users/create')->assertForbidden();
+    $this->get('/settings/users')->assertOk()->assertDontSee('New user');
+    $this->get('/settings/users/create')->assertForbidden();
 });
 
 it('only shows sidebar links the user is allowed to open', function () {
@@ -24,8 +24,8 @@ it('only shows sidebar links the user is allowed to open', function () {
     $labels = fn ($user) => collect($registry->navigationFor($user))->flatten()->pluck('label')->all();
 
     expect($labels(userWith()))->toBe([])
-        ->and($labels(userWith(['core.users.view'])))->toBe(['Users'])
-        ->and($labels(superAdmin()))->toContain('Users', 'Roles', 'Currencies', 'Company settings');
+        ->and($labels(userWith(['users.view'])))->toBe(['Users'])
+        ->and($labels(admin()))->toContain('Users', 'Roles', 'Currencies', 'Company', 'Numbering', 'Audit Log');
 });
 
 it('protects the Horizon dashboard', function () {

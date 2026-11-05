@@ -5,11 +5,15 @@ namespace App\Support\Modules;
 use App\Models\User;
 
 /**
- * Collects every registered module so the app shell can build the sidebar
- * and the permission list without knowing about individual modules.
+ * Collects every registered module so the app shell can build the sidebar,
+ * the permission list and the document-type list without knowing about
+ * individual modules.
  */
 class ModuleRegistry
 {
+    /** Sidebar group order, as in the specification's application menu. */
+    public const GROUP_ORDER = ['Sales', 'Purchasing', 'Production', 'Inventory', 'Catalog', 'Finance', 'HR', 'Assets', 'Reports', 'Settings'];
+
     /** @var array<string, ModuleServiceProvider> */
     private array $modules = [];
 
@@ -27,6 +31,22 @@ class ModuleRegistry
     }
 
     /**
+     * @return list<PermissionSet>
+     */
+    public function permissionSets(): array
+    {
+        $sets = [];
+
+        foreach ($this->modules as $module) {
+            foreach ($module->permissions() as $set) {
+                $sets[] = $set;
+            }
+        }
+
+        return $sets;
+    }
+
+    /**
      * All permissions declared by all modules, as name => description.
      *
      * @return array<string, string>
@@ -35,8 +55,8 @@ class ModuleRegistry
     {
         $permissions = [];
 
-        foreach ($this->modules as $module) {
-            $permissions += $module->permissions();
+        foreach ($this->permissionSets() as $set) {
+            $permissions += $set->permissions();
         }
 
         ksort($permissions);
@@ -45,7 +65,30 @@ class ModuleRegistry
     }
 
     /**
-     * Sidebar groups visible to the given user.
+     * Document types declared by all modules.
+     *
+     * @return array<string, DocumentType>
+     */
+    public function documentTypes(): array
+    {
+        $types = [];
+
+        foreach ($this->modules as $module) {
+            foreach ($module->documentTypes() as $type) {
+                $types[$type->key] = $type;
+            }
+        }
+
+        return $types;
+    }
+
+    public function documentType(string $key): ?DocumentType
+    {
+        return $this->documentTypes()[$key] ?? null;
+    }
+
+    /**
+     * Sidebar groups visible to the given user, in menu order.
      *
      * @return array<string, list<NavItem>>
      */
@@ -70,6 +113,13 @@ class ModuleRegistry
         foreach ($items as $item) {
             $groups[$item->group][] = $item;
         }
+
+        uksort($groups, function (string $a, string $b) {
+            $ia = array_search($a, self::GROUP_ORDER, true);
+            $ib = array_search($b, self::GROUP_ORDER, true);
+
+            return ($ia === false ? 99 : $ia) <=> ($ib === false ? 99 : $ib);
+        });
 
         return $groups;
     }

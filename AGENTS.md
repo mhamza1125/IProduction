@@ -40,7 +40,8 @@ app/Modules/Inventory/
 ```
 
 - Register the provider in `bootstrap/providers.php` and its seeder in `DatabaseSeeder`.
-- Declare permissions in `permissions()` as `{module}.{resource}.{action}` (e.g. `inventory.items.manage`), then run `php artisan permissions:sync`.
+- Declare permissions in `permissions()` as `PermissionSet` objects: names are `{resource}.{action}` (e.g. `sales_orders.approve`). Actions: view, create, edit, delete, approve, post, cancel, print, export, override. Sensitive data has its own: `cost.view`, `profit.view`, `salary.view`, `bank_balance.view`. Run `php artisan permissions:sync` after changes; it also grants new permissions to the default roles in `config/roles.php`.
+- Declare document types in `documentTypes()` (key, label, number prefix); they appear in Settings > Numbering and Approvals.
 - Declare sidebar links in `navigation()` with `NavItem`; links are hidden from users without the permission.
 - Protect routes with `->middleware('can:...')` **and** call `$this->authorize()` in every Livewire action that changes data.
 - Modules talk to each other through service classes or events, never by writing to another module's tables directly.
@@ -50,19 +51,26 @@ app/Modules/Inventory/
 
 - **Money and quantities:** `DECIMAL` columns (money `decimal(18,2)`, quantity `decimal(18,4)`, unit cost / exchange rate `decimal(20,6)`). Do the maths with `App\Support\Decimal`. Never use PHP floats.
 - **Foreign currency documents** store `currency_code`, `exchange_rate` (entered by the user) and the PKR amounts alongside the foreign amounts.
-- **Document numbers** come from `App\Modules\Core\Services\DocumentNumber::next()` inside the same `DB::transaction()` that saves the document. Never derive them from auto-increment IDs.
-- **Posted documents are immutable.** Draft → Confirmed → Posted → Cancelled; correct a posted document with a reversal, never an update or delete.
+- **Document numbers** (`SO-26-0001`) come from `App\Modules\Core\Services\DocumentNumber::next($type, $date)` inside the same `DB::transaction()` that creates the document. Never derive them from auto-increment IDs.
+- **Document lifecycle:** Draft → Approved → Posted, or Cancelled while nothing is posted. Document models implement `App\Support\Documents\Document`, use `HasDocumentWorkflow`, and add columns with `$table->documentWorkflow()`. Anything after Draft is locked by the model itself.
+- **Posting** goes through `App\Support\Documents\DocumentWorkflow::post($doc, fn ($locked) => ...effects...)`: one transaction, document row locked, double-post safe, approval setting and period lock enforced. Business actions live in action classes (`PostGoodsReceipt`) that call it; Livewire components stay thin.
+- Posted mistakes are fixed with a reversal, return, credit note or adjustment, never an update or delete. Cancel, override, reversal and adjustment always need a reason (logged).
 - **Stock is a ledger:** every movement is an insert into a movements table; balances are derived (or cached in the same transaction).
 - **Accounting is double-entry:** journal lines must balance (debits = credits) before commit.
 - Lock rows you are about to change based on their current value (`lockForUpdate()` inside a transaction): stock balances, sequences, credit limits.
 - Add `LogsActivity` to models whose changes people will ask about later.
-- Company-specific values (name, tax numbers, fiscal year) come from `App\Modules\Core\Services\Settings`, not config or constants.
+- Company-specific values (name, tax numbers, tolerances, lock date) come from `App\Modules\Core\Services\Settings`, not config or constants.
+- Unknown or "none" values are NULL, never 0. A master record used in a transaction can only be deactivated, not deleted. Inactive records cannot be picked in new documents.
 
 ## UI conventions
 
 - Full-page Livewire components are routed directly (`Route::get('items', Items\Index::class)`) and use the `layouts::app` layout. Set the page title with `#[Title('...')]` or `->title()`.
 - List screens use the `App\Support\Livewire\WithDataTable` trait plus `<x-table>`, `<x-table.toolbar>`, `<x-table.th sortable=...>`.
-- Forms use `<x-input>`, `<x-select>`, `<x-textarea>`, `<x-checkbox>`: errors are shown automatically from `wire:model`. Add `data-save-shortcut` to the main `<form>` so Ctrl+S saves.
+- Forms use `<x-input>`, `<x-select>`, `<x-textarea>`, `<x-checkbox>`, `<x-date-input>`: errors are shown automatically from `wire:model`. Add `data-save-shortcut` to the main `<form>` so Ctrl+S saves.
+- Dates display as dd-mm-yyyy (`@date($d)`, `<x-date-input>`); money with `@money($amount, $currency)`; quantities with `@qty($q)`. Status badges: `<x-status :status="...">`.
+- Every list: search, filters, date range (`dates` on the toolbar + `applyDateRange()`), sorting, pagination, Excel/CSV export (`exportPermission/exportQuery/exportColumns`).
+- Every document/profile view shows attachments, notes and history: `<livewire:core::shared.attachments :model="$doc" />`, `...shared.notes`, `...shared.activity-history` (the model implements `Attachable`).
+- Printouts: a controller checks `{resource}.print`, then `Printer::respond($request, 'module::print.x', [...], $title)` with a view built on `<x-print.layout>`. `?pdf=1` downloads a PDF.
 - Use `wire:model` (deferred) by default. Only search boxes use `.live` (debounced).
 - Line-item grids (order lines, BOM lines) run in Alpine on the client and are sent to the server once on save.
 - Notifications: `$this->dispatch('toast', message: '...')`, or `session()->flash('toast', '...')` before a redirect.
@@ -72,5 +80,6 @@ app/Modules/Inventory/
 ## Testing
 
 - Feature tests run on MySQL (`iproduction_test`) with `RefreshDatabase`, not SQLite, so decimals, locking and unique indexes behave as in production.
-- Helpers in `tests/Pest.php`: `superAdmin()`, `userWith([...permissions])`.
+- Helpers in `tests/Pest.php`: `admin()`, `userWith([...permissions])`. `tests/Fixtures` has a sample `TestDocument` for framework tests.
+- `TestCase` refuses to run unless the database name ends in `_test`; destructive artisan commands are blocked in production.
 - Every module ships tests for its permissions, its validation and its posting rules.

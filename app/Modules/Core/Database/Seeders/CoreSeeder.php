@@ -67,9 +67,9 @@ class CoreSeeder extends Seeder
             'password' => $password,
         ]);
 
-        $user->assignRole(SyncPermissions::SUPER_ADMIN);
+        $user->assignRole(SyncPermissions::ADMIN);
 
-        $this->command?->warn("Super Admin created: {$email} / {$password}");
+        $this->command?->warn("Admin created: {$email} / {$password}");
         $this->command?->warn('Change this password after the first login.');
     }
 }

@@ -1,12 +1,12 @@
 <div>
     <x-page-header title="Users" description="People who can sign in, and the roles that control what they can do.">
-        @can('core.users.manage')
+        @can('users.create')
             <x-button :href="route('core.users.create')" icon="plus">New user</x-button>
         @endcan
     </x-page-header>
 
     <x-card :padding="false">
-        <x-table.toolbar placeholder="Search name or email…">
+        <x-table.toolbar placeholder="Search name, email or username…" :export="auth()->user()->can('users.export')">
             <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
                 <option value="">All statuses</option>
                 <option value="active">Active</option>
@@ -40,10 +40,11 @@
                     <x-table.td>
                         <x-badge :color="$user->is_active ? 'green' : 'zinc'">{{ $user->is_active ? 'Active' : 'Inactive' }}</x-badge>
                     </x-table.td>
-                    <x-table.td class="whitespace-nowrap text-zinc-500">{{ $user->last_login_at?->diffForHumans() ?? 'Never' }}</x-table.td>
+                    <x-table.td class="whitespace-nowrap text-zinc-500">{{ $user->last_login_at ? \App\Support\Format::datetime($user->last_login_at) : 'Never' }}</x-table.td>
                     <x-table.td align="right" class="whitespace-nowrap">
-                        @can('core.users.manage')
+                        @can('users.edit')
                             <x-button variant="ghost" size="sm" :href="route('core.users.edit', $user)" icon="pencil">Edit</x-button>
+                            <x-button variant="ghost" size="sm" wire:click="sendResetLink({{ $user->id }})" wire:confirm="Email a password reset link to {{ $user->email }}?">Reset password</x-button>
                             @unless ($user->is(auth()->user()))
                                 <x-button variant="ghost" size="sm" wire:click="toggleActive({{ $user->id }})"
                                           wire:confirm="{{ $user->is_active ? 'Deactivate' : 'Activate' }} {{ $user->name }}?">

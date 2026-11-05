@@ -4,6 +4,7 @@ namespace App\Modules\Core\Livewire\Roles;
 
 use App\Modules\Core\Console\SyncPermissions;
 use App\Support\Modules\ModuleRegistry;
+use App\Support\Modules\PermissionSet;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -23,7 +24,7 @@ class Form extends Component
     public function mount(?Role $role = null): void
     {
         if ($role?->exists) {
-            abort_if($role->name === SyncPermissions::SUPER_ADMIN, 403, 'The Super Admin role always has every permission.');
+            abort_if($role->name === SyncPermissions::ADMIN, 403, 'The Admin role always has every permission.');
 
             $this->role = $role;
             $this->name = $role->name;
@@ -33,12 +34,12 @@ class Form extends Component
 
     public function save(ModuleRegistry $modules): void
     {
-        $this->authorize('core.roles.manage');
+        $this->authorize($this->role ? 'roles.edit' : 'roles.create');
 
         $data = $this->validate([
             'name' => [
                 'required', 'string', 'max:100',
-                Rule::notIn([SyncPermissions::SUPER_ADMIN]),
+                Rule::notIn([SyncPermissions::ADMIN]),
                 Rule::unique('roles', 'name')->where('guard_name', 'web')->ignore($this->role?->id),
             ],
             'permissions' => ['array'],
@@ -57,16 +58,16 @@ class Form extends Component
 
     public function render(ModuleRegistry $modules): View
     {
-        // Group permissions by module for the checkbox matrix.
+        // Matrix: one row per resource, one column per action, grouped by menu section.
         $groups = [];
 
-        foreach ($modules->all() as $module) {
-            if ($module->permissions() !== []) {
-                $groups[$module->name()] = $module->permissions();
-            }
+        foreach ($modules->permissionSets() as $set) {
+            $groups[$set->group][] = $set;
         }
 
-        return view('core::livewire.roles.form', ['groups' => $groups])
-            ->title($this->role ? 'Edit role' : 'New role');
+        return view('core::livewire.roles.form', [
+            'groups' => $groups,
+            'actions' => PermissionSet::ACTIONS,
+        ])->title($this->role ? 'Edit role' : 'New role');
     }
 }

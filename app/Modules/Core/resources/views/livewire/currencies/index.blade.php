@@ -1,6 +1,8 @@
 <div>
     <x-page-header title="Currencies" description="PKR is the base currency. For foreign-currency documents the exchange rate is entered on each transaction.">
-        <x-button wire:click="create" icon="plus">New currency</x-button>
+        @can('currencies.create')
+            <x-button wire:click="create" icon="plus">New currency</x-button>
+        @endcan
     </x-page-header>
 
     <x-card :padding="false">
@@ -27,10 +29,12 @@
                         <x-badge :color="$currency->is_active ? 'green' : 'zinc'">{{ $currency->is_active ? 'Active' : 'Inactive' }}</x-badge>
                     </x-table.td>
                     <x-table.td align="right" class="whitespace-nowrap">
-                        <x-button variant="ghost" size="sm" icon="pencil" wire:click="edit({{ $currency->id }})">Edit</x-button>
-                        @unless ($currency->is_base)
-                            <x-button variant="ghost" size="sm" wire:click="toggleActive({{ $currency->id }})">{{ $currency->is_active ? 'Deactivate' : 'Activate' }}</x-button>
-                        @endunless
+                        @can('currencies.edit')
+                            <x-button variant="ghost" size="sm" icon="pencil" wire:click="edit({{ $currency->id }})">Edit</x-button>
+                            @unless ($currency->is_base)
+                                <x-button variant="ghost" size="sm" wire:click="toggleActive({{ $currency->id }})">{{ $currency->is_active ? 'Deactivate' : 'Activate' }}</x-button>
+                            @endunless
+                        @endcan
                     </x-table.td>
                 </tr>
             @endforeach

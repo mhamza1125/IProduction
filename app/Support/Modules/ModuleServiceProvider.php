@@ -41,13 +41,22 @@ abstract class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
-     * Permissions this module defines, as name => description.
-     * Names follow "{module}.{resource}.{action}", e.g. "core.users.manage".
-     * Run `php artisan permissions:sync` after changing them.
+     * Permission sets this module defines. Names are "{resource}.{action}",
+     * e.g. "sales_orders.approve". Run `php artisan permissions:sync` after changing them.
      *
-     * @return array<string, string>
+     * @return list<PermissionSet>
      */
     public function permissions(): array
+    {
+        return [];
+    }
+
+    /**
+     * Document types this module owns, for numbering and approval settings.
+     *
+     * @return list<DocumentType>
+     */
+    public function documentTypes(): array
     {
         return [];
     }
