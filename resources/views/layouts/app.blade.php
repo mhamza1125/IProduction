@@ -1,0 +1,92 @@
+{{-- Main application shell: sidebar navigation built from the module registry. --}}
+@php
+    $settings = app(\App\Modules\Core\Services\Settings::class);
+    $user = auth()->user();
+    $navigation = app(\App\Support\Modules\ModuleRegistry::class)->navigationFor($user);
+@endphp
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<head>
+    @include('partials.head')
+</head>
+<body class="h-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+<div x-data="{ sidebar: false }" class="min-h-full">
+    {{-- Mobile sidebar backdrop --}}
+    <div x-show="sidebar" x-cloak x-transition.opacity class="fixed inset-0 z-40 bg-zinc-900/50 lg:hidden" x-on:click="sidebar = false"></div>
+
+    {{-- Sidebar --}}
+    <aside
+        :class="sidebar ? 'translate-x-0' : '-translate-x-full'"
+        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-zinc-200 bg-white transition-transform lg:translate-x-0 dark:border-zinc-800 dark:bg-zinc-900"
+    >
+        <div class="flex h-14 items-center gap-2 border-b border-zinc-200 px-4 dark:border-zinc-800">
+            @if ($logo = $settings->get('company.logo_path'))
+                <img src="{{ Storage::disk('public')->url($logo) }}" alt="" class="h-7 w-auto">
+            @endif
+            <span class="truncate text-sm font-semibold">{{ $settings->get('company.name') }}</span>
+            <button type="button" class="ml-auto rounded p-1 text-zinc-400 lg:hidden" x-on:click="sidebar = false">
+                <x-icon name="x" /><span class="sr-only">Close menu</span>
+            </button>
+        </div>
+
+        <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Main">
+            <div class="space-y-0.5">
+                <x-nav.link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="home">Dashboard</x-nav.link>
+            </div>
+
+            @foreach ($navigation as $group => $items)
+                <div>
+                    <p class="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $group }}</p>
+                    <div class="space-y-0.5">
+                        @foreach ($items as $item)
+                            <x-nav.link :href="route($item->route)" :active="$item->isActive()" :icon="$item->icon">{{ $item->label }}</x-nav.link>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </nav>
+    </aside>
+
+    <div class="lg:pl-64">
+        {{-- Top bar --}}
+        <header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-zinc-200 bg-white/90 px-4 backdrop-blur sm:px-6 dark:border-zinc-800 dark:bg-zinc-900/90">
+            <button type="button" class="-ml-1 rounded p-1 text-zinc-500 lg:hidden" x-on:click="sidebar = true">
+                <x-icon name="menu" /><span class="sr-only">Open menu</span>
+            </button>
+
+            <div class="ml-auto flex items-center gap-1">
+                <button type="button" onclick="toggleTheme()" class="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200" title="Toggle dark mode">
+                    <x-icon name="moon" class="dark:hidden" />
+                    <x-icon name="sun" class="hidden dark:block" />
+                    <span class="sr-only">Toggle dark mode</span>
+                </button>
+
+                <div x-data="{ open: false }" class="relative" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
+                    <button type="button" x-on:click="open = !open" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800" :aria-expanded="open">
+                        <span class="flex size-7 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">{{ $user->initials() }}</span>
+                        <span class="hidden max-w-40 truncate sm:block">{{ $user->name }}</span>
+                    </button>
+                    <div x-show="open" x-cloak x-transition class="absolute right-0 mt-1 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                        <a href="{{ route('profile') }}" wire:navigate class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                            <x-icon name="user" class="size-4" /> Profile
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                                <x-icon name="logout" class="size-4" /> Sign out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="px-4 py-6 sm:px-6 lg:px-8">
+            {{ $slot }}
+        </main>
+    </div>
+</div>
+
+<x-toasts />
+</body>
+</html>
