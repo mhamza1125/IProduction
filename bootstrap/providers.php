@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Catalog\CatalogServiceProvider;
 use App\Modules\Core\CoreServiceProvider;
 use App\Modules\Finance\FinanceServiceProvider;
 use App\Modules\People\PeopleServiceProvider;
@@ -15,5 +16,6 @@ return [
     // Business modules (app/Modules). Add each new module's provider here.
     CoreServiceProvider::class,
     PeopleServiceProvider::class,
+    CatalogServiceProvider::class,
     FinanceServiceProvider::class,
 ];

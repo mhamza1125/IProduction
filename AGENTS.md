@@ -72,7 +72,8 @@ app/Modules/Inventory/
 - Every document/profile view shows attachments, notes and history: `<livewire:core::shared.attachments :model="$doc" />`, `...shared.notes`, `...shared.activity-history` (the model implements `Attachable`).
 - Printouts: a controller checks `{resource}.print`, then `Printer::respond($request, 'module::print.x', [...], $title)` with a view built on `<x-print.layout>`. `?pdf=1` downloads a PDF.
 - Use `wire:model` (deferred) by default. Only search boxes use `.live` (debounced).
-- Line-item grids (order lines, BOM lines) run in Alpine on the client and are sent to the server once on save.
+- Long line-item grids where speed matters (sales/purchase order lines) run in Alpine on the client and are sent to the server once on save. Short setup grids (route stages, BOM lines) may use Livewire arrays with deferred `wire:model`.
+- Never name a view variable `$attributes`: Blade reserves it (use `$attributeList`).
 - Notifications: `$this->dispatch('toast', message: '...')`, or `session()->flash('toast', '...')` before a redirect.
 - Mark properties the browser must not change with `#[Locked]` (IDs, file paths, the model being edited).
 - Keep component state small: store IDs, use computed properties for collections.
@@ -82,4 +83,5 @@ app/Modules/Inventory/
 - Feature tests run on MySQL (`iproduction_test`) with `RefreshDatabase`, not SQLite, so decimals, locking and unique indexes behave as in production.
 - Helpers in `tests/Pest.php`: `admin()`, `userWith([...permissions])`. `tests/Fixtures` has a sample `TestDocument` for framework tests.
 - `TestCase` refuses to run unless the database name ends in `_test`; destructive artisan commands are blocked in production.
+- If a test run stops silently, run `PAO_DISABLE=1 vendor/bin/pest` to see the real error (laravel/pao reformats output for AI agents and can hide fatal errors).
 - Every module ships tests for its permissions, its validation and its posting rules.
