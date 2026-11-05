@@ -25,7 +25,11 @@ use Illuminate\Support\Carbon;
  */
 trait HasDocumentWorkflow
 {
-    /** Columns the workflow itself writes after a document is locked. */
+    /**
+     * Columns the workflow itself writes after a document is locked.
+     *
+     * @var list<string>
+     */
     private static array $workflowColumns = [
         'status', 'approved_by', 'approved_at', 'posted_by', 'posted_at',
         'cancelled_by', 'cancelled_at', 'cancel_reason', 'updated_at',

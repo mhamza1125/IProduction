@@ -9,6 +9,3 @@ parameters:
         - database
         - routes
     tmpDir: storage/framework/cache/phpstan
-    ignoreErrors:
-        # Framework traits are used by module models added in later phases.
-        - identifier: trait.unused

@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Modules\Core\Console\SyncPermissions;
 use App\Support\Modules\ModuleRegistry;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\TestModule;
@@ -23,6 +24,18 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 pest()->extend(TestCase::class)->in('Unit');
+
+/*
+| Concurrency tests commit real transactions on two connections, so they use
+| truncation instead of RefreshDatabase's wrapping transaction.
+*/
+pest()->extend(TestCase::class)
+    ->use(DatabaseTruncation::class)
+    ->beforeEach(function () {
+        app(ModuleRegistry::class)->add(new TestModule(app()));
+        Artisan::call('permissions:sync');
+    })
+    ->in('Concurrency');
 
 function admin(): User
 {
