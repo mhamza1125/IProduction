@@ -68,7 +68,7 @@ app/Modules/Inventory/
 - List screens use the `App\Support\Livewire\WithDataTable` trait plus `<x-table>`, `<x-table.toolbar>`, `<x-table.th sortable=...>`.
 - Forms use `<x-input>`, `<x-select>`, `<x-textarea>`, `<x-checkbox>`, `<x-date-input>`: errors are shown automatically from `wire:model`. Add `data-save-shortcut` to the main `<form>` so Ctrl+S saves.
 - Dates display as dd-mm-yyyy (`@date($d)`, `<x-date-input>`); money with `@money($amount, $currency)`; quantities with `@qty($q)`. Status badges: `<x-status :status="...">`.
-- Every list: search, filters, date range (`dates` on the toolbar + `applyDateRange()`), sorting, pagination, Excel/CSV export (`exportPermission/exportQuery/exportColumns`).
+- Every list: search, filters, date range (`dates` on the toolbar + `applyDateRange()`), sorting, pagination, and Excel/CSV export (`use WithExport` + `exportPermission/exportQuery/exportColumns`).
 - Every document/profile view shows attachments, notes and history: `<livewire:core::shared.attachments :model="$doc" />`, `...shared.notes`, `...shared.activity-history` (the model implements `Attachable`).
 - Printouts: a controller checks `{resource}.print`, then `Printer::respond($request, 'module::print.x', [...], $title)` with a view built on `<x-print.layout>`. `?pdf=1` downloads a PDF.
 - Use `wire:model` (deferred) by default. Only search boxes use `.live` (debounced).

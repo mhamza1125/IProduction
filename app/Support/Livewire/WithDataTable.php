@@ -2,12 +2,9 @@
 
 namespace App\Support\Livewire;
 
-use App\Support\Exports\QueryExport;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Search, sort and pagination for list screens.
@@ -68,32 +65,6 @@ trait WithDataTable
     public function updatedDateTo(): void
     {
         $this->resetPage();
-    }
-
-    /**
-     * Downloads the current filtered list. The component defines
-     * exportPermission(), exportQuery() and exportColumns().
-     */
-    public function export(string $format = 'xlsx'): BinaryFileResponse
-    {
-        abort_unless(method_exists($this, 'exportQuery') && method_exists($this, 'exportColumns'), 404);
-
-        $this->authorize($this->exportPermission());
-
-        $writer = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
-        $name = str($this->exportFilename())->slug().'-'.now()->format('Y-m-d').'.'.($format === 'csv' ? 'csv' : 'xlsx');
-
-        return Excel::download(new QueryExport($this->exportQuery(), $this->exportColumns()), $name, $writer);
-    }
-
-    protected function exportPermission(): string
-    {
-        return 'export';
-    }
-
-    protected function exportFilename(): string
-    {
-        return class_basename(static::class);
     }
 
     public function updatedPerPage(): void

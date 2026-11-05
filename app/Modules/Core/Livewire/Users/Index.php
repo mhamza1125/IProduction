@@ -4,6 +4,7 @@ namespace App\Modules\Core\Livewire\Users;
 
 use App\Models\User;
 use App\Support\Livewire\WithDataTable;
+use App\Support\Livewire\WithExport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Password;
@@ -14,7 +15,7 @@ use Livewire\Component;
 #[Title('Users')]
 class Index extends Component
 {
-    use WithDataTable;
+    use WithDataTable, WithExport;
 
     #[Url(except: '')]
     public string $status = '';

@@ -4,6 +4,7 @@ namespace App\Modules\Core\Livewire;
 
 use App\Models\User;
 use App\Support\Livewire\WithDataTable;
+use App\Support\Livewire\WithExport;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
@@ -17,7 +18,7 @@ use Spatie\Activitylog\Models\Activity;
 #[Title('Audit log')]
 class AuditLog extends Component
 {
-    use WithDataTable;
+    use WithDataTable, WithExport;
 
     #[Url(except: '')]
     public string $user = '';
