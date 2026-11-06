@@ -9,6 +9,7 @@ use App\Modules\Finance\Services\JournalEntry;
 use App\Modules\Finance\Services\JournalPoster;
 use App\Modules\Finance\Services\Ledgers;
 use App\Modules\Finance\Services\MoneyAccounts;
+use App\Modules\Finance\Services\Payables;
 use App\Modules\Inventory\Actions\PostStockAdjustment;
 use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\People\Models\Contractor;
@@ -39,6 +40,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
         $this->app->singleton(JournalPoster::class);
         $this->app->singleton(Ledgers::class);
         $this->app->singleton(MoneyAccounts::class);
+        $this->app->singleton(Payables::class);
     }
 
     public function boot(): void
@@ -78,6 +80,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
             new PermissionSet('accounts', 'Cash and bank accounts', [...PermissionSet::MASTER, 'print'], 'Finance'),
             new PermissionSet('ledgers', 'Ledgers', ['view', 'print', 'export'], 'Finance'),
             new PermissionSet('journals', 'Journals', ['view', 'export'], 'Finance'),
+            new PermissionSet('payments', 'Payments', PermissionSet::DOCUMENT, 'Finance'),
         ];
     }
 
@@ -85,6 +88,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
     {
         return [
             new DocumentType('journal', 'Journal (automatic)', 'JNL', approvable: false),
+            new DocumentType('payment', 'Payment', 'PAY'),
         ];
     }
 
@@ -92,6 +96,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
     {
         return [
             new NavItem('Accounts', 'finance.accounts.index', 'banknotes', 'accounts.view', 'Finance', 500, 'finance.accounts.*'),
+            new NavItem('Payments', 'finance.payments.index', 'banknotes', 'payments.view', 'Finance', 510, 'finance.payments.*'),
             new NavItem('Ledgers', 'finance.ledgers', 'document', 'ledgers.view', 'Finance', 580),
             new NavItem('Journals', 'finance.journals.index', 'list', 'journals.view', 'Finance', 585, 'finance.journals.*'),
             new NavItem('Chart of Accounts', 'finance.chart-of-accounts', 'list', 'chart_of_accounts.view', 'Finance', 590),

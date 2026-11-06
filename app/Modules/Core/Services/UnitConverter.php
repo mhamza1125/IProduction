@@ -34,6 +34,10 @@ class UnitConverter
      */
     public function factor(int $fromUnitId, int $toUnitId, ?int $itemId = null): ?BigDecimal
     {
+        if ($fromUnitId === $toUnitId) {
+            return BigDecimal::one();
+        }
+
         foreach ($itemId !== null ? [$itemId, null] : [null] as $scope) {
             $direct = UnitConversion::query()->where('item_id', $scope)->where('from_unit_id', $fromUnitId)->where('to_unit_id', $toUnitId)->value('factor');
             if ($direct !== null) {
