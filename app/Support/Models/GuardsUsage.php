@@ -9,20 +9,28 @@ use Closure;
  * "A master record used in a transaction can only be deactivated."
  *
  * Modules that reference a master record register a check from their service
- * provider, e.g. Customer::whenUsed(fn (Customer $c) => $c->salesOrders()->exists()).
+ * provider, e.g. Customer::whenUsed('sales.orders', fn (Customer $c) => $c->salesOrders()->exists()).
  * Deleting a record for which any check returns true throws.
  */
 trait GuardsUsage
 {
-    /** @var list<Closure(static): bool> */
+    /** @var array<string, Closure(static): bool> */
     protected static array $usageChecks = [];
 
     /**
+     * Registers (or replaces) a usage check. The key keeps registration
+     * idempotent when the application boots more than once (tests, Octane).
+     *
      * @param  Closure(static): bool  $check
      */
-    public static function whenUsed(Closure $check): void
+    public static function whenUsed(string $key, Closure $check): void
     {
-        static::$usageChecks[] = $check;
+        static::$usageChecks[$key] = $check;
+    }
+
+    public static function forgetUsageCheck(string $key): void
+    {
+        unset(static::$usageChecks[$key]);
     }
 
     public function isInUse(): bool

@@ -48,6 +48,11 @@ class StockAdjustment extends Model implements Attachable, Document
         return 'stock_adjustments';
     }
 
+    public function showUrl(): string
+    {
+        return route('inventory.adjustments.show', $this);
+    }
+
     /** @return HasMany<StockAdjustmentLine, $this> */
     public function lines(): HasMany
     {

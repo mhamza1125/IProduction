@@ -52,11 +52,11 @@ class InventoryServiceProvider extends ModuleServiceProvider
         });
 
         // Anything with stock history can only be deactivated.
-        ItemVariant::whenUsed(fn (ItemVariant $v) => StockMovement::query()->where('item_variant_id', $v->id)->exists());
-        Item::whenUsed(fn (Item $i) => StockMovement::query()->whereIn('item_variant_id', $i->variants()->withTrashed()->select('id'))->exists());
-        Stage::whenUsed(fn (Stage $s) => StockMovement::query()->where('stage_id', $s->id)->exists());
-        Contractor::whenUsed(fn (Contractor $c) => StockMovement::query()->whereIn('location_id', Location::query()->where('contractor_id', $c->id)->select('id'))->exists());
-        Lookup::whenUsed(fn (Lookup $l) => $l->type === 'adjustment_reason' && StockAdjustment::query()->where('reason_id', $l->id)->exists());
+        ItemVariant::whenUsed('inventory.itemvariant', fn (ItemVariant $v) => StockMovement::query()->where('item_variant_id', $v->id)->exists());
+        Item::whenUsed('inventory.item', fn (Item $i) => StockMovement::query()->whereIn('item_variant_id', $i->variants()->withTrashed()->select('id'))->exists());
+        Stage::whenUsed('inventory.stage', fn (Stage $s) => StockMovement::query()->where('stage_id', $s->id)->exists());
+        Contractor::whenUsed('inventory.contractor', fn (Contractor $c) => StockMovement::query()->whereIn('location_id', Location::query()->where('contractor_id', $c->id)->select('id'))->exists());
+        Lookup::whenUsed('inventory.lookup', fn (Lookup $l) => $l->type === 'adjustment_reason' && StockAdjustment::query()->where('reason_id', $l->id)->exists());
     }
 
     public function permissions(): array

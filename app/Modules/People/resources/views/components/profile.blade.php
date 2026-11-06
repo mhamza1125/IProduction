@@ -34,6 +34,8 @@
         </div>
 
         <div class="space-y-6">
+            @includeIf('finance::partials.profile-balance', ['profile' => $record])
+
             {{ $side ?? '' }}
 
             <x-card title="Notes">

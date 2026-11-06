@@ -1,10 +1,8 @@
 <?php
 
 use App\Modules\Catalog\Models\Item;
-use App\Modules\Core\Database\Seeders\CoreSeeder;
 use App\Modules\Core\Models\Lookup;
 use App\Modules\Inventory\Actions\PostStockAdjustment;
-use App\Modules\Inventory\Database\Seeders\InventorySeeder;
 use App\Modules\Inventory\Livewire\Adjustments;
 use App\Modules\Inventory\Livewire\Stock\Index;
 use App\Modules\Inventory\Models\Location;
@@ -17,7 +15,7 @@ use App\Support\Documents\DocumentWorkflow;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->seed([CoreSeeder::class, InventorySeeder::class]);
+    seedBase();
     $this->actingAs(admin());
     $this->variant = Item::factory()->rawMaterial('kg')->create(['code' => 'LEATHER', 'default_purchase_cost' => '1500'])->variants()->first();
     $this->reason = Lookup::where('type', 'adjustment_reason')->first();

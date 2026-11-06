@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Modules\Core\Database\Seeders\CoreSeeder;
 use App\Modules\Finance\Database\Seeders\ChartOfAccountsSeeder;
+use App\Modules\Finance\Database\Seeders\FinanceSeeder;
 use App\Modules\Inventory\Database\Seeders\InventorySeeder;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CoreSeeder::class,
             ChartOfAccountsSeeder::class,
+            FinanceSeeder::class,
             InventorySeeder::class,
         ]);
     }

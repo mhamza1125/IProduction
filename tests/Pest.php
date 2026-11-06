@@ -2,6 +2,10 @@
 
 use App\Models\User;
 use App\Modules\Core\Console\SyncPermissions;
+use App\Modules\Core\Database\Seeders\CoreSeeder;
+use App\Modules\Finance\Database\Seeders\ChartOfAccountsSeeder;
+use App\Modules\Finance\Database\Seeders\FinanceSeeder;
+use App\Modules\Inventory\Database\Seeders\InventorySeeder;
 use App\Support\Modules\ModuleRegistry;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,6 +40,31 @@ pest()->extend(TestCase::class)
         Artisan::call('permissions:sync');
     })
     ->in('Concurrency');
+
+/**
+ * Marks records as "used in a transaction" for one test only.
+ *
+ * @param  class-string  $class  a model using GuardsUsage
+ */
+function markUsedWhen(string $class, Closure $check): void
+{
+    $class::whenUsed('test', $check);
+    test()->beforeApplicationDestroyed(fn () => $class::forgetUsageCheck('test'));
+}
+
+/**
+ * Seeds what every business test needs: settings, chart of accounts,
+ * Cash Book and stock locations.
+ */
+function seedBase(): void
+{
+    test()->seed([
+        CoreSeeder::class,
+        ChartOfAccountsSeeder::class,
+        FinanceSeeder::class,
+        InventorySeeder::class,
+    ]);
+}
 
 function admin(): User
 {

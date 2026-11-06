@@ -61,7 +61,7 @@ it('manages stages and lookups', function () {
 
 it('blocks deleting a master record that is in use', function () {
     $stage = Stage::firstOrFail();
-    Stage::whenUsed(fn (Stage $s) => $s->is($stage));
+    markUsedWhen(Stage::class, fn (Stage $s) => $s->is($stage));
 
     expect(fn () => $stage->delete())->toThrow(DocumentException::class, 'can only be deactivated');
 

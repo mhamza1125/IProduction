@@ -48,7 +48,7 @@ it('requires an active currency for customers', function () {
 it('locks the customer currency once the customer is used', function () {
     $this->actingAs(admin());
     $customer = Customer::factory()->create(['currency_code' => 'USD']);
-    Customer::whenUsed(fn (Customer $c) => $c->is($customer));
+    markUsedWhen(Customer::class, fn (Customer $c) => $c->is($customer));
 
     Livewire::test(Customers\Form::class, ['customer' => $customer])
         ->set('currency_code', 'EUR')->call('save')

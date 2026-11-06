@@ -49,14 +49,15 @@ app/Modules/Inventory/
 
 ## Data rules (non-negotiable)
 
-- **Money and quantities:** `DECIMAL` columns (money `decimal(18,2)`, quantity `decimal(18,4)`, unit cost / exchange rate `decimal(20,6)`). Do the maths with `App\Support\Decimal`. Never use PHP floats.
-- **Foreign currency documents** store `currency_code`, `exchange_rate` (entered by the user) and the PKR amounts alongside the foreign amounts.
+- **Money and quantities:** `DECIMAL` columns (money `decimal(18,2)`, quantity `decimal(18,4)`, unit cost and unit price `decimal(18,4)`; specification: money 2, quantity 4, unit cost 4 decimals). Do the maths with `App\Support\Decimal`. Never use PHP floats.
+- **Foreign currency:** customer documents, ledgers and receipts stay in the customer's currency; no exchange rate is used. Only a Currency Conversion creates PKR value (PKR received is typed in). Cost entries are always PKR.
 - **Document numbers** (`SO-26-0001`) come from `App\Modules\Core\Services\DocumentNumber::next($type, $date)` inside the same `DB::transaction()` that creates the document. Never derive them from auto-increment IDs.
 - **Document lifecycle:** Draft → Approved → Posted, or Cancelled while nothing is posted. Document models implement `App\Support\Documents\Document`, use `HasDocumentWorkflow`, and add columns with `$table->documentWorkflow()`. Anything after Draft is locked by the model itself.
 - **Posting** goes through `App\Support\Documents\DocumentWorkflow::post($doc, fn ($locked) => ...effects...)`: one transaction, document row locked, double-post safe, approval setting and period lock enforced. Business actions live in action classes (`PostGoodsReceipt`) that call it; Livewire components stay thin.
 - Posted mistakes are fixed with a reversal, return, credit note or adjustment, never an update or delete. Cancel, override, reversal and adjustment always need a reason (logged).
 - **Stock is a ledger:** only `App\Modules\Inventory\Services\StockLedger` writes stock. Every change is an append-only `stock_movements` row plus the matching `stock_balances` update in the same transaction (`php artisan stock:rebuild-balances` recomputes balances). Use `createLot()` for every inbound source, `receive()`, `remove()`, `transfer()` (status/stage/location change keeping lot and cost), `allocate()/issue()` (picked lot, else the demand's reserved lots, else FIFO; never another demand's reservation), `reserve()/release()/reallocate()`. Shortages throw `DocumentException`, so the whole document rolls back. Statuses: available, in_production, rejected, returned; only available stock can be issued or reserved.
-- **Accounting is double-entry:** journal lines must balance (debits = credits) before commit.
+- **Accounting is double-entry:** only `App\Modules\Finance\Services\JournalPoster` writes journals: build a `JournalEntry` (one currency, accounts by system key such as `accounts_receivable`, a `MoneyAccount`, or a `GlAccount`; tag party lines with the customer/vendor/employee/contractor as `ledgerable`) and `post()` it inside the document's posting transaction. It must balance; journals are immutable; `reverse()` posts the mirror. Ledgers and balances come from `Ledgers` (never stored). Follow the specification's posting map.
+- Hooks between modules (e.g. `PostStockAdjustment::afterStock('finance.journal', ...)`) and usage checks (`Model::whenUsed('module.key', ...)`) are keyed so repeated boots don't register twice.
 - Lock rows you are about to change based on their current value (`lockForUpdate()` inside a transaction): stock balances, sequences, credit limits.
 - Add `LogsActivity` to models whose changes people will ask about later.
 - Company-specific values (name, tax numbers, tolerances, lock date) come from `App\Modules\Core\Services\Settings`, not config or constants.
@@ -81,7 +82,7 @@ app/Modules/Inventory/
 ## Testing
 
 - Feature tests run on MySQL (`iproduction_test`) with `RefreshDatabase`, not SQLite, so decimals, locking and unique indexes behave as in production.
-- Helpers in `tests/Pest.php`: `admin()`, `userWith([...permissions])`. `tests/Fixtures` has a sample `TestDocument` for framework tests.
+- Helpers in `tests/Pest.php`: `seedBase()` (settings, chart of accounts, Cash Book, locations), `admin()`, `userWith([...permissions])`, `markUsedWhen(Model::class, fn)`. `tests/Fixtures` has a sample `TestDocument` for framework tests.
 - `TestCase` refuses to run unless the database name ends in `_test`; destructive artisan commands are blocked in production.
 - If a test run stops silently, run `PAO_DISABLE=1 vendor/bin/pest` to see the real error (laravel/pao reformats output for AI agents and can hide fatal errors).
 - Every module ships tests for its permissions, its validation and its posting rules.

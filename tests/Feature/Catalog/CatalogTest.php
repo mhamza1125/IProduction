@@ -106,7 +106,7 @@ it('lets users remove unwanted variants but not used ones, and keeps at least on
 
     $red = $glove->variants()->where('label', 'Red')->first();
     $blue = $glove->variants()->where('label', 'Blue')->first();
-    ItemVariant::whenUsed(fn (ItemVariant $v) => $v->is($red));
+    markUsedWhen(ItemVariant::class, fn (ItemVariant $v) => $v->is($red));
 
     Livewire::test(Items\Variants::class, ['item' => $glove])->call('remove', $red->id);
     expect(ItemVariant::find($red->id))->not->toBeNull();

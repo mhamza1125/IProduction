@@ -41,12 +41,12 @@ class CatalogServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         // Master records used by the catalog can only be deactivated.
-        Unit::whenUsed(fn (Unit $u) => Item::withTrashed()->where(fn ($q) => $q->where('stock_unit_id', $u->id)->orWhere('purchase_unit_id', $u->id)->orWhere('sales_unit_id', $u->id))->exists()
+        Unit::whenUsed('catalog.unit', fn (Unit $u) => Item::withTrashed()->where(fn ($q) => $q->where('stock_unit_id', $u->id)->orWhere('purchase_unit_id', $u->id)->orWhere('sales_unit_id', $u->id))->exists()
             || BomLine::query()->where('unit_id', $u->id)->exists());
-        Stage::whenUsed(fn (Stage $s) => RouteStage::query()->where('stage_id', $s->id)->exists() || BomLine::query()->where('stage_id', $s->id)->exists());
-        Lookup::whenUsed(fn (Lookup $l) => $l->type === 'item_category' && Item::withTrashed()->where('category_id', $l->id)->exists());
-        Item::whenUsed(fn (Item $i) => BomLine::query()->where('component_item_id', $i->id)->exists() || $i->boms()->exists());
-        ItemVariant::whenUsed(fn (ItemVariant $v) => BomLine::query()->where('component_variant_id', $v->id)->exists());
+        Stage::whenUsed('catalog.stage', fn (Stage $s) => RouteStage::query()->where('stage_id', $s->id)->exists() || BomLine::query()->where('stage_id', $s->id)->exists());
+        Lookup::whenUsed('catalog.lookup', fn (Lookup $l) => $l->type === 'item_category' && Item::withTrashed()->where('category_id', $l->id)->exists());
+        Item::whenUsed('catalog.item', fn (Item $i) => BomLine::query()->where('component_item_id', $i->id)->exists() || $i->boms()->exists());
+        ItemVariant::whenUsed('catalog.itemvariant', fn (ItemVariant $v) => BomLine::query()->where('component_variant_id', $v->id)->exists());
     }
 
     public function permissions(): array

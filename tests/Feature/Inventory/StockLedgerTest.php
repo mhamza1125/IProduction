@@ -2,9 +2,7 @@
 
 use App\Modules\Catalog\Models\Item;
 use App\Modules\Catalog\Models\ItemVariant;
-use App\Modules\Core\Database\Seeders\CoreSeeder;
 use App\Modules\Core\Models\Stage;
-use App\Modules\Inventory\Database\Seeders\InventorySeeder;
 use App\Modules\Inventory\Models\Location;
 use App\Modules\Inventory\Models\Lot;
 use App\Modules\Inventory\Models\Reservation;
@@ -22,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\TestDocument;
 
 beforeEach(function () {
-    $this->seed([CoreSeeder::class, InventorySeeder::class]);
+    seedBase();
     $this->actingAs(admin());
     $this->stock = app(StockLedger::class);
     $this->main = Location::mainStore();

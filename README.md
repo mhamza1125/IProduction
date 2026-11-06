@@ -4,8 +4,8 @@ Manufacturing ERP: accounts, orders, purchasing, production, BOMs and inventory.
 Built with Laravel 13, Livewire 4, Alpine.js and Tailwind CSS 4 on MySQL 8.
 
 > **Status:** built phase by phase from the Manufacturing ERP Build Specification.
-> Done: 1 Foundation, 2 Settings and people, 3 Catalog, 4 Inventory.
-> Next: 5 Finance core, then Purchasing, Sales and planning, Production, Delivery and billing,
+> Done: 1 Foundation, 2 Settings and people, 3 Catalog, 4 Inventory, 5 Finance core.
+> Next: 6 Purchasing, then Sales and planning, Production, Delivery and billing,
 > remaining Finance, Payroll, Costing and reporting, Go-live.
 
 ## What's included

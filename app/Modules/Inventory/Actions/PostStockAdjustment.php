@@ -22,7 +22,7 @@ use Closure;
  */
 class PostStockAdjustment
 {
-    /** @var list<Closure(StockAdjustment, list<array{line: StockAdjustmentLine, value: string}>): void> */
+    /** @var array<string, Closure(StockAdjustment, list<array{line: StockAdjustmentLine, value: string}>): void> */
     private static array $afterStock = [];
 
     public function __construct(
@@ -35,9 +35,9 @@ class PostStockAdjustment
      *
      * @param  Closure(StockAdjustment, list<array{line: StockAdjustmentLine, value: string}>): void  $hook
      */
-    public static function afterStock(Closure $hook): void
+    public static function afterStock(string $key, Closure $hook): void
     {
-        self::$afterStock[] = $hook;
+        self::$afterStock[$key] = $hook;
     }
 
     public function __invoke(StockAdjustment $adjustment, ?string $overrideReason = null): StockAdjustment
