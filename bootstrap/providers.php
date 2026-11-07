@@ -5,6 +5,7 @@ use App\Modules\Core\CoreServiceProvider;
 use App\Modules\Finance\FinanceServiceProvider;
 use App\Modules\Inventory\InventoryServiceProvider;
 use App\Modules\People\PeopleServiceProvider;
+use App\Modules\Production\ProductionServiceProvider;
 use App\Modules\Purchasing\PurchasingServiceProvider;
 use App\Modules\Sales\SalesServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -24,4 +25,5 @@ return [
     FinanceServiceProvider::class,
     PurchasingServiceProvider::class,
     SalesServiceProvider::class,
+    ProductionServiceProvider::class,
 ];

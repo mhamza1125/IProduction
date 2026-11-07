@@ -51,7 +51,15 @@
                             <x-input label="Contractor" type="number" step="any" min="0" wire:model="contractor" />
                             <x-select label="Route (make)" wire:model="route_id" :options="$routes" placeholder="—" />
                         </div>
-                        @can('planning.create') <x-button type="submit" size="sm" variant="secondary" class="mt-2">Save plan</x-button> @endcan
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            @can('planning.create') <x-button type="submit" size="sm" variant="secondary">Save plan</x-button> @endcan
+                            @if ((float) $line->plan_make > 0 && \Illuminate\Support\Facades\Route::has('production.ptcs.create'))
+                                @can('ptcs.create') <x-button size="sm" :href="route('production.ptcs.create', ['line' => $line->id])">Create PTC for {{ \App\Support\Format::qty($line->plan_make) }}</x-button> @endcan
+                            @endif
+                            @if ((float) $line->plan_contractor > 0 && \Illuminate\Support\Facades\Route::has('production.jobs.create'))
+                                @can('contractor_jobs.create') <x-button size="sm" variant="ghost" :href="route('production.jobs.create')">New contractor job</x-button> @endcan
+                            @endif
+                        </div>
                     </form>
                 </div>
             </x-card>
