@@ -1,5 +1,17 @@
 <div>
     <x-page-header title="Wage work" description="Pieces accepted from wage employees at the route rate. Review before payroll; approval posts the wages payable. Rejected pieces are unpaid unless approved." />
+    @can('wage_work.create')
+        <x-card class="mb-6" title="Add work done (not from a PTC)">
+            <form wire:submit="addManual" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <x-select label="Employee" wire:model="new_employee_id" :options="$wageEmployees" placeholder="Choose…" class="lg:col-span-2" />
+                <x-date-input label="Date" wire:model="new_date" />
+                <x-input label="Work" wire:model="new_description" placeholder="Other work description" />
+                <x-input label="Quantity" type="number" step="any" min="0" wire:model="new_quantity" />
+                <x-input label="Rate" type="number" step="any" min="0" wire:model="new_rate" />
+                <div class="flex items-end lg:col-span-6"><x-button type="submit" size="sm" variant="secondary">Add</x-button></div>
+            </form>
+        </x-card>
+    @endcan
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search employee, PTC…" dates :export="auth()->user()->can('wage_work.export')">
             <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
@@ -19,7 +31,7 @@
                 <tr wire:key="ww-{{ $w->id }}">
                     <x-table.td>@date($w->work_date)</x-table.td>
                     <x-table.td>{{ $w->employee->name }}</x-table.td>
-                    <x-table.td class="text-xs">@if ($w->ptc)<a href="{{ route('production.ptcs.show', $w->ptc) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $w->ptc->number }}</a>@endif {{ $w->stage?->name }}</x-table.td>
+                    <x-table.td class="text-xs">{{ $w->description }} @if ($w->ptc)<a href="{{ route('production.ptcs.show', $w->ptc) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $w->ptc->number }}</a>@endif {{ $w->stage?->name }}</x-table.td>
                     <x-table.td align="right">@qty($w->quantity)</x-table.td>
                     <x-table.td align="right">@qty($w->rejected_qty)@if ((float) $w->paid_rejected_qty)<div class="text-xs">paid @qty($w->paid_rejected_qty)</div>@endif</x-table.td>
                     @can('salary.view')<x-table.td align="right">@money($w->rate, null, 4)</x-table.td><x-table.td align="right">@money($w->amount)</x-table.td>@endcan

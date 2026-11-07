@@ -37,6 +37,12 @@ class JournalVoucherLine extends Model
         return $this->belongsTo(GlAccount::class, 'gl_account_id');
     }
 
+    /** @return BelongsTo<JournalVoucher, $this> */
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(JournalVoucher::class, 'journal_voucher_id');
+    }
+
     /** @return BelongsTo<MoneyAccount, $this> */
     public function moneyAccount(): BelongsTo
     {

@@ -7,6 +7,7 @@ use App\Modules\Finance\Models\CurrencyConversion;
 use App\Modules\Finance\Models\Expense;
 use App\Modules\Finance\Models\GlAccount;
 use App\Modules\Finance\Models\JournalVoucher;
+use App\Modules\Finance\Models\JournalVoucherLine;
 use App\Modules\Finance\Models\MoneyAccount;
 use App\Modules\Finance\Models\Transfer;
 use App\Modules\People\Models\Employee;
@@ -15,8 +16,10 @@ use App\Support\Decimal;
 use App\Support\Documents\DocumentException;
 use App\Support\Documents\DocumentWorkflow;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -258,6 +261,42 @@ class MoneyMovements
             $journal = $this->journals->post($entry);
             $v->forceFill(['journal_id' => $journal->id])->save();
         }, $overrideReason);
+    }
+
+    /**
+     * Posted voucher lines charging an employee that payroll should deduct
+     * (not yet deducted), up to a date.
+     *
+     * @return Collection<int, JournalVoucherLine>
+     */
+    public function payrollFines(Model $employee, CarbonInterface $until): Collection
+    {
+        return JournalVoucherLine::query()->with(['account', 'voucher'])
+            ->where('party_type', $employee->getMorphClass())->where('party_id', $employee->getKey())
+            ->where('deduct_from_payroll', true)->whereNull('payroll_line_id')
+            ->whereHas('voucher', fn ($q) => $q->whereNotNull('posted_at')->whereDate('voucher_date', '<=', $until))->get();
+    }
+
+    /**
+     * Marks fines as deducted by a payroll line. Fines booked to Wages Payable
+     * already reduced what the employee is owed; others are moved there now:
+     * Dr Wages and Salaries Payable, Cr the account the fine was charged to.
+     *
+     * @param  list<int>  $ids
+     */
+    public function deductFines(array $ids, int $payrollLineId, Model $employee, CarbonInterface $date, Model $source): void
+    {
+        $lines = JournalVoucherLine::query()->with('account')->whereIn('id', $ids)->lockForUpdate()->get();
+        foreach ($lines as $l) {
+            if ($l->payroll_line_id !== null) {
+                throw new DocumentException('A fine on this payroll was already deducted.');
+            }
+            if ($l->account !== null && $l->account->system_key !== 'wages_payable') {
+                $this->journals->post((new JournalEntry($date, 'PKR', 'Fine deducted from payroll', $source))
+                    ->debit('wages_payable', $l->debit, $employee)->credit($l->account, $l->debit, $employee));
+            }
+        }
+        JournalVoucherLine::query()->whereIn('id', $ids)->update(['payroll_line_id' => $payrollLineId]);
     }
 
     private function assertDraft(?Model $doc): void

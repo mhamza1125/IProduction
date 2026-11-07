@@ -10,6 +10,7 @@ use App\Modules\Production\Models\WageWork;
 use App\Support\Decimal;
 use App\Support\Documents\DocumentException;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -66,6 +67,49 @@ class WageWorks
 
             return $work;
         });
+    }
+
+    /** Work entered by hand (no PTC): pending until reviewed. */
+    public function recordManual(Employee $employee, CarbonInterface $date, string $description, string $quantity, string $rate): WageWork
+    {
+        if ($employee->employee_type !== Employee::TYPE_WAGE) {
+            throw new DocumentException("{$employee->name} is not a wage employee.");
+        }
+        if (trim($description) === '' || Decimal::compare($quantity, '0') <= 0 || Decimal::isNegative($rate)) {
+            throw new DocumentException('Describe the work and enter a quantity above zero and a rate.');
+        }
+
+        return WageWork::query()->create([
+            'employee_id' => $employee->id, 'work_date' => $date->format('Y-m-d'), 'description' => $description,
+            'quantity' => $quantity, 'rate' => $rate, 'amount' => Decimal::mul($quantity, $rate), 'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Approved work not yet paid, up to the end of a month (payroll).
+     *
+     * @return Collection<int, WageWork>
+     */
+    public function unpaidFor(Employee $employee, CarbonInterface $until): Collection
+    {
+        return WageWork::query()->with(['ptc', 'stage'])->where('employee_id', $employee->id)->where('status', 'approved')
+            ->whereNull('payroll_line_id')->whereDate('work_date', '<=', $until)->orderBy('work_date')->get();
+    }
+
+    /**
+     * Marks work as paid by a payroll line; refuses work already paid.
+     *
+     * @param  list<int>  $ids
+     */
+    public function markPaid(array $ids, int $payrollLineId): void
+    {
+        $rows = WageWork::query()->whereIn('id', $ids)->lockForUpdate()->get();
+        foreach ($rows as $w) {
+            if ($w->payroll_line_id !== null || $w->status !== 'approved') {
+                throw new DocumentException('A wage work record on this payroll is already paid or no longer approved.');
+            }
+        }
+        WageWork::query()->whereIn('id', $ids)->update(['payroll_line_id' => $payrollLineId]);
     }
 
     public function reject(WageWork $work, string $reason): void

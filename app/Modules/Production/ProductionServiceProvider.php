@@ -67,7 +67,7 @@ class ProductionServiceProvider extends ModuleServiceProvider
         return [
             new PermissionSet('ptcs', 'PTCs', [...PermissionSet::DOCUMENT, 'override'], 'Production'),
             new PermissionSet('production_transactions', 'Stage transactions', ['view', 'create', 'export'], 'Production'),
-            new PermissionSet('wage_work', 'Wage work', ['view', 'approve', 'override', 'export'], 'Production'),
+            new PermissionSet('wage_work', 'Wage work', ['view', 'create', 'approve', 'override', 'export'], 'Production'),
             new PermissionSet('contractor_jobs', 'Contractor jobs', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('material_processes', 'Material processing', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('rejections', 'Rejections', [...PermissionSet::DOCUMENT], 'Production'),

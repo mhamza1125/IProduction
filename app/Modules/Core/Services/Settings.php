@@ -37,6 +37,13 @@ class Settings
         'period_lock.reason' => null,
         // Over-receipt tolerance in percent (Purchasing, contractor jobs, PTC over-output).
         'tolerance.over_receipt_percent' => '0',
+        // Payroll (Module 11).
+        'payroll.salary_day_basis' => 30,
+        'payroll.daily_hours' => '8',
+        'payroll.deduct_unpaid_days' => true,
+        'payroll.deduct_late_hours' => true,
+        // Overtime = hours × hourly rate × multiplier, salaried employees only.
+        'payroll.overtime_multiplier' => '1',
     ];
 
     /** @var array<string, mixed>|null */

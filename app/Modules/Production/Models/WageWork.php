@@ -28,6 +28,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $status
  * @property int|null $journal_id
  * @property int|null $payroll_line_id
+ * @property string|null $description
  * @property-read Employee $employee
  * @property-read Ptc|null $ptc
  * @property-read Stage|null $stage
