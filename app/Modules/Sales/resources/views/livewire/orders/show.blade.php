@@ -12,6 +12,7 @@
         @elseif ($order->isOpen())
             @can('sales_orders.override') <x-button variant="secondary" :href="route('sales.orders.edit', $order)" icon="pencil">Edit (approved)</x-button> @endcan
             @can('planning.view') <x-button :href="route('sales.planning', ['order' => $order->id])">Plan</x-button> @endcan
+            @if (\Illuminate\Support\Facades\Route::has('delivery.deliveries.create')) @can('deliveries.create') <x-button variant="secondary" :href="route('delivery.deliveries.create', ['customer' => $order->customer_id])">Deliver</x-button> @endcan @endif
             @if ($order->status === 'approved') @can('sales_orders.approve') <x-button variant="ghost" x-on:click="ask = 'draft'">Return to draft</x-button> @endcan @endif
             @can('sales_orders.cancel')
                 <x-button variant="ghost" x-on:click="ask = 'cancel'">Cancel order</x-button>

@@ -68,18 +68,20 @@ class DocumentWorkflow
      * @param  T  $document
      * @param  Closure(T): void  $effects
      * @param  string  $postedStatus  Status after posting, if the document uses its own (e.g. "in_progress").
+     * @param  list<string>|null  $fromStatuses  Statuses it may post from, for documents with their own steps
+     *                                           before posting (a delivery posts once Packed); default: the approval setting.
      * @return T
      */
-    public function post(Model&Document $document, Closure $effects, ?string $overrideReason = null, string $postedStatus = DocumentStatus::POSTED): Model&Document
+    public function post(Model&Document $document, Closure $effects, ?string $overrideReason = null, string $postedStatus = DocumentStatus::POSTED, ?array $fromStatuses = null): Model&Document
     {
-        return $this->transition($document, function (Model&Document $doc) use ($effects, $overrideReason, $postedStatus) {
+        return $this->transition($document, function (Model&Document $doc) use ($effects, $overrideReason, $postedStatus, $fromStatuses) {
             if ($doc->getAttribute('posted_at') !== null) {
                 throw new DocumentException("{$doc->getAttribute('number')} is already posted.");
             }
 
-            $allowed = $this->approvals->required($doc->documentType())
+            $allowed = $fromStatuses ?? ($this->approvals->required($doc->documentType())
                 ? [DocumentStatus::APPROVED]
-                : [DocumentStatus::DRAFT, DocumentStatus::APPROVED];
+                : [DocumentStatus::DRAFT, DocumentStatus::APPROVED]);
 
             $this->expectStatus($doc, $allowed, 'posted');
             $this->periodLock->assertOpen($doc->documentDate(), $overrideReason, $doc);

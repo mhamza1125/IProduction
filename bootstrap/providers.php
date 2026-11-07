@@ -2,6 +2,7 @@
 
 use App\Modules\Catalog\CatalogServiceProvider;
 use App\Modules\Core\CoreServiceProvider;
+use App\Modules\Delivery\DeliveryServiceProvider;
 use App\Modules\Finance\FinanceServiceProvider;
 use App\Modules\Inventory\InventoryServiceProvider;
 use App\Modules\People\PeopleServiceProvider;
@@ -26,4 +27,5 @@ return [
     PurchasingServiceProvider::class,
     SalesServiceProvider::class,
     ProductionServiceProvider::class,
+    DeliveryServiceProvider::class,
 ];
