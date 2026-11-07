@@ -4,6 +4,7 @@ namespace App\Modules\Core;
 
 use App\Modules\Core\Console\BackupDatabase;
 use App\Modules\Core\Console\SyncPermissions;
+use App\Modules\Core\Console\VerifyBackup;
 use App\Modules\Core\Services\DocumentNumber;
 use App\Modules\Core\Services\Settings;
 use App\Support\Documents\Approvals;
@@ -41,7 +42,7 @@ class CoreServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         if ($this->app->runningInConsole()) {
-            $this->commands([SyncPermissions::class, BackupDatabase::class]);
+            $this->commands([SyncPermissions::class, BackupDatabase::class, VerifyBackup::class]);
         }
     }
 

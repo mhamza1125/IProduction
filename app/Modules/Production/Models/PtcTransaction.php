@@ -55,6 +55,7 @@ class PtcTransaction extends Model
         'split_in' => 'Split In',
         'split_out' => 'Split Out',
         'rework_in' => 'Rework In',
+        'opening' => 'Opening balance',
     ];
 
     public const UPDATED_AT = null;

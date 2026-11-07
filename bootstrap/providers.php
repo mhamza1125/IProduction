@@ -5,6 +5,7 @@ use App\Modules\Core\CoreServiceProvider;
 use App\Modules\Delivery\DeliveryServiceProvider;
 use App\Modules\Finance\FinanceServiceProvider;
 use App\Modules\Inventory\InventoryServiceProvider;
+use App\Modules\Opening\OpeningServiceProvider;
 use App\Modules\Payroll\PayrollServiceProvider;
 use App\Modules\People\PeopleServiceProvider;
 use App\Modules\Production\ProductionServiceProvider;
@@ -32,4 +33,5 @@ return [
     DeliveryServiceProvider::class,
     PayrollServiceProvider::class,
     ReportsServiceProvider::class,
+    OpeningServiceProvider::class,
 ];

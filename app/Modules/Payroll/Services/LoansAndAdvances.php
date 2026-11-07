@@ -70,6 +70,22 @@ class LoansAndAdvances
         }, $overrideReason);
     }
 
+    /**
+     * Posts a loan or advance carried over from the old system (go-live):
+     * against Opening Balance instead of a cash/bank account.
+     */
+    public function postOpening(EmployeeLoan|SalaryAdvance $doc, string $description): EmployeeLoan|SalaryAdvance
+    {
+        $doc = $this->workflow->approve($doc);
+
+        return $this->workflow->post($doc, function (EmployeeLoan|SalaryAdvance $d) use ($description) {
+            $account = $d instanceof EmployeeLoan ? 'employee_loans' : 'employee_advances';
+            $date = $d instanceof EmployeeLoan ? $d->loan_date : $d->advance_date;
+            $this->journals->post((new JournalEntry($date, 'PKR', "{$d->number} {$description}", $d))
+                ->debit($account, $d->amount, $d->employee)->credit('opening_balance', $d->amount));
+        });
+    }
+
     /** Reduce, skip (0) or increase one month's installment, with a reason. */
     public function changeInstallment(EmployeeLoan $loan, CarbonInterface $month, string $amount, string $reason): LoanInstallmentChange
     {

@@ -23,6 +23,7 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -261,6 +262,37 @@ class PtcTransactions
             $this->record($ptc, null, 'wastage', $date, null, $variantId, $lotId, $locationId, $quantity, $cost, $amount, $reason);
             $this->costing->add($ptc, 'material', '-'.$amount, $ptc, "Wastage: {$reason}");
             $this->accounting->loss($amount, $date, $ptc, "{$ptc->number} wastage: {$reason}");
+        });
+    }
+
+    /**
+     * Go-live: pieces of a running PTC carried over from the old system, waiting
+     * (Available) at a stage, at a PKR unit cost. The caller posts the
+     * Inventory / Opening Balance journal.
+     */
+    public function openingPieces(Ptc $ptc, PtcStage $stage, string $quantity, string $unitCost, CarbonInterface $date, ?Model $source = null): void
+    {
+        $this->run($ptc, $date, function (Ptc $ptc) use ($stage, $quantity, $unitCost, $date, $source) {
+            $floor = Location::productionFloor();
+            $this->stock->receive(new StockBucket($ptc->item_variant_id, $stage->stage_id, StockStatus::AVAILABLE, $floor->id, (int) $ptc->output_lot_id), $quantity,
+                new StockSource($source ?? $ptc, $date, salesOrderLineId: $ptc->sales_order_line_id, notes: 'Opening balance'));
+            $amount = Decimal::mul($quantity, $unitCost);
+            $this->costing->add($ptc, 'stock_in', $amount, $source ?? $ptc, 'Opening balance');
+            $stage->update(['issued_qty' => Decimal::add($stage->issued_qty, $quantity, 4), 'received_qty' => Decimal::add($stage->received_qty, $quantity, 4)]);
+            $this->record($ptc, $stage, 'opening', $date, null, $ptc->item_variant_id, $ptc->output_lot_id, $floor->id, $quantity, $unitCost, $amount, 'Opening balance');
+        });
+    }
+
+    /** Go-live: material already issued to a running PTC (held on the production floor). */
+    public function openingMaterial(Ptc $ptc, int $variantId, string $quantity, string $unitCost, CarbonInterface $date, ?Model $source = null): void
+    {
+        $this->run($ptc, $date, function (Ptc $ptc) use ($variantId, $quantity, $unitCost, $date, $source) {
+            $floor = Location::productionFloor();
+            $lot = $this->stock->createLot($variantId, 'opening', $unitCost, $date, $source ?? $ptc, ['notes' => "Issued to {$ptc->number} before go-live"]);
+            $this->stock->receive(new StockBucket($variantId, null, StockStatus::IN_PRODUCTION, $floor->id, $lot->id), $quantity, new StockSource($source ?? $ptc, $date, notes: 'Opening balance'));
+            $amount = Decimal::mul($quantity, $unitCost);
+            $this->record($ptc, null, 'material_issue', $date, null, $variantId, $lot->id, $floor->id, $quantity, $unitCost, $amount, 'Opening balance');
+            $this->costing->add($ptc, 'material', $amount, $source ?? $ptc, 'Opening balance');
         });
     }
 
