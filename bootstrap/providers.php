@@ -9,6 +9,7 @@ use App\Modules\Payroll\PayrollServiceProvider;
 use App\Modules\People\PeopleServiceProvider;
 use App\Modules\Production\ProductionServiceProvider;
 use App\Modules\Purchasing\PurchasingServiceProvider;
+use App\Modules\Reports\ReportsServiceProvider;
 use App\Modules\Sales\SalesServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
@@ -30,4 +31,5 @@ return [
     ProductionServiceProvider::class,
     DeliveryServiceProvider::class,
     PayrollServiceProvider::class,
+    ReportsServiceProvider::class,
 ];

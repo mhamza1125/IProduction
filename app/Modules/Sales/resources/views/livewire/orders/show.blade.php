@@ -19,6 +19,9 @@
                 <x-button variant="ghost" x-on:click="ask = 'close'">Close remaining</x-button>
             @endcan
         @endif
+        @if (! $order->isDraft() && \Illuminate\Support\Facades\Route::has('reports.order-cost'))
+            @can('cost.view') <x-button variant="ghost" :href="route('reports.order-cost', $order)">Order cost</x-button> @endcan
+        @endif
         @if (! $order->isDraft())
             @can('sales_orders.print') <a href="{{ route('sales.orders.print', $order) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"><x-icon name="printer" class="size-4" /> Print</a> @endcan
         @endif
