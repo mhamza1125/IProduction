@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Modules\Delivery\Livewire;
+namespace App\Support\Livewire;
 
 use App\Support\Format;
-use App\Support\Livewire\WithDataTable;
-use App\Support\Livewire\WithExport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +10,8 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
- * Shared list screen for the module's documents: search, status filter,
- * date range, sorting, pagination and export.
+ * Shared list screen for documents: search (number, plus whatever
+ * searchUsing() adds), status filter, date range, sorting, pagination and export.
  */
 abstract class DocumentList extends Component
 {
@@ -47,6 +45,18 @@ abstract class DocumentList extends Component
      */
     abstract protected function columns(): array;
 
+    /**
+     * Extra OR conditions for the search box (the number is always searched).
+     *
+     * @param  Builder<covariant Model>  $query
+     */
+    protected function searchUsing(Builder $query, string $like): void {}
+
+    protected function searchPlaceholder(): string
+    {
+        return 'Search number, customer…';
+    }
+
     /** @return list<string> */
     protected function rightAligned(): array
     {
@@ -65,7 +75,10 @@ abstract class DocumentList extends Component
         $term = trim($this->search);
         if ($term !== '') {
             $like = '%'.addcslashes($term, '%_\\').'%';
-            $query->where(fn ($q) => $q->where('number', 'like', $like)->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('code', 'like', $like)));
+            $query->where(function ($q) use ($like) {
+                $q->where('number', 'like', $like);
+                $this->searchUsing($q, $like);
+            });
         }
 
         return $this->applyDateRange($query, $this->dateColumn());
@@ -90,7 +103,7 @@ abstract class DocumentList extends Component
 
     public function render(): View
     {
-        return view('delivery::livewire.document-list', [
+        return view('livewire.document-list', [
             'rows' => $this->applySorting($this->query(), $this->dateColumn(), 'desc')->orderByDesc('id')->paginate($this->perPage),
             'columns' => $this->columns(),
             'right' => $this->rightAligned(),
@@ -101,6 +114,7 @@ abstract class DocumentList extends Component
             'show' => $this->showRoute(),
             'create' => $this->createRoute(),
             'dateColumn' => $this->dateColumn(),
+            'searchPlaceholder' => $this->searchPlaceholder(),
         ])->title($this->title());
     }
 }

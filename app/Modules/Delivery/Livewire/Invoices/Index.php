@@ -2,9 +2,9 @@
 
 namespace App\Modules\Delivery\Livewire\Invoices;
 
-use App\Modules\Delivery\Livewire\DocumentList;
 use App\Modules\Delivery\Models\Invoice;
 use App\Support\Format;
+use App\Support\Livewire\DocumentList;
 use Illuminate\Database\Eloquent\Builder;
 
 class Index extends DocumentList
@@ -12,6 +12,11 @@ class Index extends DocumentList
     protected function baseQuery(): Builder
     {
         return Invoice::query()->with(['customer']);
+    }
+
+    protected function searchUsing(Builder $query, string $like): void
+    {
+        $query->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('code', 'like', $like));
     }
 
     protected function dateColumn(): string

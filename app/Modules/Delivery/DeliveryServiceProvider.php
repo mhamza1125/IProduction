@@ -9,6 +9,7 @@ use App\Modules\Delivery\Services\Deliveries;
 use App\Modules\Delivery\Services\DeliveryReturns;
 use App\Modules\Delivery\Services\Invoices;
 use App\Modules\Delivery\Services\Packing;
+use App\Modules\Finance\Services\Receivables;
 use App\Modules\People\Models\Customer;
 use App\Support\Modules\DocumentType;
 use App\Support\Modules\ModuleServiceProvider;
@@ -41,6 +42,11 @@ class DeliveryServiceProvider extends ModuleServiceProvider
 
         Customer::whenUsed('delivery.customer', fn (Customer $c) => Invoice::query()->where('customer_id', $c->id)->exists()
             || Delivery::query()->where('customer_id', $c->id)->exists());
+
+        // Customer receipts can be allocated to posted invoices.
+        Receivables::register('delivery.invoices', fn ($customer) => $customer instanceof Customer
+            ? Invoice::query()->where('customer_id', $customer->id)->whereNotNull('posted_at')->orderBy('invoice_date')->get()
+            : collect());
     }
 
     public function permissions(): array

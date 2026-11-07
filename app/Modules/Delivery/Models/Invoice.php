@@ -6,6 +6,7 @@ use App\Modules\People\Models\Customer;
 use App\Support\Decimal;
 use App\Support\Documents\Document;
 use App\Support\Documents\HasDocumentWorkflow;
+use App\Support\Finance\Receivable;
 use App\Support\Models\Attachable;
 use App\Support\Models\HasAttachmentsAndNotes;
 use Carbon\CarbonInterface;
@@ -32,7 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $total
  * @property-read Customer $customer
  */
-class Invoice extends Model implements Attachable, Document
+class Invoice extends Model implements Attachable, Document, Receivable
 {
     use HasAttachmentsAndNotes, HasDocumentWorkflow, LogsActivity;
 
@@ -85,6 +86,34 @@ class Invoice extends Model implements Attachable, Document
     public function allocations(): HasMany
     {
         return $this->hasMany(InvoiceAllocation::class);
+    }
+
+    public function receivableBalance(): string
+    {
+        return $this->isPosted() ? $this->balance() : '0.00';
+    }
+
+    public function receivableCurrency(): string
+    {
+        return $this->currency_code;
+    }
+
+    public function applyReceipt(Model $source, string $amount, CarbonInterface $date): void
+    {
+        InvoiceAllocation::query()->create([
+            'invoice_id' => $this->id, 'source_type' => $source->getMorphClass(), 'source_id' => $source->getKey(),
+            'allocation_date' => $date->format('Y-m-d'), 'amount' => $amount, 'created_by' => auth()->id(),
+        ]);
+    }
+
+    public function receivableBy(Model $customer): bool
+    {
+        return $customer instanceof Customer && $customer->id === $this->customer_id;
+    }
+
+    public function receivableLabel(): string
+    {
+        return "Invoice {$this->number}";
     }
 
     /** Amount still owed on this invoice. */

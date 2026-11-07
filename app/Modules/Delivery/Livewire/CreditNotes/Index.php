@@ -2,9 +2,9 @@
 
 namespace App\Modules\Delivery\Livewire\CreditNotes;
 
-use App\Modules\Delivery\Livewire\DocumentList;
 use App\Modules\Delivery\Models\CreditNote;
 use App\Support\Format;
+use App\Support\Livewire\DocumentList;
 use Illuminate\Database\Eloquent\Builder;
 
 class Index extends DocumentList
@@ -12,6 +12,11 @@ class Index extends DocumentList
     protected function baseQuery(): Builder
     {
         return CreditNote::query()->with(['customer', 'invoice']);
+    }
+
+    protected function searchUsing(Builder $query, string $like): void
+    {
+        $query->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('code', 'like', $like));
     }
 
     protected function dateColumn(): string

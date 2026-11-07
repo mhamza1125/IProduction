@@ -72,7 +72,7 @@ return [
 
         'Accountant' => [
             'allow' => [
-                ...$on(['accounts', 'payments', 'receipts', 'transfers', 'currency_conversions', 'expenses', 'journal_vouchers', 'chart_of_accounts', 'invoices', 'vendor_bills', 'credit_notes'], $documentWork),
+                ...$on(['accounts', 'payments', 'receipts', 'transfers', 'currency_conversions', 'expenses', 'journal_vouchers', 'chart_of_accounts', 'invoices', 'vendor_bills', 'credit_notes', 'assets'], $documentWork),
                 'ledgers.*', 'reports.*', 'bank_balance.view', 'cost.view', 'profit.view',
                 'customers.view', 'vendors.view', 'contractors.view', 'employees.view',
             ],

@@ -3,7 +3,7 @@
         @if ($create) @can($perm.'.create') <x-button :href="route($create)" icon="plus">New</x-button> @endcan @endif
     </x-page-header>
     <x-card :padding="false">
-        <x-table.toolbar placeholder="Search number, customer…" dates :export="auth()->user()->can($perm.'.export')">
+        <x-table.toolbar :placeholder="$searchPlaceholder" dates :export="auth()->user()->can($perm.'.export')">
             <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
                 <option value="">All statuses</option>@foreach ($statusOptions as $s)<option value="{{ $s }}">{{ \Illuminate\Support\Str::headline($s) }}</option>@endforeach
             </select>

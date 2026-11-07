@@ -2,10 +2,10 @@
 
 namespace App\Modules\Delivery\Livewire\Deliveries;
 
-use App\Modules\Delivery\Livewire\DocumentList;
 use App\Modules\Delivery\Models\Delivery;
 use App\Support\Decimal;
 use App\Support\Format;
+use App\Support\Livewire\DocumentList;
 use Illuminate\Database\Eloquent\Builder;
 
 class Index extends DocumentList
@@ -13,6 +13,11 @@ class Index extends DocumentList
     protected function baseQuery(): Builder
     {
         return Delivery::query()->with(['customer', 'lines']);
+    }
+
+    protected function searchUsing(Builder $query, string $like): void
+    {
+        $query->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $like)->orWhere('code', 'like', $like));
     }
 
     protected function dateColumn(): string
