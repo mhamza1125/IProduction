@@ -5,8 +5,8 @@ Built with Laravel 13, Livewire 4, Alpine.js and Tailwind CSS 4 on MySQL 8.
 
 > **Status:** built phase by phase from the Manufacturing ERP Build Specification.
 > Done: 1 Foundation, 2 Settings and people, 3 Catalog, 4 Inventory, 5 Finance core, 6 Purchasing, 7 Sales and planning, 8 Production, 9 Delivery and billing.
-> Next: 10
-> remaining Finance, Payroll, Costing and reporting, Go-live.
+> Next: 10 Remaining finance (receipts, conversions, transfers, expenses, vouchers),
+> then Payroll, Costing and reporting, Go-live.
 
 ## What's included
 
