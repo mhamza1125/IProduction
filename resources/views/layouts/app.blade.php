@@ -36,7 +36,7 @@
 
             @foreach ($navigation as $group => $items)
                 @php($groupActive = collect($items)->contains(fn ($i) => $i->isActive()))
-                <div class="border-t border-line pt-3 pb-2" x-data="{ open: $persist({{ $groupActive ? 'true' : 'false' }}).as('nav-{{ \Illuminate\Support\Str::slug($group) }}') }"
+                <div class="border-t border-line pt-2 pb-1" x-data="{ open: $persist({{ $groupActive ? 'true' : 'false' }}).as('nav-{{ \Illuminate\Support\Str::slug($group) }}') }"
                      @if ($groupActive) x-init="open = true" @endif>
                     <button type="button" x-on:click="open = ! open" :aria-expanded="open"
                             class="flex w-full items-center justify-between rounded px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
