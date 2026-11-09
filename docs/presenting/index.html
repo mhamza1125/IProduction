@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IProduction Demo Run-sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@1,400;1,500&display=swap">
+<style>
+/* Layout: a presenter's run-sheet. Masthead with the session timeline, a contents
+   rail with minutes, then one block per section: Say (serif italic, what you speak),
+   Show (what you click), Point out (tick-boxes), Bridge (the line into the next part).
+   A sticky counter tracks what has been covered. */
+:root {
+    --bg: oklch(0.975 0.004 240);
+    --surface: oklch(1 0 0);
+    --sunken: oklch(0.955 0.007 240);
+    --line: oklch(0.9 0.008 240);
+    --fg: oklch(0.21 0.015 250);
+    --muted: oklch(0.46 0.015 250);
+    --accent: oklch(0.5 0.15 245);
+    --accent-soft: oklch(0.95 0.03 240);
+    --say: oklch(0.42 0.09 300);
+    --say-soft: oklch(0.965 0.015 300);
+    --show: oklch(0.47 0.12 200);
+    --show-soft: oklch(0.96 0.02 200);
+    --done: oklch(0.52 0.15 150);
+    --warn: oklch(0.53 0.15 55);
+    --warn-soft: oklch(0.97 0.03 75);
+    --font-display: 'IBM Plex Sans Condensed', 'Arial Narrow', 'Segoe UI', sans-serif;
+    --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-say: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: oklch(0.19 0.012 250);
+        --surface: oklch(0.225 0.014 250);
+        --sunken: oklch(0.205 0.013 250);
+        --line: oklch(0.33 0.015 250);
+        --fg: oklch(0.95 0.005 250);
+        --muted: oklch(0.78 0.012 250);
+        --accent: oklch(0.76 0.12 245);
+        --accent-soft: oklch(0.3 0.05 245);
+        --say: oklch(0.82 0.08 300);
+        --say-soft: oklch(0.26 0.03 300);
+        --show: oklch(0.8 0.09 200);
+        --show-soft: oklch(0.26 0.03 200);
+        --done: oklch(0.79 0.17 150);
+        --warn: oklch(0.83 0.14 75);
+        --warn-soft: oklch(0.27 0.04 75);
+        color-scheme: dark;
+    }
+}
+:root[data-theme="dark"] {
+    --bg: oklch(0.19 0.012 250);
+    --surface: oklch(0.225 0.014 250);
+    --sunken: oklch(0.205 0.013 250);
+    --line: oklch(0.33 0.015 250);
+    --fg: oklch(0.95 0.005 250);
+    --muted: oklch(0.78 0.012 250);
+    --accent: oklch(0.76 0.12 245);
+    --accent-soft: oklch(0.3 0.05 245);
+    --say: oklch(0.82 0.08 300);
+    --say-soft: oklch(0.26 0.03 300);
+    --show: oklch(0.8 0.09 200);
+    --show-soft: oklch(0.26 0.03 200);
+    --done: oklch(0.79 0.17 150);
+    --warn: oklch(0.83 0.14 75);
+    --warn-soft: oklch(0.27 0.04 75);
+    color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font-body); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, kbd, .mono { font-family: var(--font-mono); font-size: 0.85em; }
+code { background: var(--sunken); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.35em; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0.02em 0.4em; background: var(--surface); }
+pre { margin: 0; background: var(--sunken); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; overflow-x: auto; font: 0.85rem/1.55 var(--font-mono); }
+pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
+
+.masthead { background: var(--surface); border-bottom: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.masthead-inner { max-width: 1180px; margin: 0 auto; padding-block: 36px 28px; display: grid; gap: 16px; }
+.eyebrow { font: 600 0.75rem/1 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.75rem); font-weight: 700; }
+.lede { max-width: 70ch; margin: 0; color: var(--muted); font-size: 1.06rem; }
+
+/* Session timeline: widths are the real minutes of each section. */
+.timeline { display: flex; gap: 3px; border-radius: 6px; overflow: hidden; min-width: 0; }
+.timeline a { flex: var(--m) 1 0; min-width: 0; display: grid; gap: 2px; padding: 8px 8px 7px; background: var(--accent-soft); color: var(--fg); text-decoration: none; font-size: 0.78rem; line-height: 1.25; }
+.timeline a:hover { background: var(--sunken); }
+.timeline b { font: 600 0.72rem/1 var(--font-mono); color: var(--accent); }
+.timeline span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timeline-total { font-size: 0.85rem; color: var(--muted); }
+@media (max-width: 720px) { .timeline span { display: none; } .timeline a { padding: 8px 4px; text-align: center; } }
+
+.progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.progress-inner { max-width: 1180px; margin: 0 auto; padding-block: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 0.88rem; }
+.bar { flex: 1 1 160px; height: 6px; background: var(--sunken); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; width: 0; background: var(--done); transition: width 0.2s; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+.count { font: 600 0.85rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.progress a { font-weight: 600; }
+
+.layout { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 44px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.toc { position: sticky; top: 56px; align-self: start; max-height: calc(100vh - 72px); overflow-y: auto; font-size: 0.9rem; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 6px; padding: 4px 8px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; }
+.toc a:hover { color: var(--fg); }
+.toc a .t { font: 500 0.75rem/1.6 var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .toc { position: static; max-height: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+}
+
+main { min-width: 0; display: grid; gap: 56px; }
+section { display: grid; gap: 16px; min-width: 0; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; border-bottom: 2px solid var(--fg); padding-bottom: 8px; }
+.sec-head h2 { font-size: 1.65rem; font-weight: 700; }
+.sec-head .time { font: 600 0.82rem/1 var(--font-mono); color: var(--accent); white-space: nowrap; }
+.sec-head .who { font-size: 0.85rem; color: var(--muted); }
+.goal { margin: 0; max-width: 70ch; color: var(--muted); }
+section > p, .prose { margin: 0; max-width: 70ch; }
+
+/* A step inside a section: the four parts a presenter needs. */
+.step { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; min-width: 0; }
+.step h3 { font-size: 1.12rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.step h3 .login { font: 500 0.75rem/1.4 var(--font-mono); color: var(--show); background: var(--show-soft); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; }
+.part { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+.part > .lbl { font: 600 0.7rem/1.9 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.part > div { min-width: 0; }
+.part p, .part ul, .part ol { margin: 0; }
+.part ul, .part ol { padding-left: 1.2em; }
+.part li + li { margin-top: 3px; }
+@media (max-width: 560px) { .part { grid-template-columns: minmax(0, 1fr); } }
+.say p { font: italic 1.04rem/1.6 var(--font-say); color: var(--say); background: var(--say-soft); border-radius: 6px; padding: 8px 12px; }
+.say p + p { margin-top: 6px; }
+.show .lbl { color: var(--show); }
+.path { font-weight: 600; }
+.bridge p { font: italic 0.98rem/1.55 var(--font-say); color: var(--muted); }
+.bridge p::before { content: "→ "; font-style: normal; color: var(--accent); }
+.watch { background: var(--warn-soft); border-radius: 6px; padding: 8px 12px; font-size: 0.92rem; }
+.watch b { color: var(--warn); font-family: var(--font-display); letter-spacing: 0.04em; }
+
+/* Must-cover tick-boxes. */
+.checks { list-style: none; padding: 0 !important; margin: 0; display: grid; gap: 4px; }
+.checks li + li { margin-top: 0 !important; }
+.checks label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; align-items: start; cursor: pointer; padding: 3px 6px; border-radius: 4px; }
+.checks label:hover { background: var(--sunken); }
+.checks input { width: 16px; height: 16px; margin: 4px 0 0; accent-color: var(--done); }
+.checks input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--done); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 0.72rem/1.3 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--sunken); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.mono { white-space: nowrap; }
+
+.faq { display: grid; gap: 8px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.faq summary { cursor: pointer; padding: 10px 14px; font-weight: 600; }
+.faq details > p { margin: 0; padding: 0 14px 12px; max-width: 72ch; color: var(--muted); }
+
+.remaining { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; display: grid; gap: 10px; }
+.remaining h3 { font-size: 1.05rem; }
+.remaining ul { margin: 0; padding-left: 1.2em; }
+.remaining .group { font: 600 0.75rem/1.4 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.remaining .all-done { color: var(--done); font-weight: 600; margin: 0; }
+.btn { font: 600 0.85rem/1 var(--font-body); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.btn:hover { background: var(--sunken); }
+.btn.danger { color: var(--warn); }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+    <div class="masthead-inner">
+        <span class="eyebrow">Presenter's run-sheet</span>
+        <h1>Presenting IProduction</h1>
+        <p class="lede">A step-by-step script for walking a customer through IProduction, from the first hello to the last question. Each section says what to say, what to click, what must be covered and how to move on. Tick items as you cover them; the counter and the wrap-up list show anything you have missed.</p>
+        <nav class="timeline" aria-label="Session timeline">
+            <a href="#prep" style="--m:0.6"><b>Before</b><span>Preparation</span></a>
+            <a href="#opening" style="--m:5"><b>5′</b><span>Opening</span></a>
+            <a href="#picture" style="--m:5"><b>5′</b><span>Big picture</span></a>
+            <a href="#first-look" style="--m:10"><b>10′</b><span>First look</span></a>
+            <a href="#story" style="--m:35"><b>35′</b><span>Order to cash</span></a>
+            <a href="#back-office" style="--m:15"><b>15′</b><span>Back office</span></a>
+            <a href="#control" style="--m:5"><b>5′</b><span>Control</span></a>
+            <a href="#golive" style="--m:5"><b>5′</b><span>Going live</span></a>
+            <a href="#wrap" style="--m:10"><b>10′</b><span>Wrap-up</span></a>
+        </nav>
+        <p class="timeline-total">About 90 minutes plus questions. For a 45-minute version, keep the opening, first look, order to cash (scenes 1, 2, 5, 6 and 7) and wrap-up.</p>
+    </div>
+</header>
+
+<div class="progress" role="status" aria-live="polite">
+    <div class="progress-inner">
+        <span>Covered <span class="count" id="count">0 / 0</span></span>
+        <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+        <a href="#remaining">What's left</a>
+    </div>
+</div>
+
+<div class="layout">
+    <nav class="toc" aria-label="Contents">
+        <ol>
+            <li><a href="#prep"><span class="t">before</span><span>Preparation</span></a></li>
+            <li><a href="#opening"><span class="t">0:00</span><span>1 · Opening</span></a></li>
+            <li><a href="#picture"><span class="t">0:05</span><span>2 · The big picture</span></a></li>
+            <li><a href="#first-look"><span class="t">0:10</span><span>3 · First look</span></a></li>
+            <li><a href="#story"><span class="t">0:20</span><span>4 · Order to cash</span></a></li>
+            <li><a href="#back-office"><span class="t">0:55</span><span>5 · Back office</span></a></li>
+            <li><a href="#control"><span class="t">1:10</span><span>6 · Control and safety</span></a></li>
+            <li><a href="#golive"><span class="t">1:15</span><span>7 · Going live</span></a></li>
+            <li><a href="#wrap"><span class="t">1:20</span><span>8 · Wrap-up and questions</span></a></li>
+            <li><a href="#answers"><span class="t">ref</span><span>Prepared answers</span></a></li>
+            <li><a href="#remaining"><span class="t">ref</span><span>Master checklist</span></a></li>
+        </ol>
+    </nav>
+
+    <main>
+
+        <!-- ───────────────────────── PREPARATION ───────────────────────── -->
+        <section id="prep" data-group="Preparation">
+            <div class="sec-head"><h2>Preparation</h2><span class="time">the day before, then 30 minutes before</span></div>
+            <p class="goal">A smooth demo is decided before it starts. Load clean data, open the right windows, and rehearse the order-to-cash story once.</p>
+
+            <div class="step">
+                <h3>The day before</h3>
+                <div class="part"><span class="lbl">Do</span><div>
+                    <p>On the <strong>demo copy only</strong>, reload a clean demo company so every record in this script exists and is in the state described:</p>
+                    <pre><code>php artisan migrate:fresh --seed
+php artisan db:seed --class=DemoDataSeeder
+npm run build
+php artisan optimize:clear</code></pre>
+                </div></div>
+                <div class="watch"><b>Careful.</b> <code>migrate:fresh</code> deletes everything in the database it points at. Check <code>DB_DATABASE</code> in <code>.env</code> first; never run it on a customer's real database.</div>
+                <div class="part"><span class="lbl">Check</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="prep-data"><span>Demo data loaded; it printed "Demo data loaded" and the seven demo users.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-admin"><span>You know the Super Admin password (from <code>.env</code> or the seeder output). Settings and the Audit Log need it.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-rehearse"><span>Rehearsed section 4 once, end to end, with this sheet open.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-pdf"><span>Opened a printout and clicked Download PDF to confirm PDFs work on this machine.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-audience"><span>Know who is attending and what each person does, so you can stress their part.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>30 minutes before</h3>
+                <div class="part"><span class="lbl">Set up</span><div><ul>
+                    <li><strong>Window A</strong> (normal browser window): sign in as <span class="mono">manager@demo.test</span>.</li>
+                    <li><strong>Window B</strong> (private or incognito window): sign in as <span class="mono">sales@demo.test</span>. Two windows keep two people signed in at once. Every demo user's password is <span class="mono">Demo@12345</span>.</li>
+                    <li>Theme <strong>Light</strong> for a projector, browser zoom 100–110%, window at least 1440 pixels wide. Line tables on order and PTC pages get cramped on narrower screens.</li>
+                    <li>Pin tabs in Window A: Dashboard, <span class="mono">SO-26-0002</span>, <span class="mono">PTC-26-0003</span>, <span class="mono">DN-26-0003</span>, <span class="mono">INV-26-0002</span>, Reports › Trial balance.</li>
+                    <li>Turn off notifications and close unrelated apps and tabs.</li>
+                    <li>Have the project guide link ready to share at the end.</li>
+                </ul></div></div>
+                <div class="part"><span class="lbl">Check</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="prep-windows"><span>Both windows signed in as the right users.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-screen"><span>Light theme, readable zoom, wide window, tabs pinned.</span></label></li>
+                    <li><label><input type="checkbox" data-id="prep-quiet"><span>Notifications off.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>The demo company, in one breath</h3>
+                <div class="part"><span class="lbl">Know</span><div><p class="prose"><strong>Demo Sports Industries</strong> in Sialkot makes boxing gloves (10, 12 and 16 oz), goalkeeper gloves and match footballs. Export customers: Northfield Sports (USD), Rheinland Sportartikel (EUR), Albion Fight Gear (GBP), Gulf Athletics (AED); local customer Lahore Sports Mart (PKR). Vendors supply leather, trims and ball components; one contractor stitches footballs. Seven staff are on payroll, two of them paid by piece.</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 1 OPENING ───────────────────────── -->
+        <section id="opening" data-group="1 · Opening">
+            <div class="sec-head"><h2>1 · Opening</h2><span class="time">0:00 – 0:05</span><span class="who">no screen yet, or the login page</span></div>
+            <p class="goal">Set expectations: why we are here, what they will see, how long it takes, and how questions work.</p>
+            <div class="step">
+                <div class="part say"><span class="lbl">Say</span><div>
+                    <p>"Thank you for your time. Today I'll show you IProduction, the system that will run your orders, purchasing, production, stock, deliveries, accounts and payroll in one place."</p>
+                    <p>"We'll follow one real export order through the whole factory, from the customer's order to the money in the bank, and then look at the office side: stock, finance, payroll and reports. It takes about an hour and a half."</p>
+                    <p>"Please stop me any time. If a question needs a longer answer, I'll note it and we'll come back to it at the end."</p>
+                </div></div>
+                <div class="part"><span class="lbl">Ask</span><div><p>Go round the room: name, role, and the one thing that would make their day easier. Write these down and refer back to them during the demo.</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="open-purpose"><span>The purpose: one system for the whole business, replacing spreadsheets and separate tools.</span></label></li>
+                    <li><label><input type="checkbox" data-id="open-agenda"><span>The agenda and the length of the session.</span></label></li>
+                    <li><label><input type="checkbox" data-id="open-questions"><span>How questions work, and the "parking lot" for long ones.</span></label></li>
+                    <li><label><input type="checkbox" data-id="open-roles"><span>Each attendee's role and main pain point, noted.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Before I click anything, one minute on how the system thinks. It makes everything after it easy to follow."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 2 BIG PICTURE ───────────────────────── -->
+        <section id="picture" data-group="2 · The big picture">
+            <div class="sec-head"><h2>2 · The big picture</h2><span class="time">0:05 – 0:10</span><span class="who">talk, or point at the sidebar</span></div>
+            <p class="goal">Give them the three ideas that explain every screen, so the demo feels predictable instead of overwhelming.</p>
+            <div class="step">
+                <div class="part say"><span class="lbl">Say</span><div>
+                    <p>"Everything that happens in your business is a document: an order, a goods receipt, a production card, a delivery, an invoice, a payment."</p>
+                    <p>"Every document has the same life. It starts as a Draft you can change freely. A manager Approves it, which locks it. When it's Posted, the system updates stock and the accounts by itself, in one step that either fully succeeds or changes nothing. A posted document is never edited; mistakes are corrected with a return, a credit note or an adjustment, so the history is always true."</p>
+                    <p>"Your export customers keep their own currency. A dollar customer is invoiced and paid in dollars. Rupees only appear when you convert the money at the bank and type in what the bank actually credited."</p>
+                </div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="pic-modules"><span>The areas: Sales, Purchasing, Production, Inventory, Catalog, Finance, HR, Reports, Settings.</span></label></li>
+                    <li><label><input type="checkbox" data-id="pic-lifecycle"><span>Draft → Approved → Posted, or Cancelled while nothing is posted.</span></label></li>
+                    <li><label><input type="checkbox" data-id="pic-posting"><span>Posting updates stock and accounts automatically; no double entry by hand.</span></label></li>
+                    <li><label><input type="checkbox" data-id="pic-corrections"><span>Posted documents are corrected, never edited or deleted.</span></label></li>
+                    <li><label><input type="checkbox" data-id="pic-currency"><span>Customers stay in their currency; PKR comes from typed-in conversions.</span></label></li>
+                    <li><label><input type="checkbox" data-id="pic-roles"><span>People only see what their role allows.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Let's sign in and see what a manager sees first thing in the morning."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 3 FIRST LOOK ───────────────────────── -->
+        <section id="first-look" data-group="3 · First look">
+            <div class="sec-head"><h2>3 · First look</h2><span class="time">0:10 – 0:20</span><span class="who">Window A, manager</span></div>
+            <p class="goal">Make them comfortable with the screen layout, so they recognise every page that follows.</p>
+
+            <div class="step">
+                <h3>Sign-in and dashboard <span class="login">manager@demo.test</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li>The sign-in page: email or username and password. Mention that two-factor authentication can be switched on per user in Profile.</li>
+                    <li>The <span class="path">Dashboard</span>. Walk the tiles left to right: open orders, late orders, stock shortages, production by stage, rejected stock, pending approvals, cash and bank, foreign balances, receivables, payables, this month's deliveries, top customers.</li>
+                    <li>Click <strong>Open</strong> on one tile to show that every number leads to its detail.</li>
+                </ul></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"This is the manager's morning view. Pending approvals shows what's waiting for you; stock shortages shows orders that nothing is covering yet. Each person sees the tiles for their own work."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Moving around</h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li>The sidebar groups open and close, and remember their state. The current page is highlighted.</li>
+                    <li>The theme menu at the top right: Light, Dim, Dark, or System to follow the computer.</li>
+                    <li><span class="path">Sales › Sales Orders</span>: press <kbd>/</kbd> to jump to search, type <em>Northfield</em>, then use the status filter, the date range and a column sort. Click <strong>Export</strong> to show Excel and CSV.</li>
+                </ul></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Every list in the system works the same way: search, filters, dates, sorting and export to Excel. Learn it once, use it everywhere."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Anatomy of a document <span class="login">SO-26-0002</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li>Open <span class="mono">SO-26-0002</span> (Rheinland, EUR, Partly Delivered).</li>
+                    <li>The top: number, customer, date, status badge, and the buttons this document allows now (Plan, Order cost, Print).</li>
+                    <li>The lines: ordered, reserved, on PO, in production, delivered and invoiced per line, with hints such as "Ready to deliver".</li>
+                    <li>The side panels: details, linked supply, attachments, notes and the full History of who did what and when.</li>
+                    <li><strong>Print</strong>, then <strong>Download PDF</strong> on the printout.</li>
+                </ul></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="fl-dashboard"><span>Dashboard tiles and that each one opens its detail.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-pending"><span>Pending approvals as the manager's to-do list.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-sidebar"><span>Sidebar groups, and that menus depend on permissions.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-theme"><span>Light, Dim, Dark and System themes.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-lists"><span>Lists: search with /, filters, date range, sorting, Excel/CSV export.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-doc"><span>Document page: status, actions, lines with progress, side panels.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-history"><span>Attachments, notes and History on every document.</span></label></li>
+                    <li><label><input type="checkbox" data-id="fl-print"><span>Print and Download PDF.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Now let's follow an order through the whole factory, the way your team will use it every day."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 4 ORDER TO CASH ───────────────────────── -->
+        <section id="story" data-group="4 · Order to cash">
+            <div class="sec-head"><h2>4 · Order to cash</h2><span class="time">0:20 – 0:55</span><span class="who">Windows A and B; other users where noted</span></div>
+            <p class="goal">The heart of the demo. Seven scenes in the order the work really happens. Create a little live to show it's real, then open the prepared records to show each later stage without waiting.</p>
+
+            <div class="step">
+                <h3>Scene 1 · Taking an order <span class="login">Window B · sales@demo.test</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Sales › Sales Orders › New sales order</span>.</li>
+                    <li>Customer: <strong>Gulf Athletics Trading LLC</strong>. The currency fills in as AED and cannot be changed.</li>
+                    <li>Add two lines: Match Football, 120 pcs at 58; Goalkeeper Glove, 50 pairs at 64. Leave tax empty.</li>
+                    <li>Press <kbd>Ctrl</kbd> + <kbd>S</kbd>. The order gets the next number, for example <span class="mono">SO-26-0008</span>, as a Draft.</li>
+                    <li>Point at the top: there is no Approve button for a sales user.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Your sales team enters the order exactly as the customer sent it, in the customer's currency. Tax is per line and empty by default, so export orders carry no tax. The number comes automatically. And notice that sales can't approve their own order."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s1-currency"><span>Currency comes from the customer and stays fixed.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s1-grid"><span>Fast line entry; whole order saved at once; Ctrl+S.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s1-tax"><span>Optional tax per line, none by default.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s1-number"><span>Automatic numbering (SO-26-…).</span></label></li>
+                    <li><label><input type="checkbox" data-id="s1-noapprove"><span>Sales cannot approve: separation of duties.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 2 · Approving <span class="login">Window A · manager</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li>Refresh the Dashboard: <strong>Pending approvals</strong> now counts the new order.</li>
+                    <li>Open it and click <strong>Approve</strong>. The badge changes to Approved and the History records who approved it and when.</li>
+                    <li>Mention <strong>Return to draft</strong> (needs a reason) and <strong>Cancel order</strong> (needs a reason, and only while nothing has happened against it).</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Approval locks the order. From here on, any change leaves a trace with a reason. Which documents need approval at all is your choice, per document type, in Settings."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s2-approve"><span>Approve from the dashboard's pending list.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s2-lock"><span>Approval locks the document; History shows who and when.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s2-reasons"><span>Return to draft and cancel always ask for a reason.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s2-setting"><span>Approval is configurable per document type.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"The order is confirmed. The next question every factory asks: where will the goods come from?"</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 3 · Planning supply <span class="login">Window A · manager</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Sales › Planning</span>. Walk the columns: required, free, reserved, on order, in production, shortfall, and the next action for each line.</li>
+                    <li>Rheinland's <span class="mono">SO-26-0002</span> line shows 48 footballs free in stock. Explain <strong>Reserve available free stock</strong>; then show the line moving to Reserved.</li>
+                    <li>Show <strong>Create draft purchase orders</strong> and <strong>New contractor job</strong> as the other ways to cover a shortfall, and the <strong>Plan</strong> button on an order.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Planning answers 'can we ship this?' line by line. Free stock can be reserved so nobody else takes it. Anything missing becomes a purchase order or production, linked to this order. Orders on the way count as incoming, never as stock, so you never promise goods you don't have."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s3-columns"><span>Required, free, reserved, on order, in production, shortfall.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s3-reserve"><span>Reserving free stock for an order line.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s3-supply"><span>Purchase orders and contractor jobs created from planning, linked to the order.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s3-incoming"><span>Incoming supply is never counted as stock.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Let's see what happens when we buy the materials."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 4 · Buying and receiving <span class="login">Window A · manager</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Purchasing › Purchase Orders</span> › <span class="mono">PO-26-0003</span> (Ball Components, Partly Received). Mention <strong>Mark as sent</strong> and <strong>Receive goods</strong>.</li>
+                    <li>Open its receipt <span class="mono">GRN-26-0003</span>: 10,000 panels received, 9,900 accepted, 100 rejected and returned. Each accepted line became a lot with its own cost.</li>
+                    <li><span class="path">Purchasing › Vendor Bills</span> › <span class="mono">BILL-26-0002</span> (Partly Paid), then <span class="path">Finance › Payments</span> to show a payment settling bills.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"The store records what actually arrived: received, accepted and rejected. Rejected goods sent back never enter your stock. Accepted goods enter as a lot with its cost, and the vendor's balance goes up at the same moment. A small extra above the order is accepted within your tolerance; anything more needs a manager's decision."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s4-po"><span>Purchase order: approve, mark as sent, receive.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s4-rejects"><span>Received = accepted + rejected; returns never enter stock.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s4-lots"><span>Lots with their own cost; traceable later.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s4-tolerance"><span>Over-receipt tolerance and manager override.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s4-bill"><span>Vendor bill against received lines; payments and vendor advances.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Materials are in. Now the part no generic accounting software can do: tracking work on your shop floor."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 5 · Production on the floor <span class="login">Window A · manager</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Production › PTCs</span> › <span class="mono">PTC-26-0003</span>: 150 pairs of 10 oz gloves for Northfield's order.</li>
+                    <li>The <strong>stage board</strong>: Cutting finished; Stitching 80 back and 70 still with Javed Hussain; Logo Embossing optional; Packing waiting.</li>
+                    <li>Open <strong>Record a transaction</strong> and read the types: material issue, extra issue, stage issue, stage receive, reject at stage, release to store, skip optional stage.</li>
+                    <li>Scroll to Material (expected vs issued), the BOM copy, the Timeline and <strong>Cost so far</strong>.</li>
+                    <li><span class="path">Production › Contractor Jobs</span> › <span class="mono">CJ-26-0001</span>: 300 footballs sent out, 250 back, material reconciliation.</li>
+                    <li>Briefly: <span class="path">Production › Wage Work</span> (piece work waiting for approval) and <span class="path">Rejections</span>.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Every batch has a card that follows it through its stages. At any moment you can see how many pieces are at each stage and who has them. Material, wages and contractor charges collect on the card as the work happens, so when the gloves are released to the store you know exactly what they cost. Rejected pieces are recorded with a reason, so you can see where quality is lost."</p></div></div>
+                <div class="watch"><b>Optional live step.</b> In Window B, sign out and sign in as <span class="mono">production@demo.test</span>. On <span class="mono">PTC-26-0003</span>, record a <em>Stage Receive</em> at Stitching from Javed Hussain for 70 pairs. Show the board update. Only do this if you rehearsed it.</div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s5-card"><span>One card per batch, for an order or for stock.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-board"><span>Stage board: pieces per stage and who has them.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-transactions"><span>Issue, receive, reject with reason, skip optional, release.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-bom"><span>Route and BOM copied at approval; later catalog changes don't affect it.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-cost"><span>Cost collects as work happens; released goods carry their real cost.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-reserve"><span>Released pieces are reserved to the order automatically.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-contractor"><span>Contractor jobs with material reconciliation.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s5-wages"><span>Wage work for piece-rate staff, approved before payroll.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"The goods are made and set aside for the customer. Let's ship them."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 6 · Packing and dispatch <span class="login">Window B · sales@demo.test</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Sales › Deliveries</span> › <span class="mono">DN-26-0003</span> (Albion, 200 pairs, Packed).</li>
+                    <li>Explain the steps it went through: <strong>Allocate stock</strong> (the order's reserved lot), <strong>Add carton</strong> with weights, <strong>Packing complete</strong>.</li>
+                    <li>Print the <strong>Packing list</strong> and the <strong>Delivery note</strong>.</li>
+                    <li>Click <strong>Dispatch</strong> live. The status becomes Dispatched and the order's delivered quantity goes up.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"The delivery takes exactly the lot that was set aside for this order. Cartons and weights produce the packing list for the shipment. When the truck leaves, Dispatch takes the goods out of stock and books their cost of sale, all in one click."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s6-allocate"><span>Allocation uses the order's reserved lot first.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s6-packing"><span>Cartons, weights and the printed packing list.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s6-dispatch"><span>Dispatch removes stock and posts cost of goods sold.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s6-progress"><span>The order's delivered quantity updates by itself.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Shipped. Now let's get paid."</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Scene 7 · Invoice, payment and returns <span class="login">Window A · manager</span></h3>
+                <div class="part show"><span class="lbl">Show</span><div><ol>
+                    <li><span class="path">Sales › Invoices</span> › <span class="mono">INV-26-0002</span>: Rheinland, EUR 4,184, no tax. The <strong>Balance</strong> panel shows EUR 2,010 still owed after receipt <span class="mono">RCV-26-0003</span> and credit note <span class="mono">CN-26-0001</span>.</li>
+                    <li><span class="path">Finance › Receipts</span> › <span class="mono">RCV-26-0001</span>: Northfield's USD 7,900 invoice is cleared by USD 7,850 into the USD bank account plus USD 50 bank charges recorded as a deduction. <span class="mono">RCV-26-0002</span> is an advance of USD 1,500 waiting for the next invoice.</li>
+                    <li><span class="path">Finance › Conversions</span> › <span class="mono">CNV-26-0001</span>: USD 5,000 converted, PKR 1,395,000 typed in as received.</li>
+                    <li><span class="path">Sales › Returns</span> › <span class="mono">DR-26-0001</span>: 6 pairs back; 4 restocked, 2 sent to rejections. Its credit note reduced the invoice.</li>
+                    <li><span class="path">Finance › Ledgers</span>: open Rheinland's statement in EUR.</li>
+                </ol></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Invoices are made from what was actually dispatched, so you can't bill twice or bill what you haven't shipped. Payments come in the customer's currency, bank charges included, and can be split across invoices; anything extra waits as an advance. Rupees appear only when you convert, at the rate your bank really gave you. Returns go back into stock or to rejections, and a credit note fixes the bill, never an edit."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="s7-invoice"><span>Invoice from dispatched lines only, once per line.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-currency"><span>Invoice, receipt and ledger in the customer's currency.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-deductions"><span>Bank charges as receipt deductions; split across invoices.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-advance"><span>Customer advances applied to later invoices.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-conversion"><span>Currency conversion with the PKR actually received.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-returns"><span>Delivery returns: restock or reject; credit notes.</span></label></li>
+                    <li><label><input type="checkbox" data-id="s7-ledger"><span>Customer statement from Ledgers.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"That's the full journey of an order. Everything we did also updated stock and the books behind the scenes. Let's look at those."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 5 BACK OFFICE ───────────────────────── -->
+        <section id="back-office" data-group="5 · Back office">
+            <div class="sec-head"><h2>5 · Back office</h2><span class="time">0:55 – 1:10</span><span class="who">Window A, manager</span></div>
+            <p class="goal">Show that the office side is a by-product of the shop-floor work, not extra data entry.</p>
+
+            <div class="step">
+                <h3>Inventory · 3 minutes</h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li><span class="path">Inventory › Stock</span>: the Summary, By stage and By location and lot tabs. Free stock is available minus reserved.</li>
+                    <li><span class="path">Lots</span>: open a lot to trace where it came from and where it went.</li>
+                    <li><span class="path">Stock Adjustments</span> › <span class="mono">ADJ-26-0001</span>: a month-end count found 2 kg less leather.</li>
+                </ul></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="bo-stock"><span>Stock by status, stage, location and lot; free vs reserved.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-trace"><span>Lot traceability.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-adjust"><span>Counts and adjustments, with reasons, posted to the books.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Finance · 4 minutes</h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li><span class="path">Finance › Accounts</span>: Cash Book and the PKR, USD and EUR bank accounts, each in its own currency.</li>
+                    <li><span class="path">Expenses</span>: monthly rent paid from the bank, and an electricity bill owed to the vendor, then paid.</li>
+                    <li><span class="path">Journal Vouchers</span> › <span class="mono">JV-26-0002</span>: a fine for damaged leather deducted through payroll.</li>
+                    <li><span class="path">Journals</span>: open one automatic journal to show the balanced debit and credit lines behind a posting.</li>
+                </ul></div></div>
+                <div class="watch"><b>Optional live step.</b> Sign in as <span class="mono">accountant@demo.test</span> and post transfer <span class="mono">TRF-26-0002</span> (PKR 100,000 from bank to cash, already approved). Show both balances change.</div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="bo-accounts"><span>Cash and bank accounts in their own currencies.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-expenses"><span>Expenses paid now or owed to a vendor.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-journals"><span>Automatic, balanced journals behind every posting.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>HR and payroll · 4 minutes</h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li><span class="path">HR › Attendance</span>: working days, leaves, late hours and overtime per month.</li>
+                    <li><span class="path">HR › Payroll</span> › <span class="mono">PRL-26-0001</span> (October, Partly Paid): salary, wage work, overtime, attendance deductions, fines, loan and advance recoveries, net pay. Print one payslip.</li>
+                    <li><span class="mono">PRL-26-0002</span> (November, Draft): nothing changes until it is approved and posted.</li>
+                    <li><span class="path">Loans</span> and <span class="path">Salary Advances</span>: recovered automatically through payroll.</li>
+                </ul></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="bo-attendance"><span>Monthly attendance feeding payroll.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-payroll"><span>Salaried and piece-rate staff in one run; payslips.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-loans"><span>Loans, advances and fines recovered automatically.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-draftrun"><span>A draft run changes nothing until posted.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Reports · 4 minutes</h3>
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li><span class="path">Reports</span>: the groups, such as Finance, Sales, Stock, HR, Daily and Go-live.</li>
+                    <li><strong>Trial balance</strong> in PKR, then switch the currency to EUR to show a separate one.</li>
+                    <li><strong>Profit and loss</strong>, then an order's <strong>Order cost</strong> from <span class="mono">SO-26-0001</span>.</li>
+                    <li>Export one report to Excel.</li>
+                </ul></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Reports read only posted documents, so they always match the books. Cost, profit and salary figures need their own permission, so staff who shouldn't see margins won't."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="bo-reports"><span>Report groups; print, PDF and Excel export.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-tb"><span>Trial balance per currency; profit and loss.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-ordercost"><span>Order cost per order.</span></label></li>
+                    <li><label><input type="checkbox" data-id="bo-sensitive"><span>Sensitive figures need their own permission.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"You've seen a lot of power. Let me show you how it's kept safe."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 6 CONTROL ───────────────────────── -->
+        <section id="control" data-group="6 · Control and safety">
+            <div class="sec-head"><h2>6 · Control and safety</h2><span class="time">1:10 – 1:15</span><span class="who">Window B, then the Super Admin</span></div>
+            <p class="goal">Owners buy control. Make it visible.</p>
+            <div class="step">
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li>In Window B (sales): HR, Reports and Settings are missing from the menu, Finance shows only Ledgers, and there is no Approve button anywhere.</li>
+                    <li>Open a posted document: no Edit button. Corrections go through returns, credit notes and adjustments.</li>
+                    <li>Sign in as the <strong>Super Admin</strong>: <span class="path">Settings › Roles</span> (permissions per role), <span class="path">Users</span>, <span class="path">Numbering</span>, approvals per document type, the period lock, and the <span class="path">Audit Log</span>.</li>
+                    <li><span class="path">Profile</span>: two-factor authentication.</li>
+                </ul></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"Each person sees only their own work. Nothing posted can be edited or deleted, and every change is in the history with a name and a time. When you close a month, you lock it, and nothing can be posted into it any more. The database is backed up every night, and we can prove a backup restores before you go live."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="ct-perms"><span>Menus and buttons follow permissions; roles are editable.</span></label></li>
+                    <li><label><input type="checkbox" data-id="ct-locked"><span>Posted documents are locked; corrections leave a trail.</span></label></li>
+                    <li><label><input type="checkbox" data-id="ct-audit"><span>History per document and the Audit Log.</span></label></li>
+                    <li><label><input type="checkbox" data-id="ct-period"><span>Period lock after month end.</span></label></li>
+                    <li><label><input type="checkbox" data-id="ct-2fa"><span>Two-factor authentication.</span></label></li>
+                    <li><label><input type="checkbox" data-id="ct-backup"><span>Nightly backups and a restore test.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"So how do we get your business from today's spreadsheets into this?"</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 7 GOING LIVE ───────────────────────── -->
+        <section id="golive" data-group="7 · Going live">
+            <div class="sec-head"><h2>7 · Going live</h2><span class="time">1:15 – 1:20</span><span class="who">Super Admin</span></div>
+            <p class="goal">Make the move feel safe and concrete: a fixed path, with checks at each step.</p>
+            <div class="step">
+                <div class="part show"><span class="lbl">Show</span><div><ul>
+                    <li><span class="path">Settings › Opening Balances</span>: the list of 12 types and a downloadable CSV template.</li>
+                    <li>Describe the preview that flags every row with an error, and that a file with errors can't be posted.</li>
+                    <li><span class="path">Reports › Go-live › Cutover report</span>: imported totals against your old system's totals.</li>
+                </ul></div></div>
+                <div class="watch"><b>Do not click Lock go-live</b> in the demo. It permanently stops further opening documents and moves the period lock.</div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"We pick a month end. You print your closing figures from today's system. We load your cash, stock, customer and vendor balances, staff loans, open orders and jobs on the floor from simple spreadsheets. The system checks every row, and the cutover report must match your figures before we lock. From that day, you work in IProduction."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="gl-path"><span>The path: setup, masters, cut-over date, opening balances, reconcile, lock.</span></label></li>
+                    <li><label><input type="checkbox" data-id="gl-templates"><span>CSV templates and row-by-row checks.</span></label></li>
+                    <li><label><input type="checkbox" data-id="gl-cutover"><span>Cutover report against the old system's totals.</span></label></li>
+                    <li><label><input type="checkbox" data-id="gl-training"><span>Training per role before the go-live date.</span></label></li>
+                </ul></div></div>
+                <div class="part bridge"><span class="lbl">Bridge</span><div><p>"Let me pull it together, and then it's your turn."</p></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── 8 WRAP-UP ───────────────────────── -->
+        <section id="wrap" data-group="8 · Wrap-up">
+            <div class="sec-head"><h2>8 · Wrap-up and questions</h2><span class="time">1:20 – 1:30+</span><span class="who">stop sharing the app; show the Dashboard or nothing</span></div>
+            <p class="goal">Leave them with three clear messages, answer the parked questions, and agree the next step before anyone leaves.</p>
+
+            <div class="step">
+                <h3>Recap · 2 minutes</h3>
+                <div class="part say"><span class="lbl">Say</span><div>
+                    <p>"Three things to remember. One: one system from order to cash, and the books and stock update themselves as your people work. Two: you can see your shop floor live, every batch, every stage, every cost. Three: it's controlled. People see only their part, nothing posted can be changed silently, and every customer stays in their own currency."</p>
+                </div></div>
+                <div class="part"><span class="lbl">Do</span><div><p>Tie back to the pain points you wrote down in the opening: "You mentioned … — that's the screen we saw in scene …".</p></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Questions · 5 minutes or more</h3>
+                <div class="part"><span class="lbl">Do</span><div><ol>
+                    <li>Answer the parking-lot questions first, in the order they were asked.</li>
+                    <li>Then open the floor: "What would you want to see again?"</li>
+                    <li>Use the <a href="#answers">prepared answers</a> below. Show a screen if it helps.</li>
+                    <li>If you don't know, say so, write it down, and promise an answer by a specific day. Never guess about a feature.</li>
+                </ol></div></div>
+            </div>
+
+            <div class="step">
+                <h3>Next steps and close · 3 minutes</h3>
+                <div class="part"><span class="lbl">Agree</span><div><ul>
+                    <li>A target go-live date (a month end).</li>
+                    <li>Who sends the master lists: customers, vendors, items with variants, routes and BOMs, employees.</li>
+                    <li>The list of users and their roles.</li>
+                    <li>Training sessions per role, and a date to load opening balances.</li>
+                </ul></div></div>
+                <div class="part say"><span class="lbl">Say</span><div><p>"I'll send you today's summary, the project guide and the list of open questions with answers. Thank you for your time."</p></div></div>
+                <div class="part"><span class="lbl">Point out</span><div><ul class="checks">
+                    <li><label><input type="checkbox" data-id="wr-recap"><span>Three key messages, tied to their pain points.</span></label></li>
+                    <li><label><input type="checkbox" data-id="wr-parked"><span>Parked questions answered or scheduled.</span></label></li>
+                    <li><label><input type="checkbox" data-id="wr-dates"><span>Go-live date and next meeting agreed.</span></label></li>
+                    <li><label><input type="checkbox" data-id="wr-owners"><span>Who sends master data and the user list.</span></label></li>
+                    <li><label><input type="checkbox" data-id="wr-followup"><span>Follow-up promised: summary, guide, answers.</span></label></li>
+                </ul></div></div>
+            </div>
+
+            <div class="step">
+                <h3>If something goes wrong during the demo</h3>
+                <div class="part"><span class="lbl">Do</span><div><ul>
+                    <li><strong>An error message on posting</strong> (for example a stock shortage): read it out. It is the system refusing to post something that isn't true, and nothing was changed. Then open a prepared record instead.</li>
+                    <li><strong>A button is missing</strong>: you're probably signed in as the wrong user. Check the name at the top right.</li>
+                    <li><strong>A page looks unstyled</strong>: run <code>npm run build</code> and <code>php artisan optimize:clear</code> during a break, then refresh.</li>
+                    <li><strong>You lose your place</strong>: come back to this sheet; the counter shows what's left.</li>
+                </ul></div></div>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── ANSWERS ───────────────────────── -->
+        <section id="answers" data-group="Answers">
+            <div class="sec-head"><h2>Prepared answers</h2><span class="time">reference</span></div>
+            <p class="goal">Short, accurate answers to the questions customers ask most. Open one only when needed.</p>
+            <div class="faq">
+                <details><summary>Can we run more than one company?</summary><p>Each company gets its own installation and database, so data is never mixed. A second company is a second installation.</p></details>
+                <details><summary>Where do exchange rates come from?</summary><p>Customer documents don't use a rate at all; they stay in the customer's currency. PKR value is created only when you record a currency conversion and type in the PKR the bank actually credited.</p></details>
+                <details><summary>Can we change an invoice after posting it?</summary><p>No. Posted documents are locked. You issue a credit note, a return or an adjustment, so the history stays true and auditable. Drafts can be changed freely.</p></details>
+                <details><summary>How is sales tax handled?</summary><p>Tax is an optional rate per invoice line and defaults to none, so export invoices carry no tax. When tax applies, it posts to Taxes Payable.</p></details>
+                <details><summary>Does it work on a phone or tablet? Offline?</summary><p>It runs in any modern browser and the layout adapts to smaller screens. There is no separate mobile app, and it needs a connection to the server.</p></details>
+                <details><summary>Who can see salaries, costs and profit?</summary><p>Only roles given those specific permissions: salary, cost, profit and bank balance each have their own. Roles are edited in Settings › Roles.</p></details>
+                <details><summary>Can we require approval for some documents and not others?</summary><p>Yes. Approval is switched on or off per document type in Settings.</p></details>
+                <details><summary>How do we know who changed what?</summary><p>Every document shows its full History, and the Audit Log in Settings shows all changes across the system with the user and time. Cancelling and overriding always require a reason.</p></details>
+                <details><summary>What about backups?</summary><p>The database is backed up automatically every night and old backups are pruned after a set number of days. A command restores the latest backup into a scratch database and checks it, to prove backups work before go-live. Copies should also be kept off the server.</p></details>
+                <details><summary>Can we get our data out?</summary><p>Every list exports to Excel or CSV, and every report prints, saves as PDF and exports to Excel.</p></details>
+                <details><summary>How do we bring in our existing balances and open orders?</summary><p>Through Settings › Opening Balances: twelve types, each a CSV template, checked row by row, compared with your old totals in the Cutover report, then locked.</p></details>
+                <details><summary>Can we change document numbers?</summary><p>Yes. Each document type's prefix and next number are set in Settings › Numbering.</p></details>
+                <details><summary>Can you add a report we need?</summary><p>New reports can be added to the Reports area, and they get printing, export and permissions automatically. Note the request with an example of the figures they want.</p></details>
+                <details><summary>Can we stop people posting into a closed month?</summary><p>Yes. Set the period lock date after closing a month; nothing can be posted on or before it.</p></details>
+            </div>
+        </section>
+
+        <!-- ───────────────────────── MASTER CHECKLIST ───────────────────────── -->
+        <section id="remaining" data-group="Checklist">
+            <div class="sec-head"><h2>Master checklist</h2><span class="time">before you say goodbye</span></div>
+            <p class="goal">Everything you haven't ticked yet, grouped by section. Glance at it before the recap; cover anything important in the last few minutes or put it in the follow-up email.</p>
+            <div class="remaining">
+                <div id="remaining-list"><p class="all-done">Loading…</p></div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                    <button type="button" class="btn danger" id="reset">Clear all ticks</button>
+                    <button type="button" class="btn" id="reset-confirm" hidden>Yes, clear them</button>
+                    <button type="button" class="btn" id="reset-cancel" hidden>Keep them</button>
+                    <span style="font-size:0.85rem;color:var(--muted)">Ticks are saved in this browser only, so you can reload the page mid-demo.</span>
+                </div>
+            </div>
+        </section>
+
+        <footer>IProduction presenter's run-sheet. Record numbers refer to a freshly loaded demo company (<code>DemoDataSeeder</code>). Lives in <code>docs/presenting/</code>; the product walkthrough is in <code>docs/guide/</code>.</footer>
+    </main>
+</div>
+
+<script>
+(() => {
+    const KEY = 'iproduction-demo-ticks-v1';
+    const boxes = [...document.querySelectorAll('input[type=checkbox][data-id]')];
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+    boxes.forEach(b => { b.id = 'chk-' + b.dataset.id; b.checked = !!saved[b.dataset.id]; });
+
+    const count = document.getElementById('count');
+    const bar = document.getElementById('bar');
+    const list = document.getElementById('remaining-list');
+
+    function store() {
+        const state = {};
+        boxes.forEach(b => { if (b.checked) state[b.dataset.id] = 1; });
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage blocked: ticks last for this visit */ }
+    }
+
+    function render() {
+        const done = boxes.filter(b => b.checked).length;
+        count.textContent = done + ' / ' + boxes.length;
+        bar.style.width = (boxes.length ? (done / boxes.length) * 100 : 0) + '%';
+
+        const groups = new Map();
+        boxes.filter(b => !b.checked).forEach(b => {
+            const g = b.closest('section')?.dataset.group || 'Other';
+            if (!groups.has(g)) groups.set(g, []);
+            groups.get(g).push(b);
+        });
+        list.replaceChildren();
+        if (groups.size === 0) {
+            const p = document.createElement('p'); p.className = 'all-done'; p.textContent = 'Everything is covered.';
+            list.append(p); return;
+        }
+        groups.forEach((items, name) => {
+            const h = document.createElement('div'); h.className = 'group'; h.textContent = name + ' · ' + items.length + ' left';
+            const ul = document.createElement('ul');
+            items.forEach(b => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#' + b.id;
+                a.textContent = b.nextElementSibling.textContent;
+                li.append(a); ul.append(li);
+            });
+            list.append(h, ul);
+        });
+    }
+
+    boxes.forEach(b => b.addEventListener('change', () => { store(); render(); }));
+
+    const reset = document.getElementById('reset');
+    const yes = document.getElementById('reset-confirm');
+    const no = document.getElementById('reset-cancel');
+    reset.addEventListener('click', () => { reset.hidden = true; yes.hidden = false; no.hidden = false; yes.focus(); });
+    no.addEventListener('click', () => { reset.hidden = false; yes.hidden = true; no.hidden = true; });
+    yes.addEventListener('click', () => {
+        boxes.forEach(b => { b.checked = false; });
+        store(); render();
+        reset.hidden = false; yes.hidden = true; no.hidden = true;
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>

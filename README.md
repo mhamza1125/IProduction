@@ -76,6 +76,8 @@ It also adds one user per role (`manager@demo.test`, `sales@demo.test`, `purchas
 
 Project guide with a walkthrough of every area: open `docs/guide/index.html` in a browser.
 
+Presenting the system to a customer: `docs/presenting/index.html` is a timed run-sheet (what to say, what to click, what to cover, with a checklist), written against the demo company.
+
 ### Tests
 
 Tests use a separate MySQL database so they match production behaviour:
