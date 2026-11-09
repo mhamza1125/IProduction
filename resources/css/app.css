@@ -30,6 +30,7 @@
  */
 @theme inline {
     --color-page: var(--ui-page);
+    --color-chrome: var(--ui-chrome);
     --color-surface: var(--ui-surface);
     --color-sunken: var(--ui-sunken);
     --color-raised: var(--ui-raised);
@@ -53,6 +54,7 @@
     :root {
         color-scheme: light;
         --ui-page: oklch(0.975 0.005 262);        /* app background */
+        --ui-chrome: oklch(1 0 0);                /* sidebar and top bar */
         --ui-surface: oklch(1 0 0);               /* cards, sidebar, top bar, tables */
         --ui-sunken: oklch(0.965 0.006 262);      /* table heads, card footers, disabled fields */
         --ui-raised: oklch(1 0 0);                /* menus, modals, toasts (plus shadow and ring) */
@@ -75,6 +77,7 @@
     .dark {
         color-scheme: dark;                        /* native selects, date pickers, scrollbars */
         --ui-page: oklch(0.19 0.012 262);
+        --ui-chrome: oklch(0.225 0.014 262);
         --ui-surface: oklch(0.225 0.014 262);
         --ui-sunken: oklch(0.205 0.013 262);
         --ui-raised: oklch(0.27 0.016 262);
@@ -95,27 +98,34 @@
     }
 
     /*
-     * Dim: a softer, lighter slate between light and dark. <html> carries both
-     * "dark" and "dim", so dark: variants (alerts, badge backgrounds) still apply
-     * and only these values change. Same contrast rules as above.
+     * Dim: its own theme, not a lighter Dark. Warm graphite ("stone") instead of
+     * Dark's cool slate, and a different depth model: a deeper frame (sidebar and
+     * top bar) around a mid-tone page with clearly lifted cards. The accent is a
+     * softened periwinkle of the brand blue; status colours are calmer pastels.
+     * <html> carries "dark" and "dim" so dark: variants (alert and badge tints)
+     * still apply. Text is at least 4.5:1 on every surface it sits on, form
+     * control edges 3.3:1.
      */
     .dark.dim {
-        --ui-page: oklch(0.31 0.02 255);
-        --ui-surface: oklch(0.345 0.022 255);
-        --ui-sunken: oklch(0.325 0.021 255);
-        --ui-raised: oklch(0.39 0.023 255);
-        --ui-hover: oklch(0.405 0.024 255);
-        --ui-selected: oklch(0.43 0.07 255);
-        --ui-selected-fg: oklch(0.9 0.07 250);
-        --ui-line: oklch(0.44 0.022 255);
-        --ui-line-strong: oklch(0.64 0.02 255);
-        --ui-fg: oklch(0.965 0.006 255);
-        --ui-muted: oklch(0.87 0.014 255);
-        --ui-subtle: oklch(0.81 0.016 255);
-        --ui-link: oklch(0.84 0.1 250);
-        --ui-danger: oklch(0.808 0.114 19.6);
-        --ui-success: oklch(0.871 0.15 154.4);
-        --ui-warning: oklch(0.879 0.169 91.6);
+        --ui-chrome: oklch(0.3 0.0065 70);
+        --ui-page: oklch(0.35 0.0055 70);
+        --ui-sunken: oklch(0.38 0.006 70);
+        --ui-surface: oklch(0.41 0.0065 70);
+        --ui-raised: oklch(0.45 0.007 70);
+        --ui-hover: oklch(0.455 0.008 70);
+        --ui-selected: oklch(0.475 0.05 262);
+        --ui-selected-fg: oklch(0.93 0.045 262);
+        --ui-line: oklch(0.505 0.007 70);
+        --ui-line-strong: oklch(0.7 0.007 70);
+        --ui-fg: oklch(0.965 0.01 85);
+        --ui-muted: oklch(0.885 0.01 80);
+        --ui-subtle: oklch(0.85 0.009 75);
+        --ui-link: oklch(0.865 0.075 262);
+        --ui-danger: oklch(0.86 0.08 28);
+        --ui-success: oklch(0.86 0.1 155);
+        --ui-warning: oklch(0.88 0.11 82);
+        --ui-primary: oklch(0.55 0.135 262);
+        --ui-primary-hover: oklch(0.51 0.135 262);
     }
 
     html {

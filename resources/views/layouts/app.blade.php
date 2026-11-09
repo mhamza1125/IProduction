@@ -17,7 +17,7 @@
     {{-- Sidebar --}}
     <aside
         :class="sidebar ? 'translate-x-0' : '-translate-x-full'"
-        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-line bg-surface transition-transform lg:translate-x-0"
+        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-line bg-chrome transition-transform lg:translate-x-0"
     >
         <div class="flex h-14 items-center gap-2 border-b border-line px-4">
             @if ($logo = $settings->get('company.logo_path'))
@@ -55,7 +55,7 @@
 
     <div class="lg:pl-64">
         {{-- Top bar --}}
-        <header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur sm:px-6">
+        <header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-chrome/90 px-4 backdrop-blur sm:px-6">
             <button type="button" class="-ml-1 rounded p-1 text-subtle lg:hidden" x-on:click="sidebar = true">
                 <x-icon name="menu" /><span class="sr-only">Open menu</span>
             </button>
