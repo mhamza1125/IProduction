@@ -1,6 +1,6 @@
 <div>
-    <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-        <p class="text-xs text-zinc-500">Every item has at least one variant. Generate combinations from attributes, then remove the ones you don't sell or stock.</p>
+    <div class="flex items-center justify-between border-b border-line px-4 py-2">
+        <p class="text-xs text-subtle">Every item has at least one variant. Generate combinations from attributes, then remove the ones you don't sell or stock.</p>
         @if ($canEdit)
             <x-button size="sm" variant="secondary" wire:click="openGenerator">Attributes &amp; combinations</x-button>
         @endif
@@ -38,9 +38,9 @@
 
     <x-modal wire:model="showGenerator" title="Attributes and combinations" max-width="2xl">
         @if ($attributeList->isEmpty())
-            <p class="text-sm text-zinc-500">No attributes yet. Create them in Catalog › Attributes (e.g. Color: Red, Blue; Size: S, M, L).</p>
+            <p class="text-sm text-subtle">No attributes yet. Create them in Catalog › Attributes (e.g. Color: Red, Blue; Size: S, M, L).</p>
         @else
-            <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">Tick the values this item comes in. Every combination becomes a variant; existing variants are kept.</p>
+            <p class="mb-4 text-sm text-muted">Tick the values this item comes in. Every combination becomes a variant; existing variants are kept.</p>
             <div class="space-y-4">
                 @foreach ($attributeList as $attribute)
                     <fieldset wire:key="attr-{{ $attribute->id }}">
@@ -70,7 +70,7 @@
             @endif
             <x-input label="Minimum stock" type="number" step="any" min="0" wire:model="min_stock" />
             <x-checkbox wire:model="is_active" label="Active" class="sm:col-span-2" />
-            @error('is_active') <p class="text-xs text-red-600 sm:col-span-2">{{ $message }}</p> @enderror
+            @error('is_active') <p class="text-xs text-danger sm:col-span-2">{{ $message }}</p> @enderror
         </form>
         <x-slot:footer>
             <x-button variant="secondary" x-on:click="open = false">Cancel</x-button>

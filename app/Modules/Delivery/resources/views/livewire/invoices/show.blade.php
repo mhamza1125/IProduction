@@ -13,12 +13,12 @@
                     <x-slot:head><x-table.th>Item</x-table.th><x-table.th>Delivery · order</x-table.th><x-table.th align="right">Qty</x-table.th><x-table.th align="right">Price</x-table.th><x-table.th align="right">Discount</x-table.th><x-table.th align="right">Tax</x-table.th><x-table.th align="right">Amount</x-table.th></x-slot:head>
                     @foreach ($inv->lines as $l)
                         <tr wire:key="il-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }}@if ($l->description)<div class="text-xs text-zinc-500">{{ $l->description }}</div>@endif</x-table.td>
+                            <x-table.td>{{ $l->variant->fullLabel() }}@if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
                             <x-table.td class="font-mono text-xs">{{ $l->deliveryLine->delivery->number }} · {{ $l->orderLine->order->number }}</x-table.td>
                             <x-table.td align="right">@qty($l->quantity)</x-table.td>
-                            <x-table.td align="right">@money($l->unit_price, null, 4)@if (\App\Support\Decimal::compare($l->unit_price, $l->order_price) !== 0)<div class="text-xs text-amber-700">order @money($l->order_price, null, 4)</div>@endif</x-table.td>
+                            <x-table.td align="right">@money($l->unit_price, null, 4)@if (\App\Support\Decimal::compare($l->unit_price, $l->order_price) !== 0)<div class="text-xs text-warning">order @money($l->order_price, null, 4)</div>@endif</x-table.td>
                             <x-table.td align="right">@if ($l->discount)@money($l->discount)@endif</x-table.td>
-                            <x-table.td align="right">@if ($l->tax_rate !== null){{ (float) $l->tax_rate }}% · @money($l->tax_amount)@else <span class="text-zinc-400">none</span>@endif</x-table.td>
+                            <x-table.td align="right">@if ($l->tax_rate !== null){{ (float) $l->tax_rate }}% · @money($l->tax_amount)@else <span class="text-subtle">none</span>@endif</x-table.td>
                             <x-table.td align="right">@money($l->amount)</x-table.td>
                         </tr>
                     @endforeach
@@ -35,11 +35,11 @@
                 <x-card title="Balance">
                     <p class="text-2xl font-semibold tabular">@money($inv->balance(), $inv->currency_code)</p>
                     <ul class="mt-3 space-y-1 text-sm">
-                        @forelse ($inv->allocations as $a)<li>{{ $a->source instanceof \App\Modules\Delivery\Models\CreditNote ? 'Credit note' : 'Receipt' }} {{ $a->source?->number }} · @date($a->allocation_date) · @money($a->amount)</li>@empty<li class="text-zinc-500">Nothing received or credited yet.</li>@endforelse
+                        @forelse ($inv->allocations as $a)<li>{{ $a->source instanceof \App\Modules\Delivery\Models\CreditNote ? 'Credit note' : 'Receipt' }} {{ $a->source?->number }} · @date($a->allocation_date) · @money($a->amount)</li>@empty<li class="text-subtle">Nothing received or credited yet.</li>@endforelse
                     </ul>
                     @if ($credits->isNotEmpty() && (float) $inv->balance() > 0)
                         @can('credit_notes.post')
-                            <form wire:submit="applyCredit" class="mt-4 grid gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                            <form wire:submit="applyCredit" class="mt-4 grid gap-2 border-t border-line pt-3">
                                 <x-select label="Apply customer credit" wire:model="credit_note_id" :options="$credits" placeholder="Choose…" />
                                 <x-input label="Amount" type="number" step="any" min="0" wire:model="credit_amount" />
                                 <x-button type="submit" size="sm" variant="secondary">Apply</x-button>
@@ -50,7 +50,7 @@
             @endif
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Customer"><a href="{{ route('people.customers.show', $inv->customer_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $inv->customer->label() }}</a></x-people::detail>
+                    <x-people::detail label="Customer"><a href="{{ route('people.customers.show', $inv->customer_id) }}" wire:navigate class="text-link hover:underline">{{ $inv->customer->label() }}</a></x-people::detail>
                     <x-people::detail label="Currency" :value="$inv->currency_code" />
                     <x-people::detail label="Payment terms" :value="$inv->payment_terms" />
                     <x-people::detail label="Notes" :value="$inv->notes" />

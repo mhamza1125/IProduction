@@ -3,8 +3,8 @@
 
 <div {{ $attributes->merge(['class' => 'space-y-1']) }}>
     @if ($label)
-        <label for="{{ $for }}" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {{ $label }}@if ($required)<span class="text-red-600"> *</span>@endif
+        <label for="{{ $for }}" class="block text-sm font-medium text-muted">
+            {{ $label }}@if ($required)<span class="text-danger"> *</span>@endif
         </label>
     @endif
 
@@ -12,11 +12,11 @@
 
     @if ($error)
         @error($error)
-            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+            <p class="text-xs text-danger">{{ $message }}</p>
         @enderror
     @endif
 
     @if ($help)
-        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $help }}</p>
+        <p class="text-xs text-subtle">{{ $help }}</p>
     @endif
 </div>

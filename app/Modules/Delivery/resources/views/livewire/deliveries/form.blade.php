@@ -22,15 +22,15 @@
                         <tr wire:key="ol-{{ $l->id }}">
                             <x-table.td class="font-mono text-xs">{{ $l->order->number }} @if ($l->order->sells_rejected_stock)<x-badge color="red">rejected stock</x-badge>@endif</x-table.td>
                             <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
-                            <x-table.td align="right">@qty($r['remaining'])@if ((float) $r['on_deliveries'])<div class="text-xs text-zinc-500">+ @qty($r['on_deliveries']) on other deliveries</div>@endif</x-table.td>
+                            <x-table.td align="right">@qty($r['remaining'])@if ((float) $r['on_deliveries'])<div class="text-xs text-subtle">+ @qty($r['on_deliveries']) on other deliveries</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($r['reserved'])</x-table.td>
                             <x-table.td align="right">@qty($r['ready'])</x-table.td>
-                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="quantities.{{ $l->id }}" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
-                            <x-table.td><input wire:model="overReasons.{{ $l->id }}" aria-label="Reason" class="w-48 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="quantities.{{ $l->id }}" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
+                            <x-table.td><input wire:model="overReasons.{{ $l->id }}" aria-label="Reason" class="w-48 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                         </tr>
                     @endforeach
                 </x-table>
-                @error('quantities') <p class="border-t border-zinc-200 px-4 py-3 text-sm text-red-600 dark:border-zinc-800">{{ $message }}</p> @enderror
+                @error('quantities') <p class="border-t border-line px-4 py-3 text-sm text-danger">{{ $message }}</p> @enderror
             </x-card>
         @endif
         <div class="flex justify-end gap-2">

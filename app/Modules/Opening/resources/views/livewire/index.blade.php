@@ -12,18 +12,18 @@
                     <x-slot:head><x-table.th>Number</x-table.th><x-table.th>Type</x-table.th><x-table.th>Date</x-table.th><x-table.th>File</x-table.th><x-table.th align="right">Rows</x-table.th><x-table.th align="right">Errors</x-table.th><x-table.th>Status</x-table.th></x-slot:head>
                     @foreach ($batches as $b)
                         <tr wire:key="ob-{{ $b->id }}">
-                            <x-table.td class="font-mono"><a href="{{ route('opening.show', $b) }}" wire:navigate class="text-brand-600 hover:underline">{{ $b->number }}</a></x-table.td>
+                            <x-table.td class="font-mono"><a href="{{ route('opening.show', $b) }}" wire:navigate class="text-link hover:underline">{{ $b->number }}</a></x-table.td>
                             <x-table.td>{{ $types[$b->type] ?? $b->type }}</x-table.td>
                             <x-table.td>@date($b->batch_date)</x-table.td>
                             <x-table.td class="text-xs">{{ $b->file_name }}</x-table.td>
                             <x-table.td align="right">{{ $b->row_count }}</x-table.td>
-                            <x-table.td align="right" @class(['text-red-600 font-semibold' => $b->error_count > 0])>{{ $b->error_count }}</x-table.td>
+                            <x-table.td align="right" @class(['text-danger font-semibold' => $b->error_count > 0])>{{ $b->error_count }}</x-table.td>
                             <x-table.td><x-status :status="$b->status" /></x-table.td>
                         </tr>
                     @endforeach
                 </x-table>
             </x-card>
-            @can('reports.view') <p class="text-sm"><a href="{{ route('reports.show', 'cutover') }}" wire:navigate class="text-brand-600 hover:underline">Cutover report</a>: imported totals against the old system's control totals.</p> @endcan
+            @can('reports.view') <p class="text-sm"><a href="{{ route('reports.show', 'cutover') }}" wire:navigate class="text-link hover:underline">Cutover report</a>: imported totals against the old system's control totals.</p> @endcan
         </div>
         <div class="space-y-6">
             @if (! $locked)
@@ -33,13 +33,13 @@
                             <x-select label="Opening document" wire:model.live="type" :options="$types" />
                             <x-date-input label="Opening date" wire:model="batch_date" required />
                             <div>
-                                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Excel or CSV file</label>
+                                <label class="text-sm font-medium text-muted">Excel or CSV file</label>
                                 <input type="file" wire:model="file" accept=".xlsx,.xls,.csv" class="mt-1 block w-full text-sm">
-                                @error('file') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                @error('file') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
                             </div>
                             <x-input label="Notes" wire:model="notes" />
                             <div class="flex items-center justify-between gap-2">
-                                <a href="{{ route('opening.template', $type) }}" class="text-sm text-brand-600 hover:underline">Download template</a>
+                                <a href="{{ route('opening.template', $type) }}" class="text-sm text-link hover:underline">Download template</a>
                                 <x-button type="submit">Import and check</x-button>
                             </div>
                         </form>
@@ -55,7 +55,7 @@
                 @endcan
             @endif
             <x-card title="Templates">
-                <ul class="space-y-1 text-sm">@foreach ($types as $key => $label)<li><a href="{{ route('opening.template', $key) }}" class="text-brand-600 hover:underline">{{ $label }}</a></li>@endforeach</ul>
+                <ul class="space-y-1 text-sm">@foreach ($types as $key => $label)<li><a href="{{ route('opening.template', $key) }}" class="text-link hover:underline">{{ $label }}</a></li>@endforeach</ul>
             </x-card>
         </div>
     </div>

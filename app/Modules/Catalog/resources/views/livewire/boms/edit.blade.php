@@ -35,7 +35,7 @@
         <x-card title="Components" :padding="false">
             <div class="relative overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900/60">
+                    <thead class="bg-sunken text-xs uppercase text-subtle">
                         <tr>
                             <th class="px-3 py-2 text-left">Component</th>
                             <th class="px-3 py-2 text-left">Variant</th>
@@ -47,53 +47,53 @@
                             <th class="px-3 py-2"><span class="sr-only">Remove</span></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <tbody class="divide-y divide-line">
                         @forelse ($lines as $i => $line)
                             <tr wire:key="bl-{{ $i }}-{{ $line['id'] ?? 'new' }}" class="align-top">
                                 <td class="px-3 py-2">
-                                    <select wire:model.live="lines.{{ $i }}.component_item_id" @disabled(! $editable) aria-label="Component" class="w-64 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model.live="lines.{{ $i }}.component_item_id" @disabled(! $editable) aria-label="Component" class="w-64 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         <option value="">Choose…</option>
                                         @foreach ($components as $id => $label) <option value="{{ $id }}">{{ $label }}</option> @endforeach
                                     </select>
-                                    @error("lines.$i.component_item_id") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                                    @error("lines.$i.component_item_id") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                 </td>
                                 <td class="px-3 py-2">
-                                    <select wire:model="lines.{{ $i }}.component_variant_id" @disabled(! $editable) aria-label="Variant" class="w-40 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model="lines.{{ $i }}.component_variant_id" @disabled(! $editable) aria-label="Variant" class="w-40 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         <option value="">Any / by override</option>
                                         @foreach ($variantsByItem[(int) $line['component_item_id']] ?? [] as $id => $label) <option value="{{ $id }}">{{ $label }}</option> @endforeach
                                     </select>
-                                    @error("lines.$i.component_variant_id") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                                    @error("lines.$i.component_variant_id") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                 </td>
                                 <td class="px-3 py-2">
-                                    <input type="number" step="any" min="0" wire:model="lines.{{ $i }}.quantity" @disabled(! $editable) aria-label="Quantity" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
-                                    @error("lines.$i.quantity") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                                    <input type="number" step="any" min="0" wire:model="lines.{{ $i }}.quantity" @disabled(! $editable) aria-label="Quantity" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface">
+                                    @error("lines.$i.quantity") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                 </td>
                                 <td class="px-3 py-2">
-                                    <select wire:model="lines.{{ $i }}.unit_id" @disabled(! $editable) aria-label="Unit" class="w-24 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model="lines.{{ $i }}.unit_id" @disabled(! $editable) aria-label="Unit" class="w-24 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         @foreach ($units as $id => $symbol) <option value="{{ $id }}">{{ $symbol }}</option> @endforeach
                                     </select>
                                 </td>
-                                <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.wastage_percent" @disabled(! $editable) aria-label="Wastage percent" class="w-20 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></td>
+                                <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.wastage_percent" @disabled(! $editable) aria-label="Wastage percent" class="w-20 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></td>
                                 <td class="px-3 py-2">
-                                    <select wire:model="lines.{{ $i }}.stage_id" @disabled(! $editable) aria-label="Stage" class="w-36 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model="lines.{{ $i }}.stage_id" @disabled(! $editable) aria-label="Stage" class="w-36 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         <option value="">—</option>
                                         @foreach ($stages as $id => $name) <option value="{{ $id }}">{{ $name }}</option> @endforeach
                                     </select>
                                 </td>
-                                <td class="px-3 py-2 text-center"><input type="checkbox" wire:model="lines.{{ $i }}.is_optional" @disabled(! $editable) aria-label="Optional" class="size-4 rounded border-zinc-300 text-brand-600"></td>
+                                <td class="px-3 py-2 text-center"><input type="checkbox" wire:model="lines.{{ $i }}.is_optional" @disabled(! $editable) aria-label="Optional" class="size-4 rounded border-line-strong bg-surface text-brand-600"></td>
                                 <td class="px-3 py-2 text-right">
                                     @if ($editable)
-                                        <button type="button" wire:click="removeLine({{ $i }})" class="p-1 text-zinc-400 hover:text-red-600" aria-label="Remove"><x-icon name="trash" class="size-4" /></button>
+                                        <button type="button" wire:click="removeLine({{ $i }})" class="p-1 text-subtle hover:text-danger" aria-label="Remove"><x-icon name="trash" class="size-4" /></button>
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="px-3 py-6 text-center text-sm text-zinc-500">No components yet.</td></tr>
+                            <tr><td colspan="8" class="px-3 py-6 text-center text-sm text-subtle">No components yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            @error('lines') <p class="px-4 py-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            @error('lines') <p class="px-4 py-2 text-sm text-danger">{{ $message }}</p> @enderror
             @if ($editable)
                 <x-slot:footer>
                     <x-button variant="secondary" size="sm" wire:click="addLine" icon="plus" class="mr-auto">Add component</x-button>
@@ -108,7 +108,7 @@
             @if ($editable)
                 <x-slot:actions><x-button size="sm" variant="secondary" wire:click="openOverride" icon="plus">Add</x-button></x-slot:actions>
             @endif
-            <ul class="divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
+            <ul class="divide-y divide-line text-sm">
                 @forelse ($overrides as $o)
                     <li class="flex items-start justify-between gap-3 py-2" wire:key="o-{{ $o->id }}">
                         <span>
@@ -125,11 +125,11 @@
                             @endif
                         </span>
                         @if ($editable)
-                            <button type="button" wire:click="removeOverride({{ $o->id }})" class="text-xs text-zinc-500 hover:text-red-600">Remove</button>
+                            <button type="button" wire:click="removeOverride({{ $o->id }})" class="text-xs text-subtle hover:text-danger">Remove</button>
                         @endif
                     </li>
                 @empty
-                    <li class="py-2 text-zinc-500">No overrides.</li>
+                    <li class="py-2 text-subtle">No overrides.</li>
                 @endforelse
             </ul>
         </x-card>
@@ -141,22 +141,22 @@
                 <x-button type="submit" variant="secondary">Calculate</x-button>
             </form>
             @if ($previewError)
-                <p class="mt-3 text-sm text-red-600">{{ $previewError }}</p>
+                <p class="mt-3 text-sm text-danger">{{ $previewError }}</p>
             @endif
             @if ($preview)
                 <table class="mt-4 min-w-full text-sm">
-                    <thead class="text-xs uppercase text-zinc-500"><tr><th class="py-1 text-left">Component</th><th class="py-1 text-right">Required</th><th class="py-1 text-left pl-2">Stage</th></tr></thead>
-                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <thead class="text-xs uppercase text-subtle"><tr><th class="py-1 text-left">Component</th><th class="py-1 text-right">Required</th><th class="py-1 text-left pl-2">Stage</th></tr></thead>
+                    <tbody class="divide-y divide-line">
                         @foreach ($preview as $row)
                             <tr>
                                 <td class="py-1" style="padding-left: {{ ($row['level'] - 1) * 1.25 }}rem">
                                     {{ $row['label'] }}
-                                    @if ($row['wastage'] > 0) <span class="text-xs text-zinc-500">(+@qty($row['wastage'])%)</span> @endif
+                                    @if ($row['wastage'] > 0) <span class="text-xs text-subtle">(+@qty($row['wastage'])%)</span> @endif
                                     @if ($row['optional']) <x-badge>optional</x-badge> @endif
                                     @if ($row['has_bom']) <x-badge color="blue">made</x-badge> @endif
                                 </td>
                                 <td class="py-1 text-right tabular">@qty($row['quantity']) {{ $row['unit'] }}</td>
-                                <td class="py-1 pl-2 text-zinc-500">{{ $row['stage'] }}</td>
+                                <td class="py-1 pl-2 text-subtle">{{ $row['stage'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>

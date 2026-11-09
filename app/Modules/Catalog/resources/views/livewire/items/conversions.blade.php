@@ -4,11 +4,11 @@
             <li class="flex items-center justify-between" wire:key="ic-{{ $c->id }}">
                 <span>1 {{ $c->fromUnit->name }} = @qty($c->factor) {{ $c->toUnit->name }}</span>
                 @if ($canEdit)
-                    <button type="button" wire:click="remove({{ $c->id }})" class="text-xs text-zinc-500 hover:text-red-600">Remove</button>
+                    <button type="button" wire:click="remove({{ $c->id }})" class="text-xs text-subtle hover:text-danger">Remove</button>
                 @endif
             </li>
         @empty
-            <li class="text-zinc-500">None. General conversions from Settings › Units apply.</li>
+            <li class="text-subtle">None. General conversions from Settings › Units apply.</li>
         @endforelse
     </ul>
     @if ($canEdit)

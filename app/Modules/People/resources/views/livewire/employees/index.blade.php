@@ -7,16 +7,16 @@
 
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search code, name, CNIC, phone…" dates :export="auth()->user()->can('employees.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="">All</option>
             </select>
-            <select wire:model.live="type" aria-label="Type" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="type" aria-label="Type" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All types</option>
                 @foreach ($types as $key => $label) <option value="{{ $key }}">{{ $label }}</option> @endforeach
             </select>
-            <select wire:model.live="department" aria-label="Department" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="department" aria-label="Department" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All departments</option>
                 @foreach ($departments as $id => $name) <option value="{{ $id }}">{{ $name }}</option> @endforeach
             </select>
@@ -34,8 +34,8 @@
                 <x-table.th>Status</x-table.th>
             </x-slot:head>
             @foreach ($employees as $e)
-                <tr wire:key="e-{{ $e->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <x-table.td class="font-mono"><a href="{{ route('people.employees.show', $e) }}" wire:navigate class="text-brand-600 hover:underline dark:text-brand-500">{{ $e->code }}</a></x-table.td>
+                <tr wire:key="e-{{ $e->id }}" class="hover:bg-hover">
+                    <x-table.td class="font-mono"><a href="{{ route('people.employees.show', $e) }}" wire:navigate class="text-link hover:underline">{{ $e->code }}</a></x-table.td>
                     <x-table.td class="font-medium">{{ $e->name }}</x-table.td>
                     <x-table.td>{{ $types[$e->employee_type] ?? $e->employee_type }}</x-table.td>
                     <x-table.td>{{ $e->department?->name }}</x-table.td>
@@ -47,7 +47,7 @@
             @endforeach
         </x-table>
         @if ($employees->hasPages())
-            <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $employees->links() }}</div>
+            <div class="border-t border-line px-4 py-3">{{ $employees->links() }}</div>
         @endif
     </x-card>
 </div>

@@ -37,10 +37,10 @@
         <x-button variant="ghost" x-on:click="ask = 'cancel'">Cancel document</x-button>
     @endif
     @if ($printRoute && $user->can("$key.print"))
-        <a href="{{ $printRoute }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"><x-icon name="printer" class="size-4" /> Print</a>
+        <a href="{{ $printRoute }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-muted hover:bg-hover"><x-icon name="printer" class="size-4" /> Print</a>
     @endif
 
-    <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-800/60">
+    <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-sunken p-3">
         <x-input label="Reason" wire:model="actionReason" class="min-w-64 flex-1" />
         <x-button x-show="ask === 'cancel'" variant="danger" wire:click="cancelDocument" x-on:click="ask = null">Cancel document</x-button>
         <x-button x-show="ask === 'draft'" wire:click="returnDocumentToDraft" x-on:click="ask = null">Return to draft</x-button>

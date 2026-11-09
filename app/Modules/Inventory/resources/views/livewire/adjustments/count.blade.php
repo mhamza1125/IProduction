@@ -23,7 +23,7 @@
                         <x-table.td>{{ $row->stage?->name ?? '—' }}</x-table.td>
                         <x-table.td class="font-mono text-xs">{{ $row->lot->lot_number }}</x-table.td>
                         <x-table.td align="right">@qty($row->quantity)</x-table.td>
-                        <x-table.td align="right"><input type="number" step="any" min="0" wire:model="counted.{{ $row->id }}" aria-label="Counted" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                        <x-table.td align="right"><input type="number" step="any" min="0" wire:model="counted.{{ $row->id }}" aria-label="Counted" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                     </tr>
                 @endforeach
             </x-table>

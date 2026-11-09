@@ -26,7 +26,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('input')">Add input</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('input')">Add input</x-button></div>
         </x-card>
 
         <x-card title="Outputs" :padding="false">
@@ -42,7 +42,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('output')">Add output</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('output')">Add output</x-button></div>
         </x-card>
 
         <x-card title="Losses" :padding="false">
@@ -57,7 +57,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('loss')">Add loss</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="add('loss')">Add loss</x-button></div>
         </x-card>
 
         <div class="flex justify-end gap-2">

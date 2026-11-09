@@ -6,7 +6,7 @@
                 <x-button variant="secondary" wire:click="export('csv')">CSV</x-button>
             @endcan
             @can('ledgers.print')
-                <a href="{{ route('finance.ledgers.print', ['type' => $type, 'id' => $id, 'from' => $dateFrom, 'to' => $dateTo, 'currency' => $currency]) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-white px-3.5 py-2 text-sm font-medium shadow-sm ring-1 ring-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:ring-zinc-700"><x-icon name="printer" class="size-4" /> Print</a>
+                <a href="{{ route('finance.ledgers.print', ['type' => $type, 'id' => $id, 'from' => $dateFrom, 'to' => $dateTo, 'currency' => $currency]) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-raised px-3.5 py-2 text-sm font-medium shadow-sm ring-1 ring-line-strong hover:bg-hover"><x-icon name="printer" class="size-4" /> Print</a>
             @endcan
         @endif
     </x-page-header>
@@ -30,7 +30,7 @@
                     <x-table.th>Date</x-table.th><x-table.th>Document</x-table.th><x-table.th>Description</x-table.th>
                     <x-table.th align="right">Debit</x-table.th><x-table.th align="right">Credit</x-table.th><x-table.th align="right">Balance</x-table.th>
                 </x-slot:head>
-                <tr class="bg-zinc-50 dark:bg-zinc-900/60"><x-table.td colspan="5" class="font-medium">Opening balance</x-table.td><x-table.td align="right" class="font-medium">@money($ledger['opening'])</x-table.td></tr>
+                <tr class="bg-sunken"><x-table.td colspan="5" class="font-medium">Opening balance</x-table.td><x-table.td align="right" class="font-medium">@money($ledger['opening'])</x-table.td></tr>
                 @foreach ($ledger['rows'] as $row)
                     @php($line = $row['line'])
                     @php($source = $line->journal->source)
@@ -38,18 +38,18 @@
                         <x-table.td class="whitespace-nowrap">@date($line->line_date)</x-table.td>
                         <x-table.td class="whitespace-nowrap font-mono text-xs">
                             @if ($source && method_exists($source, 'showUrl'))
-                                <a href="{{ $source->showUrl() }}" wire:navigate class="text-brand-600 hover:underline">{{ $source->number }}</a>
+                                <a href="{{ $source->showUrl() }}" wire:navigate class="text-link hover:underline">{{ $source->number }}</a>
                             @else
-                                <a href="{{ route('finance.journals.show', $line->journal_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $source?->number ?? $line->journal->number }}</a>
+                                <a href="{{ route('finance.journals.show', $line->journal_id) }}" wire:navigate class="text-link hover:underline">{{ $source?->number ?? $line->journal->number }}</a>
                             @endif
                         </x-table.td>
-                        <x-table.td>{{ $line->memo ?? $line->journal->description }} @if ($type !== 'gl')<span class="text-xs text-zinc-500">· {{ $line->account->name }}</span>@endif</x-table.td>
+                        <x-table.td>{{ $line->memo ?? $line->journal->description }} @if ($type !== 'gl')<span class="text-xs text-subtle">· {{ $line->account->name }}</span>@endif</x-table.td>
                         <x-table.td align="right">{{ (float) $line->debit ? \App\Support\Format::money($line->debit) : '' }}</x-table.td>
                         <x-table.td align="right">{{ (float) $line->credit ? \App\Support\Format::money($line->credit) : '' }}</x-table.td>
                         <x-table.td align="right">@money($row['balance'])</x-table.td>
                     </tr>
                 @endforeach
-                <tr class="bg-zinc-50 font-semibold dark:bg-zinc-900/60">
+                <tr class="bg-sunken font-semibold">
                     <x-table.td colspan="3">Closing balance</x-table.td>
                     <x-table.td align="right">@money($ledger['debits'])</x-table.td><x-table.td align="right">@money($ledger['credits'])</x-table.td>
                     <x-table.td align="right">@money($ledger['closing'], $ledgerCurrency)</x-table.td>
@@ -57,6 +57,6 @@
             </x-table>
         </x-card>
     @else
-        <p class="text-sm text-zinc-500">Choose a record to see its ledger.</p>
+        <p class="text-sm text-subtle">Choose a record to see its ledger.</p>
     @endif
 </div>

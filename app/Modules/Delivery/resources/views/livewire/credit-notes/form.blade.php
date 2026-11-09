@@ -22,7 +22,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add line</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add line</x-button></div>
         </x-card>
         <div class="flex justify-end gap-2">
             <x-button variant="ghost" :href="$note ? route('delivery.credit-notes.show', $note) : route('delivery.credit-notes.index')">Cancel</x-button>

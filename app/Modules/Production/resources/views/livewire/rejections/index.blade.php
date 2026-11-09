@@ -2,7 +2,7 @@
     <x-page-header title="Rejections" description="Rejected pieces stay in Rejected status at their stage until a decision is posted: rework, scrap, sell or recover a charge." />
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search number, SKU, reason…" dates :export="auth()->user()->can('rejections.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All</option><option value="open">Open</option><option value="decided">Decided</option>
             </select>
         </x-table.toolbar>
@@ -16,7 +16,7 @@
             </x-slot:head>
             @foreach ($rejections as $r)
                 <tr wire:key="rj-{{ $r->id }}">
-                    <x-table.td class="font-mono"><a href="{{ route('production.rejections.show', $r) }}" wire:navigate class="text-brand-600 hover:underline">{{ $r->number }}</a></x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('production.rejections.show', $r) }}" wire:navigate class="text-link hover:underline">{{ $r->number }}</a></x-table.td>
                     <x-table.td>@date($r->rejection_date)</x-table.td>
                     <x-table.td>{{ $r->variant->sku }}@if ($r->stage) · {{ $r->stage->name }}@endif</x-table.td>
                     <x-table.td class="font-mono text-xs">{{ $r->ptc?->number ?? $r->job?->number ?? 'Store' }}</x-table.td>
@@ -26,6 +26,6 @@
                 </tr>
             @endforeach
         </x-table>
-        @if ($rejections->hasPages()) <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $rejections->links() }}</div> @endif
+        @if ($rejections->hasPages()) <div class="border-t border-line px-4 py-3">{{ $rejections->links() }}</div> @endif
     </x-card>
 </div>

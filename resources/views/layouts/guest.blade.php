@@ -4,7 +4,7 @@
 <head>
     @include('partials.head')
 </head>
-<body class="flex min-h-full items-center justify-center bg-zinc-50 px-4 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+<body class="flex min-h-full items-center justify-center bg-page px-4 py-12 text-fg">
     <div class="w-full max-w-sm">
         <div class="mb-6 text-center">
             @if ($logo = app(\App\Modules\Core\Services\Settings::class)->get('company.logo_path'))
@@ -12,11 +12,11 @@
             @endif
             <p class="text-lg font-semibold">{{ app(\App\Modules\Core\Services\Settings::class)->get('company.name') }}</p>
             @isset($heading)
-                <h1 class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ $heading }}</h1>
+                <h1 class="mt-1 text-sm text-subtle">{{ $heading }}</h1>
             @endisset
         </div>
 
-        <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
+        <div class="rounded-lg bg-surface p-6 shadow-sm ring-1 ring-line">
             @if (session('status'))
                 <p class="mb-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400">{{ session('status') }}</p>
             @endif

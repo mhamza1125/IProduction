@@ -36,7 +36,7 @@
                     </x-table>
                     @if ($open->isNotEmpty())
                         @can('payments.post')
-                            <form wire:submit="allocate" class="flex flex-wrap items-end gap-2 border-t border-zinc-200 p-4 dark:border-zinc-800">
+                            <form wire:submit="allocate" class="flex flex-wrap items-end gap-2 border-t border-line p-4">
                                 <x-select label="Apply advance to" wire:model="allocateTo" :options="$open->mapWithKeys(fn ($o) => [$o->getMorphClass().':'.$o->getKey() => $o->payableLabel().' — open '.\App\Support\Format::money($o->payableBalance())])->all()" placeholder="Choose…" class="min-w-72" />
                                 <x-input label="Amount" type="number" step="0.01" min="0" wire:model="allocateAmount" class="w-36" />
                                 <x-button type="submit" variant="secondary">Apply</x-button>

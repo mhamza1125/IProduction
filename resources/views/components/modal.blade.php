@@ -18,19 +18,19 @@
     role="dialog"
     aria-modal="true"
 >
-    <div x-show="open" x-transition.opacity class="fixed inset-0 bg-zinc-900/50" x-on:click="open = false"></div>
+    <div x-show="open" x-transition.opacity class="fixed inset-0 bg-black/50" x-on:click="open = false"></div>
 
     <div class="flex min-h-full items-end justify-center p-4 sm:items-center">
         <div
             x-show="open"
             x-transition
             x-trap.noscroll="open"
-            class="relative w-full {{ $widths[$maxWidth] ?? $widths['lg'] }} rounded-lg bg-white shadow-xl ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800"
+            class="relative w-full {{ $widths[$maxWidth] ?? $widths['lg'] }} rounded-lg bg-raised text-fg shadow-xl ring-1 ring-line-strong/40"
         >
             @if ($title)
-                <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
-                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ $title }}</h3>
-                    <button type="button" x-on:click="open = false" class="rounded p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                <div class="flex items-center justify-between border-b border-line px-5 py-3">
+                    <h3 class="text-sm font-semibold text-fg">{{ $title }}</h3>
+                    <button type="button" x-on:click="open = false" class="rounded p-1 text-subtle hover:text-fg">
                         <x-icon name="x" class="size-4" />
                         <span class="sr-only">Close</span>
                     </button>
@@ -40,7 +40,7 @@
             <div class="px-5 py-4">{{ $slot }}</div>
 
             @isset($footer)
-                <div class="flex justify-end gap-2 border-t border-zinc-200 bg-zinc-50 px-5 py-3 rounded-b-lg dark:border-zinc-800 dark:bg-zinc-900/50">
+                <div class="flex justify-end gap-2 border-t border-line bg-sunken px-5 py-3 rounded-b-lg">
                     {{ $footer }}
                 </div>
             @endisset

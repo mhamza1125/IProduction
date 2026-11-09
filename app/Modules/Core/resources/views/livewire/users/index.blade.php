@@ -7,7 +7,7 @@
 
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search name, email or username…" :export="auth()->user()->can('users.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All statuses</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -25,22 +25,22 @@
             </x-slot:head>
 
             @foreach ($users as $user)
-                <tr wire:key="user-{{ $user->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <x-table.td class="font-medium text-zinc-900 dark:text-zinc-100">{{ $user->name }}</x-table.td>
+                <tr wire:key="user-{{ $user->id }}" class="hover:bg-hover">
+                    <x-table.td class="font-medium text-fg">{{ $user->name }}</x-table.td>
                     <x-table.td>{{ $user->email }}</x-table.td>
                     <x-table.td>
                         <div class="flex flex-wrap gap-1">
                             @forelse ($user->roles as $role)
                                 <x-badge color="blue">{{ $role->name }}</x-badge>
                             @empty
-                                <span class="text-zinc-400">—</span>
+                                <span class="text-subtle">—</span>
                             @endforelse
                         </div>
                     </x-table.td>
                     <x-table.td>
                         <x-badge :color="$user->is_active ? 'green' : 'zinc'">{{ $user->is_active ? 'Active' : 'Inactive' }}</x-badge>
                     </x-table.td>
-                    <x-table.td class="whitespace-nowrap text-zinc-500">{{ $user->last_login_at ? \App\Support\Format::datetime($user->last_login_at) : 'Never' }}</x-table.td>
+                    <x-table.td class="whitespace-nowrap text-subtle">{{ $user->last_login_at ? \App\Support\Format::datetime($user->last_login_at) : 'Never' }}</x-table.td>
                     <x-table.td align="right" class="whitespace-nowrap">
                         @can('users.edit')
                             <x-button variant="ghost" size="sm" :href="route('core.users.edit', $user)" icon="pencil">Edit</x-button>
@@ -58,7 +58,7 @@
         </x-table>
 
         @if ($users->hasPages())
-            <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $users->links() }}</div>
+            <div class="border-t border-line px-4 py-3">{{ $users->links() }}</div>
         @endif
     </x-card>
 </div>

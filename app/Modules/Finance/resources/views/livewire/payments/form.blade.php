@@ -28,7 +28,7 @@
                         <tr wire:key="o-{{ $key }}">
                             <x-table.td>{{ $item->payableLabel() }}</x-table.td>
                             <x-table.td align="right">@money($item->payableBalance())</x-table.td>
-                            <x-table.td align="right"><input type="number" step="0.01" min="0" wire:model="allocations.{{ $key }}" aria-label="Amount" class="w-32 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                            <x-table.td align="right"><input type="number" step="0.01" min="0" wire:model="allocations.{{ $key }}" aria-label="Amount" class="w-32 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                         </tr>
                     @endforeach
                 </x-table>

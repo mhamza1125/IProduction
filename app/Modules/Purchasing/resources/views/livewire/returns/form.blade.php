@@ -18,11 +18,11 @@
                         <x-table.td class="font-mono text-xs">{{ $b->lot->lot_number }}</x-table.td>
                         <x-table.td>{{ \Illuminate\Support\Str::headline($b->status) }} · {{ $b->location->name }}</x-table.td>
                         <x-table.td align="right">@qty($b->quantity) {{ $b->variant->item->stockUnit->symbol }}</x-table.td>
-                        <x-table.td align="right"><input type="number" step="any" min="0" wire:model="quantities.{{ $b->id }}" aria-label="Quantity to return" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">@error("quantities.{$b->id}") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror</x-table.td>
+                        <x-table.td align="right"><input type="number" step="any" min="0" wire:model="quantities.{{ $b->id }}" aria-label="Quantity to return" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface">@error("quantities.{$b->id}") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror</x-table.td>
                     </tr>
                 @endforeach
             </x-table>
-            @error('quantities') <p class="px-4 py-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            @error('quantities') <p class="px-4 py-2 text-sm text-danger">{{ $message }}</p> @enderror
             <x-slot:footer>
                 <x-button variant="secondary" :href="route('purchasing.receipts.show', $receipt)">Cancel</x-button>
                 <x-button type="submit">Save draft</x-button>

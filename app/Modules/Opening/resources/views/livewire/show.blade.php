@@ -16,14 +16,14 @@
 
     <div class="grid gap-6 xl:grid-cols-3">
         <x-card title="Preview" :padding="false" class="xl:col-span-2">
-            <div class="border-b border-zinc-200 px-4 py-2 dark:border-zinc-800"><x-checkbox wire:model.live="errorsOnly" label="Only rows with errors" /></div>
+            <div class="border-b border-line px-4 py-2"><x-checkbox wire:model.live="errorsOnly" label="Only rows with errors" /></div>
             <x-table empty="No rows.">
                 <x-slot:head><x-table.th>Row</x-table.th>@foreach ($columns as $c => $hint)<x-table.th>{{ str_replace('_', ' ', $c) }}</x-table.th>@endforeach<x-table.th>Check</x-table.th></x-slot:head>
                 @foreach ($rows as $r)
                     <tr wire:key="or-{{ $r->id }}" @class(['bg-red-50 dark:bg-red-500/10' => $r->errors])>
-                        <x-table.td class="text-xs text-zinc-500">{{ $r->row_number }}</x-table.td>
+                        <x-table.td class="text-xs text-subtle">{{ $r->row_number }}</x-table.td>
                         @foreach ($columns as $c => $hint)<x-table.td class="text-xs">{{ $r->data[$c] ?? '' }}</x-table.td>@endforeach
-                        <x-table.td class="text-xs">@if ($r->errors)<span class="text-red-700 dark:text-red-400">{{ implode(' ', $r->errors) }}</span>@else<span class="text-green-700">OK</span>@endif</x-table.td>
+                        <x-table.td class="text-xs">@if ($r->errors)<span class="text-danger">{{ implode(' ', $r->errors) }}</span>@else<span class="text-success">OK</span>@endif</x-table.td>
                     </tr>
                 @endforeach
             </x-table>
@@ -33,15 +33,15 @@
                 <form wire:submit="saveControls" class="grid gap-2">
                     @foreach ($controls as $cur => $amount)<x-input :label="$cur" type="number" step="any" wire:model="controls.{{ $cur }}" />@endforeach
                     <x-input label="Add currency (e.g. PKR, USD)" wire:model="newCurrency" maxlength="3" />
-                    @error('controls') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                    @error('controls') <p class="text-sm text-danger">{{ $message }}</p> @enderror
                     @can('opening.create') <x-button type="submit" size="sm" variant="secondary">Save control totals</x-button> @endcan
                 </form>
                 @if ($batch->totals)
-                    <dl class="mt-4 grid gap-1 border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
+                    <dl class="mt-4 grid gap-1 border-t border-line pt-3 text-sm">
                         @foreach ($batch->totals as $cur => $total)
                             @php($control = $batch->control_totals[$cur] ?? null)
                             <div class="flex justify-between"><dt>Imported {{ $cur }}</dt><dd class="tabular">@money($total)</dd></div>
-                            @if ($control !== null)<div @class(['flex justify-between', 'text-red-600 font-semibold' => \App\Support\Decimal::compare($control, $total) !== 0])><dt>Difference</dt><dd class="tabular">@money(\App\Support\Decimal::sub($total, $control))</dd></div>@endif
+                            @if ($control !== null)<div @class(['flex justify-between', 'text-danger font-semibold' => \App\Support\Decimal::compare($control, $total) !== 0])><dt>Difference</dt><dd class="tabular">@money(\App\Support\Decimal::sub($total, $control))</dd></div>@endif
                         @endforeach
                     </dl>
                 @endif

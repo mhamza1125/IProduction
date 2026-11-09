@@ -31,9 +31,9 @@
             <x-card title="Payments">
                 <ul class="space-y-1 text-sm">
                     @forelse ($payments as $p)
-                        <li class="flex justify-between"><a href="{{ route('finance.payments.show', $p->payment_id) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $p->payment->number }}</a><span>@money($p->amount)</span></li>
+                        <li class="flex justify-between"><a href="{{ route('finance.payments.show', $p->payment_id) }}" wire:navigate class="font-mono text-link hover:underline">{{ $p->payment->number }}</a><span>@money($p->amount)</span></li>
                     @empty
-                        <li class="text-zinc-500">No payments yet.</li>
+                        <li class="text-subtle">No payments yet.</li>
                     @endforelse
                 </ul>
             </x-card>

@@ -1,7 +1,7 @@
 <x-layouts::guest>
     <x-slot:heading>Confirm your password</x-slot:heading>
 
-    <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">This is a secure area. Please confirm your password to continue.</p>
+    <p class="mb-4 text-sm text-muted">This is a secure area. Please confirm your password to continue.</p>
 
     <form method="POST" action="{{ route('password.confirm.store') }}" class="space-y-4">
         @csrf

@@ -22,16 +22,16 @@
             @if ($n->isPosted())
                 <x-card title="Used against invoices">
                     <ul class="space-y-1 text-sm">
-                        @forelse ($allocations as $a)<li><a href="{{ route('delivery.invoices.show', $a->invoice) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $a->invoice->number }}</a> · @money($a->amount)</li>@empty<li class="text-zinc-500">Not used yet.</li>@endforelse
+                        @forelse ($allocations as $a)<li><a href="{{ route('delivery.invoices.show', $a->invoice) }}" wire:navigate class="font-mono text-link hover:underline">{{ $a->invoice->number }}</a> · @money($a->amount)</li>@empty<li class="text-subtle">Not used yet.</li>@endforelse
                     </ul>
                     <p class="mt-3 text-sm">Unused credit: <span class="font-semibold">@money($n->unallocated(), $n->currency_code)</span></p>
                 </x-card>
             @endif
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Customer"><a href="{{ route('people.customers.show', $n->customer_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $n->customer->label() }}</a></x-people::detail>
-                    @if ($n->invoice) <x-people::detail label="Invoice"><a href="{{ route('delivery.invoices.show', $n->invoice) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $n->invoice->number }}</a></x-people::detail> @endif
-                    @if ($n->deliveryReturn) <x-people::detail label="Return"><a href="{{ route('delivery.returns.show', $n->deliveryReturn) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $n->deliveryReturn->number }}</a></x-people::detail> @endif
+                    <x-people::detail label="Customer"><a href="{{ route('people.customers.show', $n->customer_id) }}" wire:navigate class="text-link hover:underline">{{ $n->customer->label() }}</a></x-people::detail>
+                    @if ($n->invoice) <x-people::detail label="Invoice"><a href="{{ route('delivery.invoices.show', $n->invoice) }}" wire:navigate class="font-mono text-link hover:underline">{{ $n->invoice->number }}</a></x-people::detail> @endif
+                    @if ($n->deliveryReturn) <x-people::detail label="Return"><a href="{{ route('delivery.returns.show', $n->deliveryReturn) }}" wire:navigate class="font-mono text-link hover:underline">{{ $n->deliveryReturn->number }}</a></x-people::detail> @endif
                     <x-people::detail label="Notes" :value="$n->notes" />
                 </dl>
             </x-card>

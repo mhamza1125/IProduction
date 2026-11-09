@@ -17,9 +17,9 @@
             @can('contractor_jobs.cancel') <x-button variant="ghost" x-on:click="ask = 'close'">Close job</x-button> @endcan
         @endif
         @if (! $job->isDraft())
-            @can('contractor_jobs.print') <a href="{{ route('production.jobs.print', $job) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"><x-icon name="printer" class="size-4" /> Print</a> @endcan
+            @can('contractor_jobs.print') <a href="{{ route('production.jobs.print', $job) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-muted hover:bg-hover"><x-icon name="printer" class="size-4" /> Print</a> @endcan
         @endif
-        <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-800/60">
+        <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-sunken p-3">
             <x-input label="Reason" wire:model="reason" class="min-w-64 flex-1" />
             <x-button x-show="ask === 'draft'" wire:click="returnToDraft" x-on:click="ask = null">Return to draft</x-button>
             <x-button x-show="ask === 'cancel'" variant="danger" wire:click="cancel" x-on:click="ask = null">Cancel job</x-button>
@@ -84,15 +84,15 @@
                     </x-table>
                     @if ($heldRows->isNotEmpty() && $job->isOpen())
                         @can('contractor_jobs.post')
-                            <div class="space-y-2 border-t border-zinc-200 p-4 dark:border-zinc-800">
+                            <div class="space-y-2 border-t border-line p-4">
                                 @foreach ($heldRows as $h)
                                     @php($key = $h['item_variant_id'].'-'.$h['lot_id'])
                                     <div wire:key="hr-{{ $key }}" class="flex flex-wrap items-end gap-2 text-sm">
                                         <span class="min-w-48">{{ $heldNames[$h['item_variant_id']]?->fullLabel() }} · lot {{ $h['lot_id'] }} · held @qty($h['quantity'])</span>
-                                        <input type="number" step="any" min="0" wire:model="held.{{ $key }}" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                        <input type="number" step="any" min="0" wire:model="held.{{ $key }}" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface">
                                         <x-button size="sm" variant="secondary" wire:click="settleHeld('{{ $key }}', 'return')">Return to store</x-button>
                                         <x-button size="sm" variant="ghost" wire:click="settleHeld('{{ $key }}', 'waste')">Wastage</x-button>
-                                        @error("held.$key") <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                        @error("held.$key") <span class="text-xs text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 @endforeach
                                 <x-input label="Reason (required for wastage)" wire:model="reason" class="max-w-md" />
@@ -122,8 +122,8 @@
         <div class="space-y-6">
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Contractor"><a href="{{ route('people.contractors.show', $job->contractor_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $job->contractor->name }}</a></x-people::detail>
-                    <x-people::detail label="Order line">@if ($job->orderLine)<a href="{{ route('sales.orders.show', $job->orderLine->sales_order_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $job->orderLine->order->number }}</a>@else — @endif</x-people::detail>
+                    <x-people::detail label="Contractor"><a href="{{ route('people.contractors.show', $job->contractor_id) }}" wire:navigate class="text-link hover:underline">{{ $job->contractor->name }}</a></x-people::detail>
+                    <x-people::detail label="Order line">@if ($job->orderLine)<a href="{{ route('sales.orders.show', $job->orderLine->sales_order_id) }}" wire:navigate class="text-link hover:underline">{{ $job->orderLine->order->number }}</a>@else — @endif</x-people::detail>
                     <x-people::detail label="Payment basis" :value="\Illuminate\Support\Str::headline($job->payment_basis)" />
                     <x-people::detail label="Notes" :value="$job->notes" />
                     @if ($job->close_reason) <x-people::detail label="Close reason" :value="$job->close_reason" /> @endif

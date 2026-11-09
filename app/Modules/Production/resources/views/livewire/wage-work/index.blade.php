@@ -14,10 +14,10 @@
     @endcan
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search employee, PTC…" dates :export="auth()->user()->can('wage_work.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
             </select>
-            @can('wage_work.approve') <input wire:model="reason" placeholder="Reason (to reject)" aria-label="Reason" class="rounded-md border-0 py-2 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"> @endcan
+            @can('wage_work.approve') <input wire:model="reason" placeholder="Reason (to reject)" aria-label="Reason" class="rounded-md border-0 py-2 text-sm ring-1 ring-inset ring-line-strong bg-surface"> @endcan
         </x-table.toolbar>
         <x-table empty="No wage work.">
             <x-slot:head>
@@ -31,7 +31,7 @@
                 <tr wire:key="ww-{{ $w->id }}">
                     <x-table.td>@date($w->work_date)</x-table.td>
                     <x-table.td>{{ $w->employee->name }}</x-table.td>
-                    <x-table.td class="text-xs">{{ $w->description }} @if ($w->ptc)<a href="{{ route('production.ptcs.show', $w->ptc) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $w->ptc->number }}</a>@endif {{ $w->stage?->name }}</x-table.td>
+                    <x-table.td class="text-xs">{{ $w->description }} @if ($w->ptc)<a href="{{ route('production.ptcs.show', $w->ptc) }}" wire:navigate class="font-mono text-link hover:underline">{{ $w->ptc->number }}</a>@endif {{ $w->stage?->name }}</x-table.td>
                     <x-table.td align="right">@qty($w->quantity)</x-table.td>
                     <x-table.td align="right">@qty($w->rejected_qty)@if ((float) $w->paid_rejected_qty)<div class="text-xs">paid @qty($w->paid_rejected_qty)</div>@endif</x-table.td>
                     @can('salary.view')<x-table.td align="right">@money($w->rate, null, 4)</x-table.td><x-table.td align="right">@money($w->amount)</x-table.td>@endcan
@@ -39,7 +39,7 @@
                     <x-table.td class="whitespace-nowrap">
                         @if ($w->status === 'pending')
                             @can('wage_work.approve')
-                                @can('wage_work.override') @if ((float) $w->rejected_qty)<input type="number" step="any" min="0" wire:model="paidRejected.{{ $w->id }}" placeholder="Pay rejected" aria-label="Rejected pieces to pay" class="w-24 rounded-md border-0 py-1 text-right text-xs ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">@endif @endcan
+                                @can('wage_work.override') @if ((float) $w->rejected_qty)<input type="number" step="any" min="0" wire:model="paidRejected.{{ $w->id }}" placeholder="Pay rejected" aria-label="Rejected pieces to pay" class="w-24 rounded-md border-0 py-1 text-right text-xs ring-1 ring-line-strong bg-surface">@endif @endcan
                                 <x-button size="sm" wire:click="approve({{ $w->id }})">Approve</x-button>
                                 <x-button size="sm" variant="ghost" wire:click="reject({{ $w->id }})">Reject</x-button>
                             @endcan
@@ -48,6 +48,6 @@
                 </tr>
             @endforeach
         </x-table>
-        @if ($rows->hasPages()) <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $rows->links() }}</div> @endif
+        @if ($rows->hasPages()) <div class="border-t border-line px-4 py-3">{{ $rows->links() }}</div> @endif
     </x-card>
 </div>

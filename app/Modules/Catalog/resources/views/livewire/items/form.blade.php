@@ -16,8 +16,8 @@
                     <x-checkbox wire:model="can_sell" label="Can be sold" />
                     <x-checkbox wire:model="track_by_lot" label="Track by lot" />
                 </div>
-                @error('can_buy') <p class="text-xs text-red-600 sm:col-span-2">{{ $message }}</p> @enderror
-                <p class="text-xs text-zinc-500 sm:col-span-2">An item can be both bought and made; whether to make or buy is decided when planning each order line.</p>
+                @error('can_buy') <p class="text-xs text-danger sm:col-span-2">{{ $message }}</p> @enderror
+                <p class="text-xs text-subtle sm:col-span-2">An item can be both bought and made; whether to make or buy is decided when planning each order line.</p>
             </div>
         </x-card>
 
@@ -27,7 +27,7 @@
                 <x-select label="Purchase unit" wire:model="purchase_unit_id" :options="$units" placeholder="Same as stock" />
                 <x-select label="Sales unit" wire:model="sales_unit_id" :options="$units" placeholder="Same as stock" />
             </div>
-            <p class="mt-2 text-xs text-zinc-500">Conversions between units are set in Settings › Units, or on this item after saving.</p>
+            <p class="mt-2 text-xs text-subtle">Conversions between units are set in Settings › Units, or on this item after saving.</p>
         </x-card>
 
         <x-card title="Prices and tax">
@@ -49,8 +49,8 @@
                 @elseif ($item?->image_path)
                     <img src="{{ Storage::disk('public')->url($item->image_path) }}" alt="" class="h-16 w-16 rounded object-cover">
                 @endif
-                <input type="file" wire:model="image" accept="image/*" class="text-sm text-zinc-600 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm dark:text-zinc-400 dark:file:bg-zinc-800">
-                @error('image') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                <input type="file" wire:model="image" accept="image/*" class="text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-hover file:px-3 file:py-1.5 file:text-sm">
+                @error('image') <p class="text-xs text-danger">{{ $message }}</p> @enderror
             </div>
         </x-card>
 

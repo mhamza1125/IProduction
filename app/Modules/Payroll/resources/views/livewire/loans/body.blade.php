@@ -7,7 +7,7 @@
 @if ($doc->isPosted())
     <x-card title="Installment changes" description="Reduce, skip (0) or increase one month's installment. The last installment never exceeds the balance.">
         <ul class="mb-4 space-y-1 text-sm">
-            @forelse ($changes as $c)<li>{{ $c->month->format('M Y') }}: @money($c->amount) · {{ $c->reason }}</li>@empty<li class="text-zinc-500">None.</li>@endforelse
+            @forelse ($changes as $c)<li>{{ $c->month->format('M Y') }}: @money($c->amount) · {{ $c->reason }}</li>@empty<li class="text-subtle">None.</li>@endforelse
         </ul>
         @can('loans.override')
             <form wire:submit="changeInstallment" class="flex flex-wrap items-end gap-3">

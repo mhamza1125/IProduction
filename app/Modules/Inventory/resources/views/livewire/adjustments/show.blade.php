@@ -22,10 +22,10 @@
                     @foreach ($lines as $l)
                         <tr wire:key="l-{{ $l->id }}">
                             <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
-                            <x-table.td class="text-xs text-zinc-500">{{ collect([$l->location->name, $l->stage?->name, $statuses[$l->status]])->filter()->implode(' · ') }}</x-table.td>
+                            <x-table.td class="text-xs text-subtle">{{ collect([$l->location->name, $l->stage?->name, $statuses[$l->status]])->filter()->implode(' · ') }}</x-table.td>
                             <x-table.td class="font-mono text-xs">{{ $l->lot?->lot_number ?? ((float) $l->quantity > 0 ? 'new lot' : 'oldest first') }}</x-table.td>
                             @if ($adjustment->from_count) <x-table.td align="right">@qty($l->system_quantity)</x-table.td><x-table.td align="right">@qty($l->counted_quantity)</x-table.td> @endif
-                            <x-table.td align="right" @class(['font-semibold', 'text-green-700' => (float) $l->quantity > 0, 'text-red-700' => (float) $l->quantity < 0])>{{ (float) $l->quantity > 0 ? '+' : '' }}@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td>
+                            <x-table.td align="right" @class(['font-semibold', 'text-success' => (float) $l->quantity > 0, 'text-danger' => (float) $l->quantity < 0])>{{ (float) $l->quantity > 0 ? '+' : '' }}@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td>
                             @can('cost.view') <x-table.td align="right">@money($l->unit_cost, null, 4)</x-table.td> @endcan
                         </tr>
                     @endforeach
@@ -37,7 +37,7 @@
                     <x-table>
                         <x-slot:head><x-table.th>Lot</x-table.th><x-table.th>Location</x-table.th><x-table.th align="right">In</x-table.th><x-table.th align="right">Out</x-table.th></x-slot:head>
                         @foreach ($movements as $m)
-                            <tr><x-table.td class="font-mono text-xs"><a href="{{ route('inventory.lots.show', $m->lot_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $m->lot->lot_number }}</a></x-table.td><x-table.td>{{ $m->location->name }}</x-table.td><x-table.td align="right">{{ (float) $m->qty_in ? \App\Support\Format::qty($m->qty_in) : '' }}</x-table.td><x-table.td align="right">{{ (float) $m->qty_out ? \App\Support\Format::qty($m->qty_out) : '' }}</x-table.td></tr>
+                            <tr><x-table.td class="font-mono text-xs"><a href="{{ route('inventory.lots.show', $m->lot_id) }}" wire:navigate class="text-link hover:underline">{{ $m->lot->lot_number }}</a></x-table.td><x-table.td>{{ $m->location->name }}</x-table.td><x-table.td align="right">{{ (float) $m->qty_in ? \App\Support\Format::qty($m->qty_in) : '' }}</x-table.td><x-table.td align="right">{{ (float) $m->qty_out ? \App\Support\Format::qty($m->qty_out) : '' }}</x-table.td></tr>
                         @endforeach
                     </x-table>
                 </x-card>

@@ -22,7 +22,7 @@
                 <x-textarea label="Billing address" wire:model="billing_address" rows="3" />
                 <div>
                     <x-textarea label="Shipping address" wire:model="shipping_address" rows="3" />
-                    <button type="button" wire:click="copyBillingToShipping" class="mt-1 text-xs text-brand-600 hover:underline">Same as billing</button>
+                    <button type="button" wire:click="copyBillingToShipping" class="mt-1 text-xs text-link hover:underline">Same as billing</button>
                 </div>
             </div>
         </x-card>

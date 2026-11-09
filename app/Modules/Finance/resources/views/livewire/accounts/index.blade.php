@@ -14,9 +14,9 @@
             </x-slot:head>
             @foreach ($accounts as $a)
                 <tr wire:key="ma-{{ $a->id }}">
-                    <x-table.td class="font-medium">{{ $a->name }} @if ($a->system_key)<x-badge color="blue">Permanent</x-badge>@endif <div class="font-mono text-xs text-zinc-500">{{ $a->glAccount->code }}</div></x-table.td>
+                    <x-table.td class="font-medium">{{ $a->name }} @if ($a->system_key)<x-badge color="blue">Permanent</x-badge>@endif <div class="font-mono text-xs text-subtle">{{ $a->glAccount->code }}</div></x-table.td>
                     <x-table.td>{{ $types[$a->type] }}</x-table.td>
-                    <x-table.td class="text-xs text-zinc-500">{{ collect([$a->bank_name, $a->branch, $a->account_number, $a->iban])->filter()->implode(' · ') }}</x-table.td>
+                    <x-table.td class="text-xs text-subtle">{{ collect([$a->bank_name, $a->branch, $a->account_number, $a->iban])->filter()->implode(' · ') }}</x-table.td>
                     <x-table.td class="font-mono">{{ $a->currency_code }}</x-table.td>
                     @if ($canSeeBalance) <x-table.td align="right" class="font-semibold">@money($balances[$a->id], $a->currency_code)</x-table.td> @endif
                     <x-table.td><x-status :status="$a->is_active ? 'active' : 'inactive'" /></x-table.td>

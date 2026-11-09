@@ -24,13 +24,13 @@
                         <x-table.td align="right">@qty($l->billed_qty)</x-table.td>
                         <x-table.td align="right">@money($l->rate, null, 4)</x-table.td>
                         <x-table.td align="right">
-                            <input type="number" step="any" min="0" wire:model="quantities.{{ $l->id }}" aria-label="Quantity to bill" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
-                            @error("quantities.{$l->id}") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            <input type="number" step="any" min="0" wire:model="quantities.{{ $l->id }}" aria-label="Quantity to bill" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface">
+                            @error("quantities.{$l->id}") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                         </x-table.td>
                     </tr>
                 @endforeach
             </x-table>
-            @error('quantities') <p class="px-4 py-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            @error('quantities') <p class="px-4 py-2 text-sm text-danger">{{ $message }}</p> @enderror
             <x-slot:footer>
                 <x-button variant="secondary" :href="$bill ? route('purchasing.bills.show', $bill) : route('purchasing.bills.index')">Cancel</x-button>
                 <x-button type="submit">Save draft</x-button>

@@ -13,20 +13,20 @@
                 <x-input label="Confirm password" type="password" wire:model="password_confirmation" :required="! $user" autocomplete="new-password" />
 
                 <div class="sm:col-span-2">
-                    <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">Roles</p>
+                    <p class="mb-2 text-sm font-medium text-muted">Roles</p>
                     <div class="grid gap-2 sm:grid-cols-2">
                         @forelse ($allRoles as $role)
                             <x-checkbox wire:model="roles" value="{{ $role }}" :label="$role" />
                         @empty
-                            <p class="text-sm text-zinc-500">No roles yet. <a href="{{ route('core.roles.create') }}" class="text-brand-600 hover:underline">Create one</a>.</p>
+                            <p class="text-sm text-subtle">No roles yet. <a href="{{ route('core.roles.create') }}" class="text-link hover:underline">Create one</a>.</p>
                         @endforelse
                     </div>
-                    @error('roles') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    @error('roles') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="sm:col-span-2">
                     <x-checkbox wire:model="is_active" label="Active" help="Inactive users cannot sign in." />
-                    @error('is_active') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    @error('is_active') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
             </div>
 

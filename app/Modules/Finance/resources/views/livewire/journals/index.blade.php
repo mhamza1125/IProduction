@@ -11,7 +11,7 @@
             @foreach ($journals as $j)
                 <tr wire:key="j-{{ $j->id }}">
                     <x-table.td>@date($j->journal_date)</x-table.td>
-                    <x-table.td class="font-mono"><a href="{{ route('finance.journals.show', $j) }}" wire:navigate class="text-brand-600 hover:underline">{{ $j->number }}</a> @if ($j->reverses_journal_id)<x-badge color="amber">reversal</x-badge>@endif</x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('finance.journals.show', $j) }}" wire:navigate class="text-link hover:underline">{{ $j->number }}</a> @if ($j->reverses_journal_id)<x-badge color="amber">reversal</x-badge>@endif</x-table.td>
                     <x-table.td>{{ $j->description }}</x-table.td>
                     <x-table.td class="font-mono">{{ $j->currency_code }}</x-table.td>
                     <x-table.td align="right">@money($j->lines_sum_debit)</x-table.td>
@@ -19,7 +19,7 @@
             @endforeach
         </x-table>
         @if ($journals->hasPages())
-            <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $journals->links() }}</div>
+            <div class="border-t border-line px-4 py-3">{{ $journals->links() }}</div>
         @endif
     </x-card>
 </div>

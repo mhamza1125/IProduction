@@ -16,17 +16,17 @@
                     <x-slot:head><x-table.th>Invoice</x-table.th><x-table.th>Delivery · order</x-table.th><x-table.th>Item</x-table.th><x-table.th align="right">Qty</x-table.th><x-table.th align="right">Unit price</x-table.th><x-table.th align="right">Discount</x-table.th><x-table.th align="right">Tax %</x-table.th></x-slot:head>
                     @foreach ($available as $dl)
                         <tr wire:key="il-{{ $dl->id }}">
-                            <x-table.td><input type="checkbox" wire:model="lines.{{ $dl->id }}.selected" aria-label="Invoice this line" class="size-4 rounded border-zinc-300 text-brand-600"></x-table.td>
+                            <x-table.td><input type="checkbox" wire:model="lines.{{ $dl->id }}.selected" aria-label="Invoice this line" class="size-4 rounded border-line-strong text-link"></x-table.td>
                             <x-table.td class="font-mono text-xs">{{ $dl->delivery->number }} · {{ $dl->orderLine->order->number }}</x-table.td>
                             <x-table.td>{{ $dl->variant->fullLabel() }}</x-table.td>
                             <x-table.td align="right">@qty(\App\Support\Decimal::sub($dl->quantity, $dl->returned_qty, 4))</x-table.td>
-                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="lines.{{ $dl->id }}.unit_price" @disabled(! $canChangePrice) aria-label="Unit price" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 disabled:bg-zinc-50 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
-                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="lines.{{ $dl->id }}.discount" aria-label="Discount" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
-                            <x-table.td align="right"><input type="number" step="any" min="0" max="100" wire:model="lines.{{ $dl->id }}.tax_rate" placeholder="none" aria-label="Tax rate" class="w-20 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="lines.{{ $dl->id }}.unit_price" @disabled(! $canChangePrice) aria-label="Unit price" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong disabled:bg-hover bg-surface"></x-table.td>
+                            <x-table.td align="right"><input type="number" step="any" min="0" wire:model="lines.{{ $dl->id }}.discount" aria-label="Discount" class="w-24 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
+                            <x-table.td align="right"><input type="number" step="any" min="0" max="100" wire:model="lines.{{ $dl->id }}.tax_rate" placeholder="none" aria-label="Tax rate" class="w-20 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                         </tr>
                     @endforeach
                 </x-table>
-                @error('lines') <p class="border-t border-zinc-200 px-4 py-3 text-sm text-red-600 dark:border-zinc-800">{{ $message }}</p> @enderror
+                @error('lines') <p class="border-t border-line px-4 py-3 text-sm text-danger">{{ $message }}</p> @enderror
             </x-card>
         @endif
         <div class="flex justify-end gap-2">

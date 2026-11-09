@@ -14,7 +14,7 @@
                         <x-table.td>{{ $type->label }}</x-table.td>
                         <x-table.td align="center">
                             <input type="checkbox" wire:model="required.{{ $key }}" aria-label="{{ $type->label }} requires approval"
-                                   class="size-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-600 dark:border-zinc-600 dark:bg-zinc-900">
+                                   class="size-4 rounded border-line-strong text-brand-600 focus:ring-brand-600 bg-surface">
                         </x-table.td>
                     </tr>
                 @endforeach

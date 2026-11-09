@@ -11,7 +11,7 @@
                 <x-input label="Deductions (PKR)" type="number" step="any" min="0" wire:model.blur="deductions" />
                 <x-select label="Deduction head" wire:model="deduction_account_id" :options="$heads" placeholder="Bank charges" />
                 <x-input label="Reference" wire:model="reference" />
-                <div class="text-sm"><span class="block font-medium text-zinc-700 dark:text-zinc-300">Effective rate (information)</span><span class="mt-2 block text-lg font-semibold tabular">{{ $rate ?? '—' }}</span></div>
+                <div class="text-sm"><span class="block font-medium text-muted">Effective rate (information)</span><span class="mt-2 block text-lg font-semibold tabular">{{ $rate ?? '—' }}</span></div>
                 <x-textarea label="Notes" wire:model="notes" rows="2" class="lg:col-span-3" />
             </div>
             <div class="mt-6 flex justify-end gap-2">

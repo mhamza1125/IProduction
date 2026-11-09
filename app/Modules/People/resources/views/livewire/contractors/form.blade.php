@@ -11,13 +11,13 @@
                 <x-input label="Phone" wire:model="phone" />
                 <x-textarea label="Address" wire:model="address" rows="2" class="sm:col-span-2" />
                 <div class="sm:col-span-2">
-                    <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">Work types</p>
+                    <p class="mb-2 text-sm font-medium text-muted">Work types</p>
                     <div class="flex flex-wrap gap-x-5 gap-y-2">
                         @foreach ($stages as $stage)
                             <x-checkbox wire:model="work_types" value="{{ $stage }}" :label="$stage" />
                         @endforeach
                     </div>
-                    @error('work_types.*') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    @error('work_types.*') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
                 @unless ($contractor)
                     <x-select label="Same business as vendor" wire:model="linked_vendor_id" :options="$vendors" placeholder="Not a vendor"

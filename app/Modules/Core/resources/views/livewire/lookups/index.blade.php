@@ -11,8 +11,8 @@
                 <button type="button" wire:click="$set('type', '{{ $key }}')"
                         @class([
                             'whitespace-nowrap rounded-md px-3 py-2 text-left text-sm font-medium',
-                            'bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700' => $type === $key,
-                            'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800' => $type !== $key,
+                            'bg-raised text-fg shadow-sm ring-1 ring-line' => $type === $key,
+                            'text-muted hover:bg-hover' => $type !== $key,
                         ])>{{ $label }}</button>
             @endforeach
         </nav>

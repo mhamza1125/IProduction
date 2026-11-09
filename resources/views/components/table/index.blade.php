@@ -9,16 +9,16 @@
 @props(['head' => null, 'empty' => 'Nothing found.'])
 
 <div {{ $attributes->merge(['class' => 'relative overflow-x-auto']) }}>
-    <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+    <table class="min-w-full divide-y divide-line text-sm">
         @if ($head)
-            <thead class="bg-zinc-50 dark:bg-zinc-900/60">
+            <thead class="bg-sunken">
                 <tr>{{ $head }}</tr>
             </thead>
         @endif
-        <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+        <tbody class="divide-y divide-line bg-surface">
             @if (trim($slot) === '')
                 <tr>
-                    <td colspan="100" class="px-4 py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">{{ $empty }}</td>
+                    <td colspan="100" class="px-4 py-10 text-center text-sm text-subtle">{{ $empty }}</td>
                 </tr>
             @else
                 {{ $slot }}

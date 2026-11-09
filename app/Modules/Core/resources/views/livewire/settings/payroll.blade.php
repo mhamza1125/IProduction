@@ -10,7 +10,7 @@
                 <x-checkbox wire:model="deduct_unpaid_days" label="Deduct unpaid leave days" help="Unpaid days × daily rate." class="sm:col-span-2" />
                 <x-checkbox wire:model="deduct_late_hours" label="Deduct late hours" help="Late hours × hourly rate." class="sm:col-span-2" />
                 <x-input label="Overtime multiplier" type="number" step="0.05" min="0" max="5" wire:model="overtime_multiplier" required help="Overtime = hours × hourly rate × this (1 = normal rate, 0 = not paid). Salaried employees only." />
-                <p class="text-xs text-zinc-500 sm:col-span-2">Paid leave is never deducted. Calculated deductions can be edited on a draft payroll by users with permission, with a reason.</p>
+                <p class="text-xs text-subtle sm:col-span-2">Paid leave is never deducted. Calculated deductions can be edited on a draft payroll by users with permission, with a reason.</p>
             </div>
             @can('settings.edit')
                 <x-slot:footer><x-button type="submit">Save</x-button></x-slot:footer>

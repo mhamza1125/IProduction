@@ -2,9 +2,9 @@
 
 <div {{ $attributes->merge(['class' => 'mb-6 flex flex-wrap items-end justify-between gap-4']) }}>
     <div class="min-w-0">
-        <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $title }}</h1>
+        <h1 class="text-xl font-semibold text-fg">{{ $title }}</h1>
         @if ($description)
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ $description }}</p>
+            <p class="mt-1 text-sm text-subtle">{{ $description }}</p>
         @endif
     </div>
     @if (trim($slot) !== '')

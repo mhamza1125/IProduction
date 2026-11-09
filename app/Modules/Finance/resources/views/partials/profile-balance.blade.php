@@ -13,12 +13,12 @@
     @php($balance = app(\App\Modules\Finance\Services\Ledgers::class)->partyBalance($profile))
     <x-card title="Balance">
         <p class="text-2xl font-semibold tabular">@money(ltrim($balance, '-'), $currency)</p>
-        <p class="text-xs text-zinc-500">
+        <p class="text-xs text-subtle">
             @if (\App\Support\Decimal::isZero($balance)) Settled
             @elseif (\App\Support\Decimal::isNegative($balance)) We owe them (credit)
             @else They owe us (debit)
             @endif
         </p>
-        <a href="{{ route('finance.ledgers', ['type' => $ledgerType, 'id' => $profile->id]) }}" wire:navigate class="mt-2 inline-block text-sm text-brand-600 hover:underline">Open ledger</a>
+        <a href="{{ route('finance.ledgers', ['type' => $ledgerType, 'id' => $profile->id]) }}" wire:navigate class="mt-2 inline-block text-sm text-link hover:underline">Open ledger</a>
     </x-card>
 @endif

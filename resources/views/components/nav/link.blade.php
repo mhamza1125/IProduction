@@ -2,10 +2,10 @@
 
 <a href="{{ $href }}" wire:navigate @if ($active) aria-current="page" @endif
    {{ $attributes->class([
-       'group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition',
-       'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' => $active,
-       'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100' => ! $active,
+       'group relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+       'bg-selected font-semibold text-selected-fg before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-primary' => $active,
+       'font-medium text-muted hover:bg-hover hover:text-fg' => ! $active,
    ]) }}>
-    <x-icon :name="$icon" @class(['size-5', 'text-brand-600 dark:text-brand-500' => $active, 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300' => ! $active]) />
+    <x-icon :name="$icon" @class(['size-5', 'text-selected-fg' => $active, 'text-subtle group-hover:text-fg' => ! $active]) />
     <span class="truncate">{{ $slot }}</span>
 </a>

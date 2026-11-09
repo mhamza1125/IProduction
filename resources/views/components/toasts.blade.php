@@ -21,12 +21,12 @@
     <template x-for="toast in toasts" :key="toast.id">
         <div
             x-transition
-            class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg bg-white p-3 text-sm shadow-lg ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700"
+            class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg bg-raised p-3 text-sm shadow-lg ring-1 ring-line-strong/40"
         >
-            <span x-show="toast.type !== 'error'" class="text-green-600"><x-icon name="check" class="size-5" /></span>
-            <span x-show="toast.type === 'error'" class="text-red-600"><x-icon name="exclamation" class="size-5" /></span>
-            <p class="flex-1 text-zinc-800 dark:text-zinc-100" x-text="toast.message"></p>
-            <button type="button" x-on:click="remove(toast.id)" class="text-zinc-400 hover:text-zinc-600">
+            <span x-show="toast.type !== 'error'" class="text-success"><x-icon name="check" class="size-5" /></span>
+            <span x-show="toast.type === 'error'" class="text-danger"><x-icon name="exclamation" class="size-5" /></span>
+            <p class="flex-1 text-fg" x-text="toast.message"></p>
+            <button type="button" x-on:click="remove(toast.id)" class="text-subtle hover:text-fg">
                 <x-icon name="x" class="size-4" /><span class="sr-only">Dismiss</span>
             </button>
         </div>

@@ -25,10 +25,10 @@
                             <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
                             <x-table.td align="right">@qty($l->received_qty) {{ $l->orderLine->unit->symbol }}</x-table.td>
                             <x-table.td align="right">@qty($l->accepted_qty)</x-table.td>
-                            <x-table.td align="right">@qty($l->rejected_qty) @if ((float) $l->rejected_qty)<div class="text-xs text-zinc-500">{{ $l->rejected_action === 'keep' ? 'kept' : 'returned' }} · {{ $l->rejectReason?->name }}</div>@endif</x-table.td>
-                            <x-table.td class="text-xs">{{ $l->over_receipt_action ? \App\Modules\Purchasing\Models\GoodsReceiptLine::OVER_RECEIPT_ACTIONS[$l->over_receipt_action] : '' }} @if ((float) $l->extra_qty)<div class="text-zinc-500">extra @qty($l->extra_qty)</div>@endif</x-table.td>
+                            <x-table.td align="right">@qty($l->rejected_qty) @if ((float) $l->rejected_qty)<div class="text-xs text-subtle">{{ $l->rejected_action === 'keep' ? 'kept' : 'returned' }} · {{ $l->rejectReason?->name }}</div>@endif</x-table.td>
+                            <x-table.td class="text-xs">{{ $l->over_receipt_action ? \App\Modules\Purchasing\Models\GoodsReceiptLine::OVER_RECEIPT_ACTIONS[$l->over_receipt_action] : '' }} @if ((float) $l->extra_qty)<div class="text-subtle">extra @qty($l->extra_qty)</div>@endif</x-table.td>
                             <x-table.td class="text-xs">{{ $l->location->name }}@if ($l->stage) · {{ $l->stage->name }}@endif</x-table.td>
-                            <x-table.td class="font-mono text-xs">@if ($l->lot)<a href="{{ route('inventory.lots.show', $l->lot) }}" wire:navigate class="text-brand-600 hover:underline">{{ $l->lot->lot_number }}</a>@endif</x-table.td>
+                            <x-table.td class="font-mono text-xs">@if ($l->lot)<a href="{{ route('inventory.lots.show', $l->lot) }}" wire:navigate class="text-link hover:underline">{{ $l->lot->lot_number }}</a>@endif</x-table.td>
                             @can('cost.view') <x-table.td align="right">@money($l->value)</x-table.td> @endcan
                         </tr>
                     @endforeach
@@ -39,9 +39,9 @@
         <div class="space-y-6">
             <x-card title="Linked documents">
                 <ul class="space-y-1 text-sm">
-                    <li><a href="{{ route('purchasing.orders.show', $receipt->purchase_order_id) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $receipt->order->number }}</a> purchase order</li>
-                    @foreach ($bills as $b) <li><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $b->number }}</a> <x-status :status="$b->status" /></li> @endforeach
-                    @foreach ($returns as $r) <li><a href="{{ route('purchasing.returns.show', $r) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
+                    <li><a href="{{ route('purchasing.orders.show', $receipt->purchase_order_id) }}" wire:navigate class="font-mono text-link hover:underline">{{ $receipt->order->number }}</a> purchase order</li>
+                    @foreach ($bills as $b) <li><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="font-mono text-link hover:underline">{{ $b->number }}</a> <x-status :status="$b->status" /></li> @endforeach
+                    @foreach ($returns as $r) <li><a href="{{ route('purchasing.returns.show', $r) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
                 </ul>
             </x-card>
             <x-card title="Notes"><livewire:core::shared.notes :model="$receipt" :key="'n-'.$receipt->id" /></x-card>

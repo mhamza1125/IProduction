@@ -7,16 +7,16 @@
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none';
+    $base = 'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:pointer-events-none';
     $sizes = [
         'sm' => 'px-2.5 py-1.5 text-xs',
         'md' => 'px-3.5 py-2 text-sm',
     ];
     $variants = [
-        'primary' => 'bg-brand-600 text-white shadow-sm hover:bg-brand-700',
-        'secondary' => 'bg-white text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700 dark:hover:bg-zinc-700',
+        'primary' => 'bg-primary text-white shadow-sm hover:bg-primary-hover',
+        'secondary' => 'bg-raised text-fg shadow-sm ring-1 ring-inset ring-line-strong/60 hover:bg-hover',
         'danger' => 'bg-red-600 text-white shadow-sm hover:bg-red-700',
-        'ghost' => 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
+        'ghost' => 'text-muted hover:bg-hover hover:text-fg',
     ];
     $classes = $base.' '.($sizes[$size] ?? $sizes['md']).' '.($variants[$variant] ?? $variants['primary']);
 @endphp

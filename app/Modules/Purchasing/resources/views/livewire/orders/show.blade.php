@@ -22,10 +22,10 @@
             @can('purchase_orders.cancel') <x-button variant="ghost" x-on:click="ask = 'short'">Close short</x-button> @endcan
         @endif
         @if (! $order->isDraft())
-            @can('purchase_orders.print') <a href="{{ route('purchasing.orders.print', $order) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"><x-icon name="printer" class="size-4" /> Print</a> @endcan
+            @can('purchase_orders.print') <a href="{{ route('purchasing.orders.print', $order) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-muted hover:bg-hover"><x-icon name="printer" class="size-4" /> Print</a> @endcan
         @endif
 
-        <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-800/60">
+        <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-sunken p-3">
             <x-input label="Reason" wire:model="reason" class="min-w-64 flex-1" />
             <x-button x-show="ask === 'cancel'" variant="danger" wire:click="cancel" x-on:click="ask = null">Cancel order</x-button>
             <x-button x-show="ask === 'short'" variant="danger" wire:click="closeShort" x-on:click="ask = null">Close remaining short</x-button>
@@ -45,7 +45,7 @@
                     </x-slot:head>
                     @foreach ($lines as $l)
                         <tr wire:key="l-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }} @if ($l->stage)<x-badge>{{ $l->stage->name }}</x-badge>@endif @if ($l->description)<div class="text-xs text-zinc-500">{{ $l->description }}</div>@endif</x-table.td>
+                            <x-table.td>{{ $l->variant->fullLabel() }} @if ($l->stage)<x-badge>{{ $l->stage->name }}</x-badge>@endif @if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($l->quantity) {{ $l->unit->symbol }}</x-table.td>
                             <x-table.td align="right">@money($l->rate, null, 4)</x-table.td>
                             <x-table.td align="right">@money($l->amount)</x-table.td>
@@ -54,7 +54,7 @@
                             <x-table.td align="right">@qty($l->rejected_qty)</x-table.td>
                             <x-table.td align="right">@qty($l->returned_qty)</x-table.td>
                             <x-table.td align="right">@qty($l->billed_qty)</x-table.td>
-                            <x-table.td align="right" class="font-semibold">@qty($l->outstanding()) @if ((float) $l->closed_short_qty)<div class="text-xs font-normal text-zinc-500">closed @qty($l->closed_short_qty)</div>@endif</x-table.td>
+                            <x-table.td align="right" class="font-semibold">@qty($l->outstanding()) @if ((float) $l->closed_short_qty)<div class="text-xs font-normal text-subtle">closed @qty($l->closed_short_qty)</div>@endif</x-table.td>
                         </tr>
                     @endforeach
                     <tr class="font-semibold"><x-table.td colspan="3">Total PKR</x-table.td><x-table.td align="right">@money($order->total)</x-table.td><x-table.td colspan="6"></x-table.td></tr>
@@ -65,7 +65,7 @@
         <div class="space-y-6">
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Vendor"><a href="{{ route('people.vendors.show', $order->vendor_id) }}" wire:navigate class="text-brand-600 hover:underline">{{ $order->vendor->label() }}</a></x-people::detail>
+                    <x-people::detail label="Vendor"><a href="{{ route('people.vendors.show', $order->vendor_id) }}" wire:navigate class="text-link hover:underline">{{ $order->vendor->label() }}</a></x-people::detail>
                     <x-people::detail label="Expected" :value="\App\Support\Format::date($order->expected_date)" />
                     <x-people::detail label="Payment terms" :value="$order->payment_terms" />
                     <x-people::detail label="Notes" :value="$order->notes" />
@@ -74,10 +74,10 @@
             </x-card>
             <x-card title="Linked documents">
                 <ul class="space-y-1 text-sm">
-                    @foreach ($receipts as $r) <li><a href="{{ route('purchasing.receipts.show', $r) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
-                    @foreach ($bills as $b) <li><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $b->number }}</a> <x-status :status="$b->status" /></li> @endforeach
-                    @foreach ($returns as $r) <li><a href="{{ route('purchasing.returns.show', $r) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
-                    @if ($receipts->isEmpty()) <li class="text-zinc-500">None yet.</li> @endif
+                    @foreach ($receipts as $r) <li><a href="{{ route('purchasing.receipts.show', $r) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
+                    @foreach ($bills as $b) <li><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="font-mono text-link hover:underline">{{ $b->number }}</a> <x-status :status="$b->status" /></li> @endforeach
+                    @foreach ($returns as $r) <li><a href="{{ route('purchasing.returns.show', $r) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->number }}</a> <x-status :status="$r->status" /></li> @endforeach
+                    @if ($receipts->isEmpty()) <li class="text-subtle">None yet.</li> @endif
                 </ul>
             </x-card>
             <x-card title="Notes"><livewire:core::shared.notes :model="$order" :key="'n-'.$order->id" /></x-card>

@@ -17,7 +17,7 @@
         @includeIf('purchasing::partials.vendor-summary', ['vendor' => $vendor])
         @if ($linkedContractor)
             <x-card title="Also a contractor">
-                <a href="{{ route('people.contractors.show', $linkedContractor) }}" wire:navigate class="text-sm text-brand-600 hover:underline">{{ $linkedContractor->label() }}</a>
+                <a href="{{ route('people.contractors.show', $linkedContractor) }}" wire:navigate class="text-sm text-link hover:underline">{{ $linkedContractor->label() }}</a>
             </x-card>
         @endif
     </x-slot:side>

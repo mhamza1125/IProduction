@@ -4,9 +4,9 @@
     <x-card title="Purchasing (PKR)">
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             @foreach ($summary as $label => $value)
-                <dt class="text-zinc-500">{{ $label }}</dt><dd class="text-right tabular">@money($value)</dd>
+                <dt class="text-subtle">{{ $label }}</dt><dd class="text-right tabular">@money($value)</dd>
             @endforeach
         </dl>
-        <a href="{{ route('purchasing.orders.index', ['q' => $vendor->name]) }}" wire:navigate class="mt-2 inline-block text-sm text-brand-600 hover:underline">Purchase orders</a>
+        <a href="{{ route('purchasing.orders.index', ['q' => $vendor->name]) }}" wire:navigate class="mt-2 inline-block text-sm text-link hover:underline">Purchase orders</a>
     </x-card>
 @endcan

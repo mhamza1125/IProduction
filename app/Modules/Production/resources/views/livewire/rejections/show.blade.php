@@ -23,7 +23,7 @@
                         </tr>
                     @endforeach
                 </x-table>
-                @can('rejections.cancel') <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-input label="Reason for cancelling a decision" wire:model="cancel_reason" class="max-w-md" /></div> @endcan
+                @can('rejections.cancel') <div class="border-t border-line p-3"><x-input label="Reason for cancelling a decision" wire:model="cancel_reason" class="max-w-md" /></div> @endcan
             </x-card>
 
             @can('rejections.create')
@@ -50,8 +50,8 @@
             <x-card title="Details">
                 <dl class="grid gap-3">
                     <x-people::detail label="Date" :value="\App\Support\Format::date($rejection->rejection_date)" />
-                    <x-people::detail label="Source">@if ($rejection->ptc)<a href="{{ route('production.ptcs.show', $rejection->ptc) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $rejection->ptc->number }}</a>@elseif ($rejection->job)<a href="{{ route('production.jobs.show', $rejection->job) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $rejection->job->number }}</a>@else Store @endif</x-people::detail>
-                    <x-people::detail label="Lot"><a href="{{ route('inventory.lots.show', $rejection->lot) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $rejection->lot->lot_number }}</a></x-people::detail>
+                    <x-people::detail label="Source">@if ($rejection->ptc)<a href="{{ route('production.ptcs.show', $rejection->ptc) }}" wire:navigate class="font-mono text-link hover:underline">{{ $rejection->ptc->number }}</a>@elseif ($rejection->job)<a href="{{ route('production.jobs.show', $rejection->job) }}" wire:navigate class="font-mono text-link hover:underline">{{ $rejection->job->number }}</a>@else Store @endif</x-people::detail>
+                    <x-people::detail label="Lot"><a href="{{ route('inventory.lots.show', $rejection->lot) }}" wire:navigate class="font-mono text-link hover:underline">{{ $rejection->lot->lot_number }}</a></x-people::detail>
                     <x-people::detail label="Location" :value="$rejection->location->name" />
                     <x-people::detail label="Found by" :value="$rejection->found_by" />
                     <x-people::detail label="Responsible" :value="$rejection->responsible?->name" />

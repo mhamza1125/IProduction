@@ -2,7 +2,7 @@
     <x-page-header title="Goods receipts" description="What actually arrived. Create a receipt from an open purchase order." />
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search number, PO, vendor, delivery note…" dates :export="auth()->user()->can('goods_receipts.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All statuses</option>
                 @foreach (\App\Support\Documents\DocumentStatus::LABELS as $k => $v) <option value="{{ $k }}">{{ $v }}</option> @endforeach
             </select>
@@ -15,7 +15,7 @@
             </x-slot:head>
             @foreach ($receipts as $r)
                 <tr wire:key="r-{{ $r->id }}">
-                    <x-table.td class="font-mono"><a href="{{ route('purchasing.receipts.show', $r) }}" wire:navigate class="text-brand-600 hover:underline">{{ $r->number }}</a></x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('purchasing.receipts.show', $r) }}" wire:navigate class="text-link hover:underline">{{ $r->number }}</a></x-table.td>
                     <x-table.td>@date($r->receipt_date)</x-table.td>
                     <x-table.td class="font-mono text-xs">{{ $r->order->number }}</x-table.td>
                     <x-table.td>{{ $r->vendor->name }}</x-table.td>
@@ -25,6 +25,6 @@
                 </tr>
             @endforeach
         </x-table>
-        @if ($receipts->hasPages()) <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $receipts->links() }}</div> @endif
+        @if ($receipts->hasPages()) <div class="border-t border-line px-4 py-3">{{ $receipts->links() }}</div> @endif
     </x-card>
 </div>

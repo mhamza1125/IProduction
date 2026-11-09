@@ -18,7 +18,7 @@
 
             @foreach ($currencies as $currency)
                 <tr wire:key="currency-{{ $currency->id }}">
-                    <x-table.td class="font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                    <x-table.td class="font-mono font-medium text-fg">
                         {{ $currency->code }}
                         @if ($currency->is_base) <x-badge color="blue" class="ml-1">Base</x-badge> @endif
                     </x-table.td>

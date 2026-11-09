@@ -17,7 +17,7 @@
                                     <x-table.td>{{ $kind === 'loss' ? ucfirst((string) $l->loss_type) : $l->variant?->fullLabel() }}</x-table.td>
                                     @if ($kind === 'output')<x-table.td align="right">@qty($l->expected_qty)</x-table.td>@endif
                                     <x-table.td align="right">@qty($l->quantity)</x-table.td>
-                                    <x-table.td>@if ($l->lot)<a href="{{ route('inventory.lots.show', $l->lot) }}" wire:navigate class="font-mono text-xs text-brand-600 hover:underline">{{ $l->lot->lot_number }}</a>@endif</x-table.td>
+                                    <x-table.td>@if ($l->lot)<a href="{{ route('inventory.lots.show', $l->lot) }}" wire:navigate class="font-mono text-xs text-link hover:underline">{{ $l->lot->lot_number }}</a>@endif</x-table.td>
                                     @can('cost.view')@if ($kind !== 'loss')<x-table.td align="right">@if ($l->total_cost !== null)@money($l->total_cost)@endif</x-table.td>@endif @endcan
                                     <x-table.td>{{ $kind === 'loss' ? $l->reason : $l->location?->name }}</x-table.td>
                                 </tr>
@@ -36,7 +36,7 @@
                     <div class="flex justify-between"><dt>Actual output</dt><dd class="tabular font-semibold">@qty($yield['actual'])</dd></div>
                     <div class="flex justify-between"><dt>Wastage</dt><dd class="tabular">{{ $yield['wastage_percent'] !== null ? $yield['wastage_percent'].'%' : '—' }}</dd></div>
                     @can('cost.view')
-                        <div class="flex justify-between border-t border-zinc-200 pt-2 dark:border-zinc-800"><dt>Input cost</dt><dd class="tabular">@money($process->input_cost)</dd></div>
+                        <div class="flex justify-between border-t border-line pt-2"><dt>Input cost</dt><dd class="tabular">@money($process->input_cost)</dd></div>
                         <div class="flex justify-between"><dt>Labor</dt><dd class="tabular">@money($process->labor_cost)</dd></div>
                         <div class="flex justify-between"><dt>Recoverable value</dt><dd class="tabular">@money($process->recoverable_value)</dd></div>
                         <div class="flex justify-between font-semibold"><dt>Cost per output unit</dt><dd class="tabular">@money($process->output_unit_cost, null, 4)</dd></div>

@@ -18,7 +18,7 @@
             </x-card>
             @if ($journals->isNotEmpty())
                 <x-card title="Journals">
-                    <ul class="space-y-1 text-sm">@foreach ($journals as $j)<li>@can('journals.view')<a href="{{ route('finance.journals.show', $j) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $j->number }}</a>@else <span class="font-mono">{{ $j->number }}</span>@endcan · {{ $j->currency_code }} · {{ $j->description }}</li>@endforeach</ul>
+                    <ul class="space-y-1 text-sm">@foreach ($journals as $j)<li>@can('journals.view')<a href="{{ route('finance.journals.show', $j) }}" wire:navigate class="font-mono text-link hover:underline">{{ $j->number }}</a>@else <span class="font-mono">{{ $j->number }}</span>@endcan · {{ $j->currency_code }} · {{ $j->description }}</li>@endforeach</ul>
                 </x-card>
             @endif
             <x-card title="Notes"><livewire:core::shared.notes :model="$doc" :key="'n-'.$doc->id" /></x-card>

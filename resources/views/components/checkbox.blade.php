@@ -9,13 +9,13 @@
     <input
         type="checkbox"
         id="{{ $id }}"
-        {{ $attributes->except('class')->merge(['class' => 'mt-0.5 size-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-600 dark:border-zinc-600 dark:bg-zinc-900']) }}
+        {{ $attributes->except('class')->merge(['class' => 'mt-0.5 size-4 rounded border-line-strong bg-surface text-brand-600 focus:ring-brand-600']) }}
     />
     @if ($label)
         <div class="text-sm">
-            <label for="{{ $id }}" class="font-medium text-zinc-700 dark:text-zinc-300">{{ $label }}</label>
+            <label for="{{ $id }}" class="font-medium text-muted">{{ $label }}</label>
             @if ($help)
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $help }}</p>
+                <p class="text-xs text-subtle">{{ $help }}</p>
             @endif
         </div>
     @endif

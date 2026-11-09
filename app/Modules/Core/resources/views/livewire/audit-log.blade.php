@@ -3,13 +3,13 @@
 
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search description or record…" dates :export="auth()->user()->can('audit_log.export')">
-            <select wire:model.live="user" aria-label="User" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="user" aria-label="User" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All users</option>
                 @foreach ($users as $id => $name)
                     <option value="{{ $id }}">{{ $name }}</option>
                 @endforeach
             </select>
-            <select wire:model.live="event" aria-label="Action" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="event" aria-label="Action" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All actions</option>
                 @foreach ($events as $e)
                     <option value="{{ $e }}">{{ \Illuminate\Support\Str::headline($e) }}</option>
@@ -34,7 +34,7 @@
                         {{ $a->subject_type ? \Illuminate\Support\Str::headline(class_basename($a->subject_type)) : '—' }}
                         {{ $a->subject?->number ?? $a->subject?->code ?? $a->subject?->name ?? ($a->subject_id ? '#'.$a->subject_id : '') }}
                     </x-table.td>
-                    <x-table.td class="max-w-md text-xs text-zinc-500">
+                    <x-table.td class="max-w-md text-xs text-subtle">
                         @php($p = $a->properties)
                         @if ($p->has('reason') || $p->has('override_reason'))
                             <div><span class="font-medium">Reason:</span> {{ $p->get('reason') ?? $p->get('override_reason') }}</div>
@@ -56,7 +56,7 @@
         </x-table>
 
         @if ($activities->hasPages())
-            <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $activities->links() }}</div>
+            <div class="border-t border-line px-4 py-3">{{ $activities->links() }}</div>
         @endif
     </x-card>
 </div>

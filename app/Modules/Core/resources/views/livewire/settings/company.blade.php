@@ -25,20 +25,20 @@
 
         <x-card title="Logo">
             <div class="flex items-center gap-6">
-                <div class="flex h-20 w-40 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
+                <div class="flex h-20 w-40 items-center justify-center rounded-md bg-hover">
                     @if ($logo)
                         <img src="{{ $logo->temporaryUrl() }}" alt="New logo" class="max-h-16 max-w-36">
                     @elseif ($logoPath)
                         <img src="{{ Storage::disk('public')->url($logoPath) }}" alt="Current logo" class="max-h-16 max-w-36">
                     @else
-                        <span class="text-xs text-zinc-400">No logo</span>
+                        <span class="text-xs text-subtle">No logo</span>
                     @endif
                 </div>
                 <div>
-                    <input type="file" wire:model="logo" accept="image/png,image/jpeg,image/webp" class="text-sm text-zinc-600 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-700 hover:file:bg-zinc-200 dark:text-zinc-400 dark:file:bg-zinc-800 dark:file:text-zinc-200">
-                    <p class="mt-1 text-xs text-zinc-500">PNG, JPG or WebP, up to 2 MB. Resized to 600px wide.</p>
-                    <div wire:loading wire:target="logo" class="text-xs text-zinc-500">Uploading…</div>
-                    @error('logo') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    <input type="file" wire:model="logo" accept="image/png,image/jpeg,image/webp" class="text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-hover file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-muted hover:file:bg-line">
+                    <p class="mt-1 text-xs text-subtle">PNG, JPG or WebP, up to 2 MB. Resized to 600px wide.</p>
+                    <div wire:loading wire:target="logo" class="text-xs text-subtle">Uploading…</div>
+                    @error('logo') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
             </div>
         </x-card>

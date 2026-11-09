@@ -18,7 +18,7 @@
                 <tr wire:key="s-{{ $stage->id }}">
                     <x-table.td align="right">{{ $stage->sort_order }}</x-table.td>
                     <x-table.td class="font-medium">{{ $stage->name }}</x-table.td>
-                    <x-table.td class="text-zinc-500">{{ $stage->description }}</x-table.td>
+                    <x-table.td class="text-subtle">{{ $stage->description }}</x-table.td>
                     <x-table.td><x-status :status="$stage->is_active ? 'active' : 'inactive'" /></x-table.td>
                     <x-table.td align="right" class="whitespace-nowrap">
                         @can('stages.edit')

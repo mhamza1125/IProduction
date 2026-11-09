@@ -4,7 +4,7 @@
     </x-page-header>
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search number, process…" dates :export="auth()->user()->can('material_processes.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All statuses</option>@foreach (['draft', 'approved', 'posted', 'cancelled'] as $s)<option value="{{ $s }}">{{ ucfirst($s) }}</option>@endforeach
             </select>
         </x-table.toolbar>
@@ -16,12 +16,12 @@
             </x-slot:head>
             @foreach ($processes as $p)
                 <tr wire:key="mp-{{ $p->id }}">
-                    <x-table.td class="font-mono"><a href="{{ route('production.processes.show', $p) }}" wire:navigate class="text-brand-600 hover:underline">{{ $p->number }}</a></x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('production.processes.show', $p) }}" wire:navigate class="text-link hover:underline">{{ $p->number }}</a></x-table.td>
                     <x-table.td>@date($p->process_date)</x-table.td><x-table.td>{{ $p->process_name }}</x-table.td>
                     <x-table.td>{{ $p->employee?->name ?? $p->contractor?->name }}</x-table.td><x-table.td><x-status :status="$p->status" /></x-table.td>
                 </tr>
             @endforeach
         </x-table>
-        @if ($processes->hasPages()) <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $processes->links() }}</div> @endif
+        @if ($processes->hasPages()) <div class="border-t border-line px-4 py-3">{{ $processes->links() }}</div> @endif
     </x-card>
 </div>

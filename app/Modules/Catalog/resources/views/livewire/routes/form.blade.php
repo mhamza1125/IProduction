@@ -21,7 +21,7 @@
         <x-card title="Stages" :padding="false">
             <div class="relative overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900/60">
+                    <thead class="bg-sunken text-xs uppercase text-subtle">
                         <tr>
                             <th class="px-3 py-2 text-left">#</th>
                             <th class="px-3 py-2 text-left">Stage</th>
@@ -35,40 +35,40 @@
                             <th class="px-3 py-2"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <tbody class="divide-y divide-line">
                         @foreach ($lines as $i => $line)
                             <tr wire:key="line-{{ $i }}" class="align-top">
-                                <td class="px-3 py-2 text-zinc-500">{{ $i + 1 }}</td>
+                                <td class="px-3 py-2 text-subtle">{{ $i + 1 }}</td>
                                 <td class="px-3 py-2">
-                                    <select wire:model="lines.{{ $i }}.stage_id" aria-label="Stage" class="w-44 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model="lines.{{ $i }}.stage_id" aria-label="Stage" class="w-44 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         <option value="">Choose…</option>
                                         @foreach ($stages as $id => $name) <option value="{{ $id }}">{{ $name }}</option> @endforeach
                                     </select>
-                                    @error("lines.$i.stage_id") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                                    <input type="text" wire:model="lines.{{ $i }}.instructions" placeholder="Instructions" aria-label="Instructions" class="mt-1 block w-44 rounded-md border-0 py-1 text-xs ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    @error("lines.$i.stage_id") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                    <input type="text" wire:model="lines.{{ $i }}.instructions" placeholder="Instructions" aria-label="Instructions" class="mt-1 block w-44 rounded-md border-0 py-1 text-xs ring-1 ring-line bg-surface">
                                 </td>
                                 <td class="px-3 py-2">
-                                    <select wire:model="lines.{{ $i }}.default_work_type" aria-label="Done by" class="rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+                                    <select wire:model="lines.{{ $i }}.default_work_type" aria-label="Done by" class="rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface">
                                         @foreach ($workTypes as $k => $v) <option value="{{ $k }}">{{ $v }}</option> @endforeach
                                     </select>
                                 </td>
                                 @if ($canSeeCost)
-                                    <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.wage_rate" aria-label="Wage rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></td>
-                                    <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.contractor_rate" aria-label="Contractor rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></td>
+                                    <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.wage_rate" aria-label="Wage rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></td>
+                                    <td class="px-3 py-2"><input type="number" step="any" min="0" wire:model="lines.{{ $i }}.contractor_rate" aria-label="Contractor rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></td>
                                 @endif
-                                <td class="px-3 py-2"><input type="text" wire:model="lines.{{ $i }}.machine" aria-label="Machine" class="w-32 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></td>
-                                <td class="px-3 py-2 text-center"><input type="checkbox" wire:model="lines.{{ $i }}.is_optional" aria-label="Optional" class="size-4 rounded border-zinc-300 text-brand-600"></td>
+                                <td class="px-3 py-2"><input type="text" wire:model="lines.{{ $i }}.machine" aria-label="Machine" class="w-32 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface"></td>
+                                <td class="px-3 py-2 text-center"><input type="checkbox" wire:model="lines.{{ $i }}.is_optional" aria-label="Optional" class="size-4 rounded border-line-strong bg-surface text-brand-600"></td>
                                 <td class="whitespace-nowrap px-3 py-2 text-right">
-                                    <button type="button" wire:click="move({{ $i }}, -1)" class="p-1 text-zinc-400 hover:text-zinc-700" aria-label="Move up"><x-icon name="chevron-up" class="size-4" /></button>
-                                    <button type="button" wire:click="move({{ $i }}, 1)" class="p-1 text-zinc-400 hover:text-zinc-700" aria-label="Move down"><x-icon name="chevron-down" class="size-4" /></button>
-                                    <button type="button" wire:click="removeLine({{ $i }})" class="p-1 text-zinc-400 hover:text-red-600" aria-label="Remove"><x-icon name="trash" class="size-4" /></button>
+                                    <button type="button" wire:click="move({{ $i }}, -1)" class="p-1 text-subtle hover:text-muted" aria-label="Move up"><x-icon name="chevron-up" class="size-4" /></button>
+                                    <button type="button" wire:click="move({{ $i }}, 1)" class="p-1 text-subtle hover:text-muted" aria-label="Move down"><x-icon name="chevron-down" class="size-4" /></button>
+                                    <button type="button" wire:click="removeLine({{ $i }})" class="p-1 text-subtle hover:text-danger" aria-label="Remove"><x-icon name="trash" class="size-4" /></button>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            @error('lines') <p class="px-4 py-2 text-xs text-red-600">{{ $message }}</p> @enderror
+            @error('lines') <p class="px-4 py-2 text-xs text-danger">{{ $message }}</p> @enderror
             <x-slot:footer>
                 <x-button variant="secondary" size="sm" wire:click="addLine" icon="plus" class="mr-auto">Add stage</x-button>
                 @if ($canEdit)

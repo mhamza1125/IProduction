@@ -21,7 +21,7 @@
         <div class="space-y-6">
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Goods receipt"><a href="{{ route('purchasing.receipts.show', $return->goods_receipt_id) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $return->receipt->number }}</a></x-people::detail>
+                    <x-people::detail label="Goods receipt"><a href="{{ route('purchasing.receipts.show', $return->goods_receipt_id) }}" wire:navigate class="font-mono text-link hover:underline">{{ $return->receipt->number }}</a></x-people::detail>
                     <x-people::detail label="Replacement required" :value="$return->replacement_required ? 'Yes' : 'No'" />
                     <x-people::detail label="Notes" :value="$return->notes" />
                 </dl>

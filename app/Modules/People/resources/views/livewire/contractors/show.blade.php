@@ -14,7 +14,7 @@
     <x-slot:side>
         @if ($linkedVendor)
             <x-card title="Also a vendor">
-                <a href="{{ route('people.vendors.show', $linkedVendor) }}" wire:navigate class="text-sm text-brand-600 hover:underline">{{ $linkedVendor->label() }}</a>
+                <a href="{{ route('people.vendors.show', $linkedVendor) }}" wire:navigate class="text-sm text-link hover:underline">{{ $linkedVendor->label() }}</a>
             </x-card>
         @endif
     </x-slot:side>

@@ -4,7 +4,7 @@
     </x-page-header>
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search number, vendor invoice, vendor…" dates :export="auth()->user()->can('vendor_bills.export')">
-            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All statuses</option>
                 @foreach (['draft', 'approved', 'posted', 'partly_paid', 'paid', 'cancelled'] as $s) <option value="{{ $s }}">{{ \Illuminate\Support\Str::headline($s) }}</option> @endforeach
             </select>
@@ -19,17 +19,17 @@
             </x-slot:head>
             @foreach ($bills as $b)
                 <tr wire:key="b-{{ $b->id }}">
-                    <x-table.td class="font-mono"><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="text-brand-600 hover:underline">{{ $b->number }}</a></x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('purchasing.bills.show', $b) }}" wire:navigate class="text-link hover:underline">{{ $b->number }}</a></x-table.td>
                     <x-table.td>{{ $b->vendor_invoice_number }}</x-table.td>
                     <x-table.td>{{ $b->vendor->name }}</x-table.td>
                     <x-table.td>@date($b->bill_date)</x-table.td>
-                    <x-table.td @class(['text-red-600' => $b->due_date && $b->due_date->isPast() && (float) $b->balance() > 0])>@date($b->due_date)</x-table.td>
+                    <x-table.td @class(['text-danger' => $b->due_date && $b->due_date->isPast() && (float) $b->balance() > 0])>@date($b->due_date)</x-table.td>
                     <x-table.td align="right">@money($b->total)</x-table.td>
                     <x-table.td align="right">@money($b->balance())</x-table.td>
                     <x-table.td><x-status :status="$b->status" /></x-table.td>
                 </tr>
             @endforeach
         </x-table>
-        @if ($bills->hasPages()) <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $bills->links() }}</div> @endif
+        @if ($bills->hasPages()) <div class="border-t border-line px-4 py-3">{{ $bills->links() }}</div> @endif
     </x-card>
 </div>

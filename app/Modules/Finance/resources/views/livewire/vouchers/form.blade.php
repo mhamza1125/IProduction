@@ -18,14 +18,14 @@
                         <x-table.td><x-input type="number" step="any" min="0" wire:model.blur="lines.{{ $i }}.debit" aria-label="Debit" /></x-table.td>
                         <x-table.td><x-input type="number" step="any" min="0" wire:model.blur="lines.{{ $i }}.credit" aria-label="Credit" /></x-table.td>
                         <x-table.td><x-input wire:model="lines.{{ $i }}.memo" aria-label="Memo" /></x-table.td>
-                        <x-table.td><input type="checkbox" wire:model="lines.{{ $i }}.deduct_from_payroll" aria-label="Deduct from payroll" class="size-4 rounded border-zinc-300 text-brand-600"></x-table.td>
+                        <x-table.td><input type="checkbox" wire:model="lines.{{ $i }}.deduct_from_payroll" aria-label="Deduct from payroll" class="size-4 rounded border-line-strong bg-surface text-brand-600"></x-table.td>
                         <x-table.td><x-button size="sm" variant="ghost" icon="trash" wire:click="removeLine({{ $i }})" aria-label="Remove line" /></x-table.td>
                     </tr>
                 @endforeach
-                <tr @class(['font-semibold', 'text-red-600' => \App\Support\Decimal::compare($debits, $credits) !== 0])><x-table.td colspan="2">Totals</x-table.td><x-table.td align="right">@money($debits)</x-table.td><x-table.td align="right">@money($credits)</x-table.td><x-table.td colspan="3">{{ \App\Support\Decimal::compare($debits, $credits) !== 0 ? 'Not balanced' : '' }}</x-table.td></tr>
+                <tr @class(['font-semibold', 'text-danger' => \App\Support\Decimal::compare($debits, $credits) !== 0])><x-table.td colspan="2">Totals</x-table.td><x-table.td align="right">@money($debits)</x-table.td><x-table.td align="right">@money($credits)</x-table.td><x-table.td colspan="3">{{ \App\Support\Decimal::compare($debits, $credits) !== 0 ? 'Not balanced' : '' }}</x-table.td></tr>
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add line</x-button></div>
-            @error('lines') <p class="border-t border-zinc-200 px-4 py-3 text-sm text-red-600 dark:border-zinc-800">{{ $message }}</p> @enderror
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add line</x-button></div>
+            @error('lines') <p class="border-t border-line px-4 py-3 text-sm text-danger">{{ $message }}</p> @enderror
         </x-card>
         <div class="flex justify-end gap-2">
             <x-button variant="ghost" :href="$voucher ? route('finance.vouchers.show', $voucher) : route('finance.vouchers.index')">Cancel</x-button>

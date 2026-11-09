@@ -16,7 +16,7 @@
 
             @foreach ($roles as $role)
                 <tr wire:key="role-{{ $role->id }}">
-                    <x-table.td class="font-medium text-zinc-900 dark:text-zinc-100">{{ $role->name }}</x-table.td>
+                    <x-table.td class="font-medium text-fg">{{ $role->name }}</x-table.td>
                     <x-table.td align="right">{{ $role->name === $adminRole ? 'All' : $role->permissions_count }}</x-table.td>
                     <x-table.td align="right">{{ $role->users_count }}</x-table.td>
                     <x-table.td align="right" class="whitespace-nowrap">
@@ -28,7 +28,7 @@
                                 <x-button variant="ghost" size="sm" icon="trash" wire:click="delete({{ $role->id }})" wire:confirm="Delete the {{ $role->name }} role?">Delete</x-button>
                             @endcan
                         @else
-                            <span class="text-xs text-zinc-400">Built in</span>
+                            <span class="text-xs text-subtle">Built in</span>
                         @endif
                     </x-table.td>
                 </tr>

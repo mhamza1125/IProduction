@@ -11,7 +11,7 @@
                 <tr>
                     <x-table.td><span class="font-mono text-xs">{{ $l->account->code }}</span> {{ $l->account->name }}</x-table.td>
                     <x-table.td>{{ $l->ledgerable?->name ?? $l->moneyAccount?->name }}</x-table.td>
-                    <x-table.td class="text-zinc-500">{{ $l->memo }}</x-table.td>
+                    <x-table.td class="text-subtle">{{ $l->memo }}</x-table.td>
                     <x-table.td align="right">{{ (float) $l->debit ? \App\Support\Format::money($l->debit) : '' }}</x-table.td>
                     <x-table.td align="right">{{ (float) $l->credit ? \App\Support\Format::money($l->credit) : '' }}</x-table.td>
                 </tr>

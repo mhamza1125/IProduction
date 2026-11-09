@@ -2,7 +2,7 @@
     <x-page-header title="Lots" description="Every inbound source creates a lot with its own source and cost." />
     <x-card :padding="false">
         <x-table.toolbar placeholder="Search lot, SKU or item…" dates :export="auth()->user()->can('lots.export')">
-            <select wire:model.live="origin" aria-label="Origin" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+            <select wire:model.live="origin" aria-label="Origin" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All origins</option>
                 @foreach ($origins as $key => $label) <option value="{{ $key }}">{{ $label }}</option> @endforeach
             </select>
@@ -18,7 +18,7 @@
             </x-slot:head>
             @foreach ($lots as $lot)
                 <tr wire:key="l-{{ $lot->id }}">
-                    <x-table.td class="font-mono"><a href="{{ route('inventory.lots.show', $lot) }}" wire:navigate class="text-brand-600 hover:underline">{{ $lot->lot_number }}</a></x-table.td>
+                    <x-table.td class="font-mono"><a href="{{ route('inventory.lots.show', $lot) }}" wire:navigate class="text-link hover:underline">{{ $lot->lot_number }}</a></x-table.td>
                     <x-table.td><span class="font-mono text-xs">{{ $lot->variant->sku }}</span> {{ $lot->variant->item->name }}</x-table.td>
                     <x-table.td>{{ $origins[$lot->origin] ?? $lot->origin }}</x-table.td>
                     <x-table.td>@date($lot->received_date)</x-table.td>
@@ -28,7 +28,7 @@
             @endforeach
         </x-table>
         @if ($lots->hasPages())
-            <div class="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">{{ $lots->links() }}</div>
+            <div class="border-t border-line px-4 py-3">{{ $lots->links() }}</div>
         @endif
     </x-card>
 </div>

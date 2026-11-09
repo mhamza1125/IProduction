@@ -24,10 +24,10 @@
                             </form>
                         @endcan
                     @else
-                        <p class="text-sm text-zinc-500">All returned pieces have been inspected.</p>
+                        <p class="text-sm text-subtle">All returned pieces have been inspected.</p>
                     @endif
                     @if ($rejections->isNotEmpty())
-                        <ul class="mt-4 space-y-1 text-sm">@foreach ($rejections as $rj)<li>Rejection <a href="{{ route('production.rejections.show', $rj) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $rj->number }}</a> · @qty($rj->quantity) <x-status :status="$rj->status" /></li>@endforeach</ul>
+                        <ul class="mt-4 space-y-1 text-sm">@foreach ($rejections as $rj)<li>Rejection <a href="{{ route('production.rejections.show', $rj) }}" wire:navigate class="font-mono text-link hover:underline">{{ $rj->number }}</a> · @qty($rj->quantity) <x-status :status="$rj->status" /></li>@endforeach</ul>
                     @endif
                 </x-card>
             @endif
@@ -36,14 +36,14 @@
         <div class="space-y-6">
             <x-card title="Details">
                 <dl class="grid gap-3">
-                    <x-people::detail label="Delivery"><a href="{{ route('delivery.deliveries.show', $r->deliveryLine->delivery) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->deliveryLine->delivery->number }}</a> · {{ $r->deliveryLine->orderLine->order->number }}</x-people::detail>
-                    @if ($r->invoiceLine) <x-people::detail label="Invoice"><a href="{{ route('delivery.invoices.show', $r->invoiceLine->invoice) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->invoiceLine->invoice->number }}</a></x-people::detail> @endif
-                    <x-people::detail label="Lot"><a href="{{ route('inventory.lots.show', $r->lot) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $r->lot->lot_number }}</a></x-people::detail>
+                    <x-people::detail label="Delivery"><a href="{{ route('delivery.deliveries.show', $r->deliveryLine->delivery) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->deliveryLine->delivery->number }}</a> · {{ $r->deliveryLine->orderLine->order->number }}</x-people::detail>
+                    @if ($r->invoiceLine) <x-people::detail label="Invoice"><a href="{{ route('delivery.invoices.show', $r->invoiceLine->invoice) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->invoiceLine->invoice->number }}</a></x-people::detail> @endif
+                    <x-people::detail label="Lot"><a href="{{ route('inventory.lots.show', $r->lot) }}" wire:navigate class="font-mono text-link hover:underline">{{ $r->lot->lot_number }}</a></x-people::detail>
                     <x-people::detail label="Return date" :value="\App\Support\Format::date($r->return_date)" />
                     <x-people::detail label="Replacement" :value="$r->replacement_required ? 'Required: order line reopened' : 'Not required'" />
                     @can('cost.view') @if ($r->unit_cost !== null) <x-people::detail label="Unit cost (PKR)" :value="\App\Support\Format::money($r->unit_cost, null, 4)" /> @endif @endcan
                     <x-people::detail label="Notes" :value="$r->notes" />
-                    @foreach ($credits as $c) <x-people::detail label="Credit note"><a href="{{ route('delivery.credit-notes.show', $c) }}" wire:navigate class="font-mono text-brand-600 hover:underline">{{ $c->number }}</a></x-people::detail> @endforeach
+                    @foreach ($credits as $c) <x-people::detail label="Credit note"><a href="{{ route('delivery.credit-notes.show', $c) }}" wire:navigate class="font-mono text-link hover:underline">{{ $c->number }}</a></x-people::detail> @endforeach
                 </dl>
             </x-card>
             <x-card title="Notes"><livewire:core::shared.notes :model="$r" :key="'n-'.$r->id" /></x-card>

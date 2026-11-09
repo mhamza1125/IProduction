@@ -23,7 +23,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add output</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="addLine">Add output</x-button></div>
         </x-card>
         <x-card title="Expected material use" :padding="false">
             <x-table empty="No material supplied by the company.">
@@ -36,7 +36,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button size="sm" variant="secondary" icon="plus" wire:click="addMaterial">Add material</x-button></div>
+            <div class="border-t border-line p-3"><x-button size="sm" variant="secondary" icon="plus" wire:click="addMaterial">Add material</x-button></div>
         </x-card>
         <div class="flex justify-end gap-2">
             <x-button variant="ghost" :href="$job ? route('production.jobs.show', $job) : route('production.jobs.index')">Cancel</x-button>

@@ -46,14 +46,14 @@
                                 <x-button size="sm" variant="secondary" :href="route('catalog.routes.create', ['item' => $item->id])" icon="plus">Add</x-button>
                             @endcan
                         </x-slot:actions>
-                        <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <ul class="divide-y divide-line">
                             @forelse ($routes as $route)
                                 <li class="flex items-center justify-between px-4 py-2.5 text-sm">
-                                    <a href="{{ route('catalog.routes.edit', $route) }}" wire:navigate class="font-medium text-brand-600 hover:underline">{{ $route->name }}</a>
-                                    <span class="text-xs text-zinc-500">{{ $route->stages_count }} stages @if ($route->is_default) · <x-badge color="blue">Default</x-badge> @endif</span>
+                                    <a href="{{ route('catalog.routes.edit', $route) }}" wire:navigate class="font-medium text-link hover:underline">{{ $route->name }}</a>
+                                    <span class="text-xs text-subtle">{{ $route->stages_count }} stages @if ($route->is_default) · <x-badge color="blue">Default</x-badge> @endif</span>
                                 </li>
                             @empty
-                                <li class="px-4 py-3 text-sm text-zinc-500">No route yet.</li>
+                                <li class="px-4 py-3 text-sm text-subtle">No route yet.</li>
                             @endforelse
                         </ul>
                     </x-card>
@@ -64,14 +64,14 @@
                                 <x-button size="sm" variant="secondary" wire:click="newBomVersion" icon="plus">New version</x-button>
                             @endcan
                         </x-slot:actions>
-                        <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <ul class="divide-y divide-line">
                             @forelse ($boms as $bom)
                                 <li class="flex items-center justify-between px-4 py-2.5 text-sm">
-                                    <a href="{{ route('catalog.boms.edit', $bom) }}" wire:navigate class="font-medium text-brand-600 hover:underline">Version {{ $bom->version }}</a>
-                                    <span class="flex items-center gap-2 text-xs text-zinc-500">@date($bom->effective_date) <x-status :status="$bom->is_active ? 'active' : $bom->status" /></span>
+                                    <a href="{{ route('catalog.boms.edit', $bom) }}" wire:navigate class="font-medium text-link hover:underline">Version {{ $bom->version }}</a>
+                                    <span class="flex items-center gap-2 text-xs text-subtle">@date($bom->effective_date) <x-status :status="$bom->is_active ? 'active' : $bom->status" /></span>
                                 </li>
                             @empty
-                                <li class="px-4 py-3 text-sm text-zinc-500">No BOM yet.</li>
+                                <li class="px-4 py-3 text-sm text-subtle">No BOM yet.</li>
                             @endforelse
                         </ul>
                     </x-card>

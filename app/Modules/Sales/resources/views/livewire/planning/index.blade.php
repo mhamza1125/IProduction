@@ -2,8 +2,8 @@
     <x-page-header title="Planning" description="Open order lines: reserve free stock, decide how to supply the rest, check materials and create purchase orders. Rejected and returned stock never counts; open POs count as incoming, not as stock." />
 
     <x-card :padding="false" class="mb-6">
-        <div class="flex flex-wrap gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-            <select wire:model.live="customer" aria-label="Customer" class="rounded-md border-0 bg-white py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700">
+        <div class="flex flex-wrap gap-3 border-b border-line px-4 py-3">
+            <select wire:model.live="customer" aria-label="Customer" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All customers</option>@foreach ($customers as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
             </select>
             @if ($orderId) <x-button size="sm" variant="ghost" wire:click="$set('orderId', null)">Show all orders</x-button> @endif
@@ -16,17 +16,17 @@
             </x-slot:head>
             @foreach ($rows as $r)
                 @php($l = $r['line'])
-                <tr wire:key="pl-{{ $l->id }}" wire:click="select({{ $l->id }})" @class(['cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50', 'bg-brand-50 dark:bg-brand-500/10' => $lineId === $l->id])>
+                <tr wire:key="pl-{{ $l->id }}" wire:click="select({{ $l->id }})" @class(['cursor-pointer hover:bg-hover', 'bg-selected' => $lineId === $l->id])>
                     <x-table.td class="font-mono text-xs">{{ $l->order->number }}</x-table.td>
                     <x-table.td>{{ $l->order->customer->name }}</x-table.td>
                     <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
-                    <x-table.td @class(['text-red-600' => ($l->due_date ?? $l->order->due_date)?->isPast()])>@date($l->due_date ?? $l->order->due_date)</x-table.td>
+                    <x-table.td @class(['text-danger' => ($l->due_date ?? $l->order->due_date)?->isPast()])>@date($l->due_date ?? $l->order->due_date)</x-table.td>
                     <x-table.td align="right">@qty($r['required'])</x-table.td>
                     <x-table.td align="right">@qty($r['free'])</x-table.td>
                     <x-table.td align="right">@qty($r['reserved'])</x-table.td>
                     <x-table.td align="right">@qty($r['on_order'])</x-table.td>
                     <x-table.td align="right">@qty($r['in_production'])</x-table.td>
-                    <x-table.td align="right" @class(['font-semibold', 'text-red-600' => (float) $r['shortfall'] > 0])>@qty($r['shortfall'])</x-table.td>
+                    <x-table.td align="right" @class(['font-semibold', 'text-danger' => (float) $r['shortfall'] > 0])>@qty($r['shortfall'])</x-table.td>
                     <x-table.td class="text-xs">{{ $r['blocker'] }} → <span class="font-medium">{{ $r['next'] }}</span></x-table.td>
                 </tr>
             @endforeach
@@ -66,20 +66,20 @@
 
             <x-card title="3. Materials for make + contractor" description="Required includes wastage. Free stock is used first, then incoming purchase orders; the rest is short.">
                 @if ($requirementsError)
-                    <p class="text-sm text-red-600">{{ $requirementsError }}</p>
+                    <p class="text-sm text-danger">{{ $requirementsError }}</p>
                 @elseif ($requirements === [])
-                    <p class="text-sm text-zinc-500">Nothing planned to make yet.</p>
+                    <p class="text-sm text-subtle">Nothing planned to make yet.</p>
                 @else
                     <table class="min-w-full text-sm">
-                        <thead class="text-xs uppercase text-zinc-500"><tr><th class="py-1 text-left">Component</th><th class="py-1 text-right">Required</th><th class="py-1 text-right">Free</th><th class="py-1 text-right">Incoming</th><th class="py-1 text-right">Short</th></tr></thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <thead class="text-xs uppercase text-subtle"><tr><th class="py-1 text-left">Component</th><th class="py-1 text-right">Required</th><th class="py-1 text-right">Free</th><th class="py-1 text-right">Incoming</th><th class="py-1 text-right">Short</th></tr></thead>
+                        <tbody class="divide-y divide-line">
                             @foreach ($requirements as $r)
                                 <tr>
                                     <td class="py-1" style="padding-left: {{ ($r['level'] - 1) * 1.25 }}rem">{{ $r['variant']->fullLabel() }} @if ($r['made'])<x-badge color="blue">made</x-badge>@endif</td>
                                     <td class="py-1 text-right tabular">@qty($r['required'])</td>
                                     <td class="py-1 text-right tabular">@qty($r['free'])</td>
                                     <td class="py-1 text-right tabular">@qty($r['incoming'])</td>
-                                    <td @class(['py-1 text-right tabular font-semibold', 'text-red-600' => (float) $r['shortage'] > 0])>@qty($r['shortage'])</td>
+                                    <td @class(['py-1 text-right tabular font-semibold', 'text-danger' => (float) $r['shortage'] > 0])>@qty($r['shortage'])</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -94,19 +94,19 @@
                             <x-slot:head><x-table.th>Order</x-table.th><x-table.th>Item</x-table.th><x-table.th align="right">Quantity</x-table.th><x-table.th>Vendor</x-table.th><x-table.th align="right">Rate (PKR)</x-table.th></x-slot:head>
                             @foreach ($purchaseLabels as $variantId => $label)
                                 <tr wire:key="pp-{{ $variantId }}">
-                                    <x-table.td><input type="checkbox" wire:model="purchase.{{ $variantId }}.order" aria-label="Order {{ $label }}" class="size-4 rounded border-zinc-300 text-brand-600"></x-table.td>
+                                    <x-table.td><input type="checkbox" wire:model="purchase.{{ $variantId }}.order" aria-label="Order {{ $label }}" class="size-4 rounded border-line-strong bg-surface text-brand-600"></x-table.td>
                                     <x-table.td>{{ $label }}</x-table.td>
-                                    <x-table.td align="right"><input type="number" step="any" min="0" wire:model="purchase.{{ $variantId }}.quantity" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                                    <x-table.td align="right"><input type="number" step="any" min="0" wire:model="purchase.{{ $variantId }}.quantity" aria-label="Quantity" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                                     <x-table.td>
-                                        <select wire:model="purchase.{{ $variantId }}.vendor_id" aria-label="Vendor" class="w-64 rounded-md border-0 py-1.5 text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"><option value="">Choose…</option>@foreach ($vendors as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach</select>
-                                        @error("purchase.$variantId.vendor_id") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                                        <select wire:model="purchase.{{ $variantId }}.vendor_id" aria-label="Vendor" class="w-64 rounded-md border-0 py-1.5 text-sm ring-1 ring-line-strong bg-surface"><option value="">Choose…</option>@foreach ($vendors as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach</select>
+                                        @error("purchase.$variantId.vendor_id") <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </x-table.td>
-                                    <x-table.td align="right"><input type="number" step="any" min="0" wire:model="purchase.{{ $variantId }}.rate" aria-label="Rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-zinc-300 dark:bg-zinc-900 dark:ring-zinc-700"></x-table.td>
+                                    <x-table.td align="right"><input type="number" step="any" min="0" wire:model="purchase.{{ $variantId }}.rate" aria-label="Rate" class="w-28 rounded-md border-0 py-1.5 text-right text-sm ring-1 ring-line-strong bg-surface"></x-table.td>
                                 </tr>
                             @endforeach
                         </x-table>
                         @can('purchase_orders.create')
-                            <div class="flex justify-end border-t border-zinc-200 p-3 dark:border-zinc-800"><x-button type="submit">Create draft purchase orders</x-button></div>
+                            <div class="flex justify-end border-t border-line p-3"><x-button type="submit">Create draft purchase orders</x-button></div>
                         @endcan
                     </form>
                 </x-card>

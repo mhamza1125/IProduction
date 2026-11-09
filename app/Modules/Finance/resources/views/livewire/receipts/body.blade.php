@@ -18,7 +18,7 @@
         @endif
     </x-table>
     @if ($doc->isPosted())
-        <div class="border-t border-zinc-200 p-4 text-sm dark:border-zinc-800">
+        <div class="border-t border-line p-4 text-sm">
             Unallocated (customer advance): <span class="font-semibold">@money($doc->unallocated(), $doc->currency_code)</span>
             @if ($openInvoices->isNotEmpty())
                 @can('receipts.post')
