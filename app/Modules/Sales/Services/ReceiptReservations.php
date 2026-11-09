@@ -19,7 +19,7 @@ class ReceiptReservations
 
     public function __invoke(GoodsReceipt $receipt): void
     {
-        foreach ($receipt->lines()->whereNotNull('lot_id')->get() as $grnLine) {
+        foreach ($receipt->lines()->with('orderLine')->whereNotNull('lot_id')->get() as $grnLine) {
             $arrived = Decimal::of($grnLine->stock_qty);
 
             $allocations = SupplyAllocation::query()->with('orderLine.order')

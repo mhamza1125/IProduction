@@ -20,8 +20,8 @@ class PrintController
         return $printer->respond($request, 'production::print.ptc', [
             'ptc' => $ptc,
             'stages' => $ptc->stages()->get(),
-            'materials' => $ptc->materials()->with('variant')->get(),
-            'transactions' => $ptc->transactions()->with(['ptcStage', 'employee', 'contractor', 'variant'])->get(),
+            'materials' => $ptc->materials()->with('variant.item')->get(),
+            'transactions' => $ptc->transactions()->with(['ptcStage', 'employee', 'contractor', 'variant.item'])->get(),
             'reconciliation' => $costing->reconciliation($ptc),
         ], $ptc->number);
     }
@@ -29,7 +29,7 @@ class PrintController
     public function job(Request $request, ContractorJob $job, Printer $printer, ContractorJobs $jobs): Response
     {
         abort_if($job->isDraft(), 403, 'Approve the job before printing it.');
-        $job->load(['contractor', 'lines.variant.item.stockUnit', 'lines.stage', 'materials.variant', 'orderLine.order']);
+        $job->load(['contractor', 'lines.variant.item.stockUnit', 'lines.stage', 'materials.variant.item', 'orderLine.order']);
 
         return $printer->respond($request, 'production::print.job', ['job' => $job, 'reconciliation' => $jobs->reconciliation($job)], $job->number);
     }

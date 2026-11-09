@@ -127,14 +127,14 @@ class Show extends Component
 
     public function render(ContractorJobs $jobs): View
     {
-        $job = $this->job->load(['contractor', 'lines.variant.item.stockUnit', 'lines.stage', 'materials.variant', 'orderLine.order']);
+        $job = $this->job->load(['contractor', 'lines.variant.item.stockUnit', 'lines.stage', 'materials.variant.item', 'orderLine.order']);
         $held = $job->isDraft() ? collect() : $jobs->held($job);
 
         return view('production::livewire.jobs.show', [
             'reconciliation' => $job->isDraft() ? collect() : $jobs->reconciliation($job),
             'heldRows' => $held,
-            'heldNames' => ItemVariant::withTrashed()->whereIn('id', $held->pluck('item_variant_id'))->get()->keyBy('id'),
-            'transactions' => $job->transactions()->with(['variant', 'lot'])->get(),
+            'heldNames' => ItemVariant::withTrashed()->with('item')->whereIn('id', $held->pluck('item_variant_id'))->get()->keyBy('id'),
+            'transactions' => $job->transactions()->with(['variant.item', 'lot'])->get(),
             'materialOptions' => $job->materials->mapWithKeys(fn ($m) => [$m->item_variant_id => $m->variant->fullLabel()])
                 ->union(ItemVariant::query()->active()->with('item')->get()->sortBy('sku')->mapWithKeys(fn ($v) => [$v->id => $v->fullLabel()])),
             'overActions' => ContractorJobs::OVER_RECEIPT_ACTIONS,

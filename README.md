@@ -51,6 +51,31 @@ composer dev
 
 Open http://localhost:8000 and sign in with the admin email and password from `.env`. If `ADMIN_PASSWORD` was empty, a random password is printed by the seeder.
 
+### Demo company (optional)
+
+To try the software with realistic data, load a sample sports-goods manufacturer after the normal seed:
+
+```bash
+php artisan db:seed --class=DemoDataSeeder
+```
+
+It adds:
+- customers in USD, EUR, GBP, AED and PKR;
+- vendors, contractors and employees;
+- items with BOMs and routes;
+- purchase orders, receipts, bills, returns and payments;
+- sales orders in every state;
+- running and finished PTCs, and a contractor job;
+- deliveries, invoices, receipts, a return and a credit note;
+- expenses, transfers and a currency conversion;
+- a posted October payroll and a draft November one.
+
+Every document is posted through the real services, so stock and the books agree.
+
+It also adds one user per role (`manager@demo.test`, `sales@demo.test`, `purchase@demo.test`, `store@demo.test`, `production@demo.test`, `accountant@demo.test`, `hr@demo.test`), all with the password `Demo@12345`. It refuses to run in production and does nothing if the demo data is already there.
+
+Project guide with a walkthrough of every area: open `docs/guide/index.html` in a browser.
+
 ### Tests
 
 Tests use a separate MySQL database so they match production behaviour:

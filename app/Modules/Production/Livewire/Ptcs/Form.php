@@ -51,7 +51,7 @@ class Form extends Component
         if ($ptc?->exists) {
             abort_unless($ptc->isDraft(), 403, 'Only drafts can be edited.');
             $this->ptc = $ptc;
-            $this->fill($ptc->only(['item_variant_id', 'route_id', 'start_stage_id', 'end_stage_id', 'sales_order_line_id', 'responsible_employee_id', 'notes']));
+            $this->fill($ptc->only(['item_variant_id', 'route_id', 'start_stage_id', 'end_stage_id', 'sales_order_line_id', 'responsible_employee_id']));
             $this->planned_qty = Decimal::round($ptc->planned_qty, 4);
             $this->start_date = $ptc->start_date->format('Y-m-d');
             $this->target_date = $ptc->target_date?->format('Y-m-d');

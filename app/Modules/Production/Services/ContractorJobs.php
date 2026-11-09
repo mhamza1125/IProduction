@@ -328,7 +328,7 @@ class ContractorJobs
     public function reconciliation(ContractorJob $job): Collection
     {
         $tx = ContractorJobTransaction::query()->where('contractor_job_id', $job->id)->where('type', '!=', 'receipt')->get()->groupBy('item_variant_id');
-        $materials = $job->materials()->with('variant')->get()->keyBy('item_variant_id');
+        $materials = $job->materials()->with('variant.item')->get()->keyBy('item_variant_id');
         $totalQty = Decimal::sum($job->lines->pluck('quantity'), 4);
         $returned = Decimal::sum($job->lines->map(fn ($l) => Decimal::add($l->accepted_qty, $l->rejected_qty, 4)), 4);
 
@@ -341,7 +341,7 @@ class ContractorJobs
             $waste = $sum('wastage');
 
             return [
-                'variant' => $materials[$id]->variant ?? ItemVariant::withTrashed()->findOrFail($id),
+                'variant' => $materials[$id]->variant ?? ItemVariant::withTrashed()->with('item')->findOrFail($id),
                 'expected' => isset($materials[$id]) && Decimal::compare($totalQty, '0') > 0 ? Decimal::div(Decimal::mul($materials[$id]->expected_qty, $returned, 6), $totalQty, 4) : '0.0000',
                 'issued' => $issued, 'consumed' => $consumed, 'returned' => $back, 'wastage' => $waste,
                 'held' => Decimal::sub($issued, Decimal::add(Decimal::add($consumed, $back, 4), $waste, 4), 4),

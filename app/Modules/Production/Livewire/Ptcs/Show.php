@@ -231,14 +231,14 @@ class Show extends Component
 
         $transactions = $ptc->transactions()->with(['ptcStage', 'employee', 'contractor', 'variant', 'lot', 'creator'])->get();
         $heldMaterial = $ptc->isDraft() ? collect() : $costing->heldMaterial($ptc);
-        $variantNames = ItemVariant::withTrashed()->whereIn('id', $heldMaterial->pluck('item_variant_id')->merge($ptc->materials()->pluck('item_variant_id')))->get()->keyBy('id');
+        $variantNames = ItemVariant::withTrashed()->with('item')->whereIn('id', $heldMaterial->pluck('item_variant_id')->merge($ptc->materials()->pluck('item_variant_id')))->get()->keyBy('id');
 
         return view('production::livewire.ptcs.show', [
             'stages' => $stages,
             'board' => $board,
             'holders' => $ptc->isDraft() ? [] : $tx->holders($ptc),
             'transactions' => $transactions,
-            'materials' => $ptc->materials()->with('variant')->get(),
+            'materials' => $ptc->materials()->with('variant.item')->get(),
             'heldMaterial' => $heldMaterial,
             'reconciliation' => $ptc->isDraft() ? collect() : $costing->reconciliation($ptc),
             'variantNames' => $variantNames,

@@ -23,7 +23,7 @@ class PrintController
     public function packing(Request $request, Delivery $delivery, Printer $printer, Packing $packing): Response
     {
         abort_if($delivery->isDraft() || $delivery->isCancelled(), 403, 'Allocate the delivery before printing its packing list.');
-        $delivery->load(['customer', 'packingList.cartons.lines.deliveryLine.variant', 'packingList.cartons.lines.deliveryLine.orderLine.order']);
+        $delivery->load(['customer', 'packingList.cartons.lines.deliveryLine.variant.item', 'packingList.cartons.lines.deliveryLine.orderLine.order']);
 
         return $printer->respond($request, 'delivery::print.packing', [
             'delivery' => $delivery,

@@ -95,6 +95,27 @@ it('receives part of an order: lot in, Dr Inventory / Cr Accounts Payable', func
     expect($po->fresh()->status)->toBe('received');
 });
 
+it('posts a receipt with several lines without lazy loading (strict mode is on outside production)', function () {
+    $second = Item::factory()->rawMaterial('pcs')->create(['code' => 'THREAD'])->variants()->first();
+    $pcs = Unit::where('symbol', 'pcs')->value('id');
+    $po = app(DocumentWorkflow::class)->approve(app(PurchaseOrders::class)->saveDraft(null, ['vendor_id' => $this->vendor->id, 'order_date' => '2026-11-01'], [
+        ['item_variant_id' => $this->variant->id, 'stage_id' => null, 'description' => '', 'quantity' => '10', 'unit_id' => $pcs, 'rate' => '20', 'expected_date' => null],
+        ['item_variant_id' => $second->id, 'stage_id' => null, 'description' => '', 'quantity' => '5', 'unit_id' => $pcs, 'rate' => '8', 'expected_date' => null],
+    ]));
+
+    $grn = GoodsReceipt::create(['number' => app(DocumentNumber::class)->next('goods_receipt'), 'purchase_order_id' => $po->id, 'vendor_id' => $po->vendor_id, 'receipt_date' => '2026-11-05']);
+    foreach ($po->lines()->orderBy('id')->get() as $line) {
+        $grn->lines()->create([
+            'purchase_order_line_id' => $line->id, 'item_variant_id' => $line->item_variant_id, 'ordered_qty' => $line->quantity, 'previously_accepted_qty' => '0',
+            'received_qty' => $line->quantity, 'accepted_qty' => $line->quantity, 'rejected_qty' => '0', 'rate' => $line->rate, 'location_id' => Location::mainStore()->id,
+        ]);
+    }
+    app(PostGoodsReceipt::class)(app(DocumentWorkflow::class)->approve($grn));
+
+    expect($this->stock->onHand($this->variant->id))->toBe('10.0000')
+        ->and($this->stock->onHand($second->id))->toBe('5.0000');
+});
+
 it('requires received = accepted + rejected', function () {
     $po = approvedPo();
     receive($po, '10', '9', '0');

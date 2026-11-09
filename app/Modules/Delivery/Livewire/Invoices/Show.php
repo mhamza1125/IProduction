@@ -74,7 +74,7 @@ class Show extends Component
 
     public function render(): View
     {
-        $inv = $this->invoice->load(['customer', 'lines.variant', 'lines.orderLine.order', 'lines.deliveryLine.delivery', 'allocations.source']);
+        $inv = $this->invoice->load(['customer', 'lines.variant.item', 'lines.orderLine.order', 'lines.deliveryLine.delivery', 'allocations.source']);
         $credits = $inv->isPosted() ? CreditNote::query()->where('customer_id', $inv->customer_id)->where('currency_code', $inv->currency_code)->whereNotNull('posted_at')->get()
             ->filter(fn (CreditNote $c) => (float) $c->unallocated() > 0) : collect();
 
