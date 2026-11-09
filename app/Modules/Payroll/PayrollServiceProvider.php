@@ -62,7 +62,7 @@ class PayrollServiceProvider extends ModuleServiceProvider
     public function documentTypes(): array
     {
         return [
-            new DocumentType('payroll', 'Payroll', 'PR'),
+            new DocumentType('payroll', 'Payroll', 'PRL'),
             new DocumentType('employee_loan', 'Employee Loan', 'LN'),
             new DocumentType('salary_advance', 'Salary Advance', 'ADV'),
         ];

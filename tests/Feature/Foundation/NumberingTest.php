@@ -2,6 +2,7 @@
 
 use App\Modules\Core\Livewire\Settings\Numbering;
 use App\Modules\Core\Services\DocumentNumber;
+use App\Support\Modules\ModuleRegistry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -74,4 +75,10 @@ it('stops users without settings.edit from changing numbering', function () {
         ->set('prefix', 'HACK')
         ->call('save')
         ->assertForbidden();
+});
+
+it('gives every document type its own default prefix, so a number names one kind of document', function () {
+    $prefixes = collect(app(ModuleRegistry::class)->documentTypes())->map(fn ($t) => $t->prefix);
+
+    expect($prefixes->duplicates()->all())->toBe([]);
 });

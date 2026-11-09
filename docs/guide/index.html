@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IProduction Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a reference manual. Sticky contents rail on the left, a reading column
+   of about 68ch, screenshots allowed to run wider than the text. */
+:root {
+    --bg: oklch(0.975 0.005 262);
+    --surface: oklch(1 0 0);
+    --sunken: oklch(0.955 0.008 262);
+    --line: oklch(0.9 0.008 262);
+    --fg: oklch(0.21 0.015 262);
+    --muted: oklch(0.45 0.015 262);
+    --accent: oklch(0.5 0.18 258);
+    --accent-soft: oklch(0.95 0.03 255);
+    --draft: oklch(0.45 0.015 262);
+    --approved: oklch(0.5 0.18 258);
+    --posted: oklch(0.527 0.154 150);
+    --cancelled: oklch(0.505 0.213 27.5);
+    --warn: oklch(0.555 0.163 49);
+    --shadow: 0 1px 2px oklch(0.2 0.02 262 / 0.06), 0 8px 24px oklch(0.2 0.02 262 / 0.08);
+    --font-display: 'IBM Plex Sans Condensed', 'Arial Narrow', 'Segoe UI', sans-serif;
+    --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: oklch(0.19 0.012 262);
+        --surface: oklch(0.225 0.014 262);
+        --sunken: oklch(0.205 0.013 262);
+        --line: oklch(0.33 0.015 262);
+        --fg: oklch(0.95 0.005 262);
+        --muted: oklch(0.78 0.012 262);
+        --accent: oklch(0.75 0.13 255);
+        --accent-soft: oklch(0.32 0.06 258);
+        --draft: oklch(0.78 0.012 262);
+        --approved: oklch(0.75 0.13 255);
+        --posted: oklch(0.792 0.209 151.7);
+        --cancelled: oklch(0.704 0.191 22.2);
+        --warn: oklch(0.828 0.189 84.4);
+        --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.3);
+        color-scheme: dark;
+    }
+}
+:root[data-theme="dark"] {
+    --bg: oklch(0.19 0.012 262);
+    --surface: oklch(0.225 0.014 262);
+    --sunken: oklch(0.205 0.013 262);
+    --line: oklch(0.33 0.015 262);
+    --fg: oklch(0.95 0.005 262);
+    --muted: oklch(0.78 0.012 262);
+    --accent: oklch(0.75 0.13 255);
+    --accent-soft: oklch(0.32 0.06 258);
+    --draft: oklch(0.78 0.012 262);
+    --approved: oklch(0.75 0.13 255);
+    --posted: oklch(0.792 0.209 151.7);
+    --cancelled: oklch(0.704 0.191 22.2);
+    --warn: oklch(0.828 0.189 84.4);
+    --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.3);
+    color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 var(--font-body);
+    -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+code, kbd, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--sunken); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.35em; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0.05em 0.4em; background: var(--surface); }
+pre { margin: 0; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font: 0.86rem/1.55 var(--font-mono); }
+pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+.masthead {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.masthead-inner { max-width: 1180px; margin: 0 auto; padding-block: 40px 32px; display: grid; gap: 20px; }
+.eyebrow { font: 600 0.75rem/1 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.01em; }
+.lede { max-width: 68ch; font-size: 1.125rem; color: var(--muted); margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.facts li + li, .toc li + li { margin-top: 0; }
+.facts li { border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; font-size: 0.85rem; color: var(--muted); background: var(--bg); }
+
+.layout {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 40px 80px;
+}
+.toc { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; font-size: 0.9rem; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: block; padding: 4px 10px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; }
+.toc a:hover { color: var(--fg); border-left-color: var(--muted); }
+.toc a.current { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.toc .sub a { padding-left: 22px; font-size: 0.85rem; }
+@media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--surface); }
+    .toc .sub { display: none; }
+}
+
+main { min-width: 0; display: grid; gap: 64px; }
+section { display: grid; gap: 18px; min-width: 0; }
+section > p, section > ul, section > ol, .prose { max-width: 68ch; margin: 0; }
+h2 { font-size: 1.75rem; font-weight: 700; padding-top: 4px; }
+h2 .num { color: var(--muted); font-weight: 500; margin-right: 0.35em; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+ul, ol { padding-left: 1.3em; }
+li + li { margin-top: 4px; }
+
+figure { margin: 0; display: grid; gap: 8px; }
+figure img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); background: var(--surface); }
+figcaption { font-size: 0.875rem; color: var(--muted); max-width: 68ch; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.card h3 { font-size: 1.05rem; }
+.card p { margin: 0; font-size: 0.93rem; color: var(--muted); }
+
+/* Document lifecycle strip: the one diagram the whole system hangs on. */
+.lifecycle { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.state { font: 600 0.95rem/1 var(--font-display); letter-spacing: 0.02em; padding: 8px 14px; border-radius: 6px; border: 1.5px solid currentColor; }
+.state.draft { color: var(--draft); }
+.state.approved { color: var(--approved); }
+.state.posted { color: var(--posted); }
+.state.cancelled { color: var(--cancelled); border-style: dashed; }
+.arrow { color: var(--muted); }
+.lifecycle .note { flex-basis: 100%; margin: 4px 0 0; font-size: 0.9rem; color: var(--muted); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 0.75rem/1.3 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--sunken); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.mono, td .mono { white-space: nowrap; }
+
+/* Walkthrough: a real sequence, so it is numbered. */
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 40px; counter-reset: step; }
+.step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 16px; }
+.step::before {
+    counter-increment: step; content: counter(step);
+    grid-row: 1 / span 3; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 1rem/1 var(--font-display);
+    color: var(--accent); background: var(--accent-soft); border: 1px solid var(--line);
+}
+.step h3 { align-self: center; }
+.step .body { display: grid; gap: 12px; min-width: 0; }
+.step .body > p { margin: 0; max-width: 68ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; color: var(--muted); margin: 0; padding: 0; list-style: none; }
+.meta li + li { margin-top: 0; }
+.meta b { color: var(--fg); font-weight: 600; }
+.effect { border-left: 3px solid var(--posted); background: var(--surface); border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 0.93rem; max-width: 68ch; }
+.effect strong { font-family: var(--font-display); letter-spacing: 0.02em; }
+.try { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 0.93rem; max-width: 68ch; }
+.callout { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--surface); border-radius: 0 6px 6px 0; padding: 12px 16px; max-width: 68ch; }
+.callout p { margin: 0; }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+details summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+details > div { padding: 0 16px 16px; display: grid; gap: 12px; }
+dl.glossary { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 20px; margin: 0; max-width: 80ch; }
+dl.glossary dt { font-family: var(--font-display); font-weight: 600; }
+dl.glossary dd { margin: 0; color: var(--muted); }
+@media (max-width: 560px) { dl.glossary { grid-template-columns: minmax(0, 1fr); } dl.glossary dd { margin-bottom: 8px; } }
+
+.themes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 20px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+    <div class="masthead-inner">
+        <span class="eyebrow">Project guide</span>
+        <h1>IProduction</h1>
+        <p class="lede">A manufacturing ERP for a single company: orders, purchasing, production on the shop floor, stock, delivery, billing, accounts and payroll in one system. This guide explains what it does, the few ideas everything is built on, and walks through a real order from start to finish using the demo company.</p>
+        <ul class="facts" aria-label="Key facts">
+            <li>Laravel 13 · Livewire 4 · MySQL 8</li>
+            <li>One company per installation</li>
+            <li>Base currency PKR</li>
+            <li>Customers in their own currency</li>
+            <li>Light, Dim and Dark themes</li>
+        </ul>
+    </div>
+</header>
+
+<div class="layout">
+    <nav class="toc" aria-label="Contents">
+        <ol>
+            <li><a href="#overview">What it is</a></li>
+            <li><a href="#concepts">How it works</a></li>
+            <li><a href="#start">Getting started</a></li>
+            <li><a href="#screen">Finding your way</a></li>
+            <li><a href="#walkthrough">Walkthrough: order to cash</a></li>
+            <li class="sub"><a href="#step-order">Sales order</a></li>
+            <li class="sub"><a href="#step-plan">Planning</a></li>
+            <li class="sub"><a href="#step-buy">Buying and receiving</a></li>
+            <li class="sub"><a href="#step-make">Production</a></li>
+            <li class="sub"><a href="#step-ship">Delivery</a></li>
+            <li class="sub"><a href="#step-bill">Invoice and payment</a></li>
+            <li><a href="#areas">Other areas</a></li>
+            <li><a href="#golive">Going live</a></li>
+            <li><a href="#developers">For developers</a></li>
+            <li><a href="#glossary">Glossary</a></li>
+        </ol>
+    </nav>
+
+    <main>
+
+        <section id="overview">
+            <h2><span class="num">1</span>What it is</h2>
+            <p>IProduction runs the day-to-day work of a manufacturer that makes goods to order, such as sports gloves and balls, often for export customers. Each customer company gets its own installation and its own database, so there is no mixing of data between companies.</p>
+            <p>Everything that happens in the business is a <em>document</em>: a sales order, a goods receipt, a production card, a delivery, an invoice, a payment. When a document is posted, the system updates stock and the accounts for you, in one step that either fully succeeds or changes nothing.</p>
+            <div class="cards">
+                <div class="card"><h3>Sales</h3><p>Customers, sales orders, planning, deliveries with packing lists, invoices, returns and credit notes.</p></div>
+                <div class="card"><h3>Purchasing</h3><p>Vendors, purchase orders, goods receipts with rejected quantities, vendor bills and purchase returns.</p></div>
+                <div class="card"><h3>Production</h3><p>PTCs that follow each batch through its route of stages, contractor jobs, material processing, rejections and wage work.</p></div>
+                <div class="card"><h3>Inventory</h3><p>Stock by item, stage, status, location and lot; reservations for orders; counts and adjustments.</p></div>
+                <div class="card"><h3>Finance</h3><p>Cash and bank accounts in any currency, receipts, payments, conversions, transfers, expenses, journal vouchers, ledgers and assets.</p></div>
+                <div class="card"><h3>HR and payroll</h3><p>Employees and contractors, attendance, loans, salary advances and a monthly payroll with payslips.</p></div>
+                <div class="card"><h3>Reports</h3><p>Over 30 reports, from trial balance and profit and loss to order cost, yield, idle stock and daily activity.</p></div>
+                <div class="card"><h3>Settings</h3><p>Company details, users and roles, units, currencies, stages, lookups, document numbering, approvals and opening balances.</p></div>
+            </div>
+        </section>
+
+        <section id="concepts">
+            <h2><span class="num">2</span>How it works</h2>
+            <p>Six ideas explain nearly every screen. Once these make sense, the rest of the system behaves the way you would expect.</p>
+
+            <h3>Every document has the same life</h3>
+            <div class="lifecycle" role="img" aria-label="Draft, then Approved, then Posted. A document can be Cancelled while nothing is posted.">
+                <span class="state draft">Draft</span><span class="arrow" aria-hidden="true">→</span>
+                <span class="state approved">Approved</span><span class="arrow" aria-hidden="true">→</span>
+                <span class="state posted">Posted</span>
+                <span class="arrow" aria-hidden="true">or</span>
+                <span class="state cancelled">Cancelled</span>
+                <p class="note">A draft can be edited freely. Approving locks it. Posting applies its effects to stock and accounts. A document can be cancelled only while nothing has been posted. Some documents show their progress instead of "Posted", for example Partly Received, Dispatched or Paid.</p>
+            </div>
+            <p>Posted documents are never edited or deleted. A mistake is corrected with a new document that reverses it: a return, a credit note, a stock adjustment or a journal voucher. Cancelling, overriding and reversing always ask for a reason, which is kept in the document's history.</p>
+
+            <div class="cards">
+                <div class="card"><h3>Stock is a ledger</h3><p>Every change in stock is a movement row that is never edited. Stock is held by item, stage, status (available, in production, rejected, returned), location and lot. Only available stock can be reserved or issued.</p></div>
+                <div class="card"><h3>Accounts are double-entry</h3><p>Posting writes balanced journals automatically: debits always equal credits. Ledgers and balances are calculated from journals, never typed in.</p></div>
+                <div class="card"><h3>Customers keep their currency</h3><p>A USD customer's orders, invoices, ledger and receipts stay in USD; no exchange rate is guessed. PKR value appears only when you record a currency conversion and type the PKR actually received. Costs are always in PKR.</p></div>
+                <div class="card"><h3>Numbers come from sequences</h3><p>Each document type has its own prefix, such as <span class="mono">SO-26-0001</span> for the first sales order of 2026. Prefixes and next numbers can be changed in Settings › Numbering.</p></div>
+                <div class="card"><h3>Permissions decide what you see</h3><p>Menu links, buttons and pages are hidden from users without the permission. Cost, profit, salary and bank balance figures each have their own permission.</p></div>
+            </div>
+        </section>
+
+        <section id="start">
+            <h2><span class="num">3</span>Getting started</h2>
+            <h3>Install</h3>
+            <p>You need PHP 8.3 or later, Composer, Node.js and MySQL 8. Create a database called <code>iproduction</code>, copy <code>.env.example</code> to <code>.env</code> with your database details, then run:</p>
+            <pre><code>composer setup</code></pre>
+            <p>This installs dependencies, migrates, seeds the Super Admin, currencies and permissions, and builds the front end. Start everything with <code>composer dev</code> and open <code>http://localhost:8000</code>. The admin password is the one in <code>.env</code>, or the random one the seeder prints.</p>
+            <div class="callout"><p><strong>Using Laravel Herd?</strong> Herd serves the PHP side at <code>http://iproduction.test</code>, so skip <code>composer dev</code>. Run <code>npm run dev</code> while you work (or <code>npm run build</code> once), and <code>php artisan queue:work</code> if you need exports and emails.</p></div>
+
+            <h3>Load the demo company</h3>
+            <p>To explore with realistic data, load the demo company after the normal seed. It is a sports goods maker in Sialkot with export customers in USD, EUR, GBP and AED, and every document in it was posted through the real system, so stock and the books agree.</p>
+            <pre><code>php artisan db:seed --class=DemoDataSeeder</code></pre>
+            <p>It refuses to run in production and does nothing if it was loaded before. It adds one user per role, all with the password <code>Demo@12345</code>:</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Sign in as</th><th>Role</th><th>What they do</th></tr></thead>
+                    <tbody>
+                        <tr><td class="mono">manager@demo.test</td><td>Manager</td><td>Sees everything outside Settings, approves documents, reads all reports including cost, profit and salary.</td></tr>
+                        <tr><td class="mono">sales@demo.test</td><td>Sales</td><td>Customers, sales orders, planning, deliveries, packing, invoices, returns and credit notes.</td></tr>
+                        <tr><td class="mono">purchase@demo.test</td><td>Purchase</td><td>Vendors, purchase orders and purchase returns.</td></tr>
+                        <tr><td class="mono">store@demo.test</td><td>Store</td><td>Stock, lots, reservations, goods receipts, production issues and stock adjustments.</td></tr>
+                        <tr><td class="mono">production@demo.test</td><td>Production</td><td>PTCs, stage work on the floor, contractor jobs, material processing, rejections and wage work.</td></tr>
+                        <tr><td class="mono">accountant@demo.test</td><td>Accountant</td><td>Cash and bank accounts, receipts, payments, transfers, conversions, expenses, vouchers, invoices, vendor bills, credit notes, assets, ledgers and all reports.</td></tr>
+                        <tr><td class="mono">hr@demo.test</td><td>HR</td><td>Employees, attendance, loans, advances and payroll.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Staff roles prepare documents; approving them is for the Manager and the Super Admin. The Super Admin can do everything, including users, roles and settings. Roles can be changed in Settings › Roles.</p>
+        </section>
+
+        <section id="screen">
+            <h2><span class="num">4</span>Finding your way</h2>
+            <figure>
+                <img src="img/dashboard.webp" width="1440" height="900" loading="lazy" alt="Dashboard with tiles for open orders, late orders, stock shortages, production by stage, rejected stock, pending approvals, cash and bank, foreign balances, receivables, payables, deliveries and top customers.">
+                <figcaption>The dashboard shows what needs attention for your role. Each tile opens the screen or report behind it.</figcaption>
+            </figure>
+            <ul>
+                <li><strong>Sidebar.</strong> Areas are grouped as Sales, Purchasing, Production, Inventory, Catalog, Finance, HR, Reports and Settings. Groups open and close and remember their state. You only see links you have permission for.</li>
+                <li><strong>Lists.</strong> Every list has a search box (press <kbd>/</kbd> to jump to it), filters, a date range, sortable columns, paging and an Export button for Excel or CSV.</li>
+                <li><strong>Document pages.</strong> The top shows the number, the party and a status badge, with the buttons the document allows next (Approve, Post, Cancel, Print). The side shows details, linked documents, attachments, notes and the full history of who changed what.</li>
+                <li><strong>Forms.</strong> Press <kbd>Ctrl</kbd> + <kbd>S</kbd> (<kbd>⌘</kbd> + <kbd>S</kbd> on a Mac) to save. Dates are entered and shown as dd-mm-yyyy.</li>
+                <li><strong>Printing.</strong> Orders, receipts, delivery notes, packing lists, invoices, PTC cards, payslips and reports print on their own pages; add <code>?pdf=1</code> to download a PDF.</li>
+                <li><strong>Theme.</strong> The icon at the top right picks Light, Dim, Dark, or System to follow your computer.</li>
+            </ul>
+            <div class="themes">
+                <figure><img src="img/theme-dim.webp" width="1440" height="900" loading="lazy" alt="Sales order list in the Dim theme: soft slate background with light text."><figcaption>Dim: between light and dark, for long sessions.</figcaption></figure>
+                <figure><img src="img/theme-dark.webp" width="1440" height="900" loading="lazy" alt="Sales order list in the Dark theme."><figcaption>Dark.</figcaption></figure>
+            </div>
+        </section>
+
+        <section id="walkthrough">
+            <h2><span class="num">5</span>Walkthrough: order to cash</h2>
+            <p>This follows one export order through the whole system, in the order the work happens. Each step names who usually does it, where to find it, and what changes when it is posted. The demo company has a record at each stage, so you can open it and look.</p>
+
+            <ol class="steps">
+                <li class="step" id="step-order">
+                    <h3>Take the customer's order</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Sales</li><li><b>Where</b> Sales › Sales Orders › New sales order</li></ul>
+                        <p>Pick the customer; the currency comes from the customer and cannot be changed on the order. Add a line per item variant with quantity, unit price and an optional tax rate. The lines grid runs in the browser, so long orders stay fast, and the whole order is sent once when you save.</p>
+                        <figure><img src="img/order-form.webp" width="1440" height="900" loading="lazy" alt="New sales order form with customer, dates, customer PO number, payment terms, currency and a lines grid."><figcaption>A new order is a draft until it is approved.</figcaption></figure>
+                        <p>A manager then approves it. Approval locks the order against edits; a manager can return it to draft with a reason.</p>
+                        <figure><img src="img/order-draft.webp" width="1440" height="900" loading="lazy" alt="Draft sales order SO-26-0006 for Gulf Athletics Trading with an Approve button."><figcaption>Draft order <span class="mono">SO-26-0006</span> waiting for approval.</figcaption></figure>
+                        <p class="effect"><strong>Approving changes nothing</strong> in stock or the books. The order is now open for planning, production and delivery.</p>
+                    </div>
+                </li>
+
+                <li class="step" id="step-plan">
+                    <h3>Plan how to supply it</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Sales or the manager</li><li><b>Where</b> Sales › Planning, or Plan on the order</li></ul>
+                        <p>Planning lists every open order line with what is required, what is free in stock, already reserved, on order and in production, and the shortfall. For each line it says what is blocking it and what to do next: reserve free stock, buy, or make.</p>
+                        <figure><img src="img/planning.webp" width="1440" height="900" loading="lazy" alt="Planning screen listing open order lines with required, free, reserved, on order, in production and shortfall columns, and a next action per line."><figcaption>Rheinland's order <span class="mono">SO-26-0002</span> has 48 footballs free in stock; the next action is to reserve them.</figcaption></figure>
+                        <p class="effect"><strong>Reserving</strong> holds available stock for that order line so no other order can take it. Purchase orders and PTCs created from planning are linked to the line; planning counts them as incoming, never as stock.</p>
+                    </div>
+                </li>
+
+                <li class="step" id="step-buy">
+                    <h3>Buy and receive materials</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Purchase, then Store</li><li><b>Where</b> Purchasing › Purchase Orders, Goods Receipts</li></ul>
+                        <p>A purchase order goes through draft, approval and Mark sent. When the goods arrive, the store records a goods receipt against it: the quantity received, how much was accepted, and how much was rejected, with what to do with the rejects (return to the vendor or keep). A small extra within the tolerance in settings is accepted as is; anything above it needs a decision on the extra quantity and the override permission.</p>
+                        <figure><img src="img/po.webp" width="1440" height="1049" loading="lazy" alt="Purchase order PO-26-0003, partly received: 10,000 ball panels received with 100 rejected, and 400 bladders received."><figcaption><span class="mono">PO-26-0003</span> is Partly Received: 9,900 of 12,000 panels accepted so far.</figcaption></figure>
+                        <figure><img src="img/grn.webp" width="1440" height="1049" loading="lazy" alt="Goods receipt GRN-26-0003, posted, with lots created per line and rejected panels marked for return."><figcaption>Each accepted line becomes a lot, such as <span class="mono">LOT-26-0006</span>, carrying its unit cost.</figcaption></figure>
+                        <p class="effect"><strong>Posting a goods receipt</strong> adds the accepted goods to stock as new lots at the order rate, and posts Dr Inventory / Cr Accounts Payable. Goods returned at the gate never enter stock. Goods for an order line linked to this purchase order are reserved to it at once.</p>
+                        <p>The vendor's invoice is then entered as a vendor bill against the received lines, adding any tax and freight, and paid through Finance › Payments. A payment can settle several bills; anything left over stays as an advance to the vendor.</p>
+                    </div>
+                </li>
+
+                <li class="step" id="step-make">
+                    <h3>Make it on the shop floor</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Production, with Store for materials</li><li><b>Where</b> Production › PTCs</li></ul>
+                        <p>A PTC is the card that follows one batch through production. Create it for an order line or for stock, choose the item, quantity and route, then approve it. Approval copies the route's stages and the item's bill of materials onto the card, so later changes to the catalog don't affect work already started.</p>
+                        <p>On the floor, record each step on the card's stage board:</p>
+                        <ul>
+                            <li><strong>Issue material</strong> from the store to the first stage.</li>
+                            <li><strong>Issue to a stage</strong> and <strong>receive from it</strong>, naming the employee or contractor who did the work. Wage employees and contractors are paid the stage's rate.</li>
+                            <li><strong>Reject</strong> bad pieces with a reason, <strong>skip</strong> optional stages, and record returns and wastage.</li>
+                            <li><strong>Release</strong> finished pieces to the store.</li>
+                        </ul>
+                        <figure><img src="img/ptc.webp" width="1440" height="1300" loading="lazy" alt="PTC-26-0003 stage board: Cutting done for 150 pairs, Stitching has 80 received and 70 still with Javed Hussain, then optional Logo Embossing and Packing. Below are material use, timeline and cost so far."><figcaption><span class="mono">PTC-26-0003</span> for Northfield's 10oz gloves: cutting is done and stitching is halfway, with 70 pairs still with the stitcher.</figcaption></figure>
+                        <p class="effect"><strong>Costs collect on the card</strong> as work happens: material at lot cost, wages, contractor charges and extra work. A release moves its share of the cost onto the finished goods lot, and rejected pieces count as an allowed loss. Pieces released for an order line are reserved to it automatically.</p>
+                        <p>Work sent outside goes on a <strong>contractor job</strong> instead: issue materials to the contractor, receive the finished pieces back, and the job reconciles what was issued against what was used, returned, wasted or still held.</p>
+                        <figure><img src="img/job.webp" width="1440" height="900" loading="lazy" alt="Contractor job CJ-26-0001 for 300 footballs at 85 per piece, 250 received, with a material reconciliation of panels and bladders."><figcaption>Contractor job <span class="mono">CJ-26-0001</span>: 250 of 300 footballs back, with material still held by the workshop.</figcaption></figure>
+                    </div>
+                </li>
+
+                <li class="step" id="step-ship">
+                    <h3>Pack and dispatch</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Sales and Store</li><li><b>Where</b> Sales › Deliveries</li></ul>
+                        <p>Create a delivery from the customer's open order lines and save it. Then:</p>
+                        <ul>
+                            <li><strong>Allocate</strong> picks stock for each line: a lot you choose, otherwise the order's reserved lots, otherwise the oldest free stock.</li>
+                            <li><strong>Pack</strong> into cartons with type, size and weights; completing packing produces the packing list.</li>
+                            <li><strong>Dispatch</strong> when the goods leave.</li>
+                        </ul>
+                        <figure><img src="img/delivery.webp" width="1440" height="1150" loading="lazy" alt="Delivery DN-26-0003 for Albion Fight Gear: 200 pairs from LOT-26-0009, packed in one master carton, with delivery note and packing list print buttons."><figcaption><span class="mono">DN-26-0003</span> is Packed and ready to dispatch, with its packing list available to print.</figcaption></figure>
+                        <p class="effect"><strong>Dispatch</strong> removes the goods from stock and posts the cost of goods sold (Dr COGS / Cr Inventory) at the lots' cost. The order shows the delivered quantity.</p>
+                    </div>
+                </li>
+
+                <li class="step" id="step-bill">
+                    <h3>Invoice and collect payment</h3>
+                    <div class="body">
+                        <ul class="meta"><li><b>Who</b> Sales, then Accountant</li><li><b>Where</b> Sales › Invoices; Finance › Receipts</li></ul>
+                        <p>An invoice is made from dispatched delivery lines; each line can be invoiced once. Prices come from the order and can be adjusted on the invoice; tax is optional per line and defaults to none, so export invoices show no tax.</p>
+                        <figure><img src="img/invoice.webp" width="1440" height="900" loading="lazy" alt="Invoice INV-26-0002 for Rheinland Sportartikel in EUR, total 4,184.00, with a balance of 2,010.00 after a receipt of 2,000 and a credit note of 174."><figcaption><span class="mono">INV-26-0002</span>: EUR 4,184 invoiced, part paid, and reduced by a credit note for returned pairs.</figcaption></figure>
+                        <p class="effect"><strong>Posting the invoice</strong> posts Dr Accounts Receivable / Cr Sales, plus Taxes Payable when tax applies, in the customer's currency.</p>
+                        <p>When money arrives, record a receipt in the customer's currency into a bank account of that currency. Bank charges and other deductions are entered on the receipt, so the amount cleared equals the deductions plus the net received. Allocate it to invoices; anything left is a customer advance that can be applied to a later invoice.</p>
+                        <p>Finally, when foreign currency is converted, record a currency conversion and type the PKR actually credited by the bank. That is the only point where foreign money becomes PKR value in the books.</p>
+                        <p class="try"><strong>If goods come back,</strong> record a delivery return: the goods go to Returned status, then are restocked or sent to rejections. Issue a credit note to reduce what the customer owes.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section id="areas">
+            <h2><span class="num">6</span>Other areas</h2>
+
+            <details open>
+                <summary>Inventory</summary>
+                <div>
+                    <p class="prose">Inventory › Stock shows quantities by item with idle, in production, rejected, returned, reserved and free columns, and tabs by stage and by location and lot. Stock Movements is the full ledger, Lots traces where each lot came from and went, and Reservations shows what is held for which order. Stock Adjustments record count differences; posting one writes the movement and the matching journal.</p>
+                    <figure><img src="img/stock.webp" width="1440" height="900" loading="lazy" alt="Stock summary listing items with quantities by status and free stock."><figcaption>Free stock is available minus reserved.</figcaption></figure>
+                </div>
+            </details>
+
+            <details>
+                <summary>Catalog</summary>
+                <div>
+                    <p class="prose">Items are raw materials, components or finished goods, each with a stock unit. Attributes such as weight or size generate variants; each variant has its own SKU, like <span class="mono">FG-BOX-12OZ</span>. Routes list the stages an item goes through, with optional stages and wage and contractor rates. BOMs list the materials per piece, are versioned, and must be approved before use.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>Finance</summary>
+                <div>
+                    <p class="prose">Accounts lists the cash and bank accounts with balances in their own currencies. Besides receipts and payments, Finance covers transfers between accounts of the same currency, currency conversions, expenses (paid now, or owed to a vendor and paid later), journal vouchers for anything else (optionally deducted through payroll), ledgers for any customer, vendor, employee, contractor or account, the automatic journals, the chart of accounts, and fixed assets.</p>
+                    <figure><img src="img/ledgers.webp" width="1440" height="900" loading="lazy" alt="Cash and bank accounts: Cash Book in PKR and Meezan Bank accounts in PKR, USD and EUR with their balances."><figcaption>Foreign currency accounts keep their balance in that currency.</figcaption></figure>
+                </div>
+            </details>
+
+            <details>
+                <summary>HR and payroll</summary>
+                <div>
+                    <p class="prose">Employees are salaried or paid by wage. Enter attendance for the month (working days, leaves, late hours, overtime), then create the month's payroll. Salaried staff get salary plus overtime, minus unpaid days and late hours; wage employees get their approved wage work. Allowances, fines, loan installments, advances and any amount brought forward apply to both. Nothing changes until the payroll is approved and posted; after that, payments settle each employee's line and payslips can be printed.</p>
+                    <figure><img src="img/payroll.webp" width="1440" height="900" loading="lazy" alt="Payroll for October 2026, partly paid, listing each employee's salary or wage work, overtime and allowances, attendance deductions, fines, loan and advance recoveries and net payable."><figcaption>October payroll <span class="mono">PRL-26-0001</span>, posted and partly paid.</figcaption></figure>
+                </div>
+            </details>
+
+            <details>
+                <summary>Reports</summary>
+                <div>
+                    <p class="prose">Reports are grouped by area and read posted documents only. Each one has filters, prints, and exports to Excel or CSV. Reports showing cost, salary or profit need their own permission. Order cost shows the direct cost of an order; profit uses a reference PKR value and posts nothing.</p>
+                    <figure><img src="img/trial-balance.webp" width="1440" height="900" loading="lazy" alt="Trial balance report as of a date, in PKR, listing accounts with debit and credit balances."><figcaption>The trial balance is per currency, because foreign documents stay in their currency.</figcaption></figure>
+                </div>
+            </details>
+
+            <details>
+                <summary>Settings</summary>
+                <div>
+                    <p class="prose">Company holds the name, logo, tax numbers and tolerances. The period lock date (nothing can be posted on or before it) has its own page. Users and Roles control access. Units, Currencies, Stages and Lookups hold the lists used in forms. Numbering sets each document's prefix and next number, Approvals sets which document types need approval, and Audit Log shows every change. Opening Balances is used once, at go-live.</p>
+                </div>
+            </details>
+        </section>
+
+        <section id="golive">
+            <h2><span class="num">7</span>Going live</h2>
+            <p>Moving a company from its old system follows a fixed order, described in full in <code>docs/GO-LIVE.md</code>:</p>
+            <ol>
+                <li>Set up the server, company settings, master data and users.</li>
+                <li>Check backups work: <code>php artisan db:verify-backup</code> restores the latest backup into a scratch database and compares it.</li>
+                <li>Pick a month end as the cut-over date and print the old system's closing reports as control totals.</li>
+                <li>In Settings › Opening Balances, download each CSV template, fill it in and upload it. Twelve types are available, from cash and stock to running PTCs. The preview flags every row with an error, and a file with errors cannot be posted.</li>
+                <li>Check Reports › Go-live › Cutover report shows every type as matching the control totals.</li>
+                <li>Lock go-live. No more opening documents can be loaded, and nothing can be posted on or before the cut-over date.</li>
+            </ol>
+        </section>
+
+        <section id="developers">
+            <h2><span class="num">8</span>For developers</h2>
+            <p>The code is a modular Laravel application. Each business area is a module in <code>app/Modules/{Name}</code> with its own models, services, Livewire screens, migrations, views and routes; <code>Core</code> is the reference module. The rules every module follows are in <code>AGENTS.md</code>; the most important ones:</p>
+            <ul>
+                <li>Money and quantities are <code>DECIMAL</code> columns calculated with <code>App\Support\Decimal</code>, never floats.</li>
+                <li>Only <code>StockLedger</code> writes stock and only <code>JournalPoster</code> writes journals, always inside the document's posting transaction.</li>
+                <li>Posting goes through <code>DocumentWorkflow::post()</code>, which locks the document, prevents double posting, and enforces approvals and the period lock.</li>
+                <li>Modules talk through service classes and keyed hooks, never by writing to each other's tables.</li>
+                <li>Screens use the shared Blade components and semantic colours (<code>bg-surface</code>, <code>text-muted</code> and so on), which work in every theme.</li>
+            </ul>
+            <pre><code>composer dev      # server, queue, logs and Vite
+composer test     # Pest tests on MySQL (database iproduction_test)
+composer check    # code style, static analysis and tests, as in CI
+composer lint     # fix code style</code></pre>
+            <p>Tests run on MySQL, not SQLite, so decimals, locking and unique indexes behave as in production. One test loads the demo company and opens every screen and printout for every record, which catches screens that break only with real data.</p>
+        </section>
+
+        <section id="glossary">
+            <h2><span class="num">9</span>Glossary</h2>
+            <dl class="glossary">
+                <dt>Allocation</dt><dd>On a delivery: the lots picked for each line. In planning: a link between an order line and its supply (a purchase order line or production).</dd>
+                <dt>BOM</dt><dd>Bill of materials: the materials and quantities needed for one piece of an item.</dd>
+                <dt>COGS</dt><dd>Cost of goods sold, posted when a delivery is dispatched.</dd>
+                <dt>Contractor job</dt><dd>Work sent to an outside contractor, with materials issued and finished pieces received back.</dd>
+                <dt>Free stock</dt><dd>Available stock that is not reserved for any order.</dd>
+                <dt>GRN</dt><dd>Goods receipt note: the record of goods arriving against a purchase order.</dd>
+                <dt>Lot</dt><dd>A batch of stock from one source, such as a receipt or a PTC, carrying its own unit cost.</dd>
+                <dt>Period lock</dt><dd>A date on or before which nothing can be posted, set after month end and at go-live.</dd>
+                <dt>Posting</dt><dd>The step that applies a document's effects to stock and accounts. It happens once and cannot be undone except by a reversing document.</dd>
+                <dt>PTC</dt><dd>The production card for one batch: its route of stages, materials, workers, rejections, cost and output lot.</dd>
+                <dt>Reservation</dt><dd>Available stock held for a specific order line.</dd>
+                <dt>Route</dt><dd>The ordered list of stages an item passes through, such as Cutting, Stitching, Logo Embossing and Packing.</dd>
+                <dt>Stage</dt><dd>One step of production. Stock in production is held by stage.</dd>
+                <dt>Wage work</dt><dd>Pieces done by wage employees at a stage, approved before they are paid through payroll.</dd>
+            </dl>
+        </section>
+
+        <footer>IProduction project guide. Screenshots show the demo company from <code>DemoDataSeeder</code>. The guide lives in <code>docs/guide/</code> in the repository.</footer>
+    </main>
+</div>
+
+<script>
+// Highlight the contents entry for the section in view. Purely a reading aid.
+(() => {
+    const links = [...document.querySelectorAll('.toc a')];
+    const byId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+    const targets = [...byId.keys()].map(id => document.getElementById(id)).filter(Boolean);
+    if (!('IntersectionObserver' in window) || targets.length === 0) return;
+    const visible = new Set();
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id));
+        const first = targets.find(t => visible.has(t.id));
+        if (!first) return;
+        links.forEach(a => a.classList.remove('current'));
+        byId.get(first.id)?.classList.add('current');
+    }, { rootMargin: '0px 0px -70% 0px' });
+    targets.forEach(t => io.observe(t));
+})();
+</script>
+</body>
+</html>
