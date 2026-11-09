@@ -94,6 +94,30 @@
         --ui-primary-hover: oklch(0.5 0.18 260);
     }
 
+    /*
+     * Dim: a softer, lighter slate between light and dark. <html> carries both
+     * "dark" and "dim", so dark: variants (alerts, badge backgrounds) still apply
+     * and only these values change. Same contrast rules as above.
+     */
+    .dark.dim {
+        --ui-page: oklch(0.31 0.02 255);
+        --ui-surface: oklch(0.345 0.022 255);
+        --ui-sunken: oklch(0.325 0.021 255);
+        --ui-raised: oklch(0.39 0.023 255);
+        --ui-hover: oklch(0.405 0.024 255);
+        --ui-selected: oklch(0.43 0.07 255);
+        --ui-selected-fg: oklch(0.9 0.07 250);
+        --ui-line: oklch(0.44 0.022 255);
+        --ui-line-strong: oklch(0.64 0.02 255);
+        --ui-fg: oklch(0.965 0.006 255);
+        --ui-muted: oklch(0.87 0.014 255);
+        --ui-subtle: oklch(0.81 0.016 255);
+        --ui-link: oklch(0.84 0.1 250);
+        --ui-danger: oklch(0.808 0.114 19.6);
+        --ui-success: oklch(0.871 0.15 154.4);
+        --ui-warning: oklch(0.879 0.169 91.6);
+    }
+
     html {
         @apply antialiased;
     }

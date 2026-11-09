@@ -1,26 +1,46 @@
-// Light/dark theme. The initial class is set by an inline script in the
-// layout <head> (to avoid a flash), this keeps it in sync after navigation.
+// Themes: light, dim, dark, or "system" (follow the operating system).
+// The <head> runs applyTheme() before the page paints, so there is no flash;
+// this file keeps it in sync after Livewire navigation and OS changes.
+// Dim sets both "dark" (so dark: variants apply) and "dim" (softer values in app.css).
 const KEY = 'theme';
+const THEMES = ['light', 'dim', 'dark'];
 
-export function applyTheme(theme) {
-    const dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.classList.toggle('dark', dark);
+export function savedTheme() {
+    try {
+        const saved = localStorage.getItem(KEY);
+
+        return THEMES.includes(saved) ? saved : 'system';
+    } catch (e) {
+        return 'system'; // storage blocked: follow the OS
+    }
 }
 
-window.toggleTheme = () => {
-    const dark = !document.documentElement.classList.contains('dark');
+export function applyTheme(theme = savedTheme()) {
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const html = document.documentElement;
+    html.classList.toggle('dark', theme === 'dark' || theme === 'dim' || (theme === 'system' && systemDark));
+    html.classList.toggle('dim', theme === 'dim');
+}
+
+window.setTheme = (theme) => {
     try {
-        localStorage.setItem(KEY, dark ? 'dark' : 'light');
+        if (THEMES.includes(theme)) {
+            localStorage.setItem(KEY, theme);
+        } else {
+            localStorage.removeItem(KEY);
+        }
     } catch (e) {
-        // Storage can be blocked; the toggle still works for this page.
+        // Storage can be blocked; the choice still applies to this page.
     }
-    applyTheme(dark ? 'dark' : 'light');
+    applyTheme(THEMES.includes(theme) ? theme : 'system');
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: theme }));
 };
 
-document.addEventListener('livewire:navigated', () => {
-    let saved = null;
-    try {
-        saved = localStorage.getItem(KEY);
-    } catch (e) {}
-    applyTheme(saved);
+window.currentTheme = savedTheme;
+
+document.addEventListener('livewire:navigated', () => applyTheme());
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (savedTheme() === 'system') {
+        applyTheme('system');
+    }
 });

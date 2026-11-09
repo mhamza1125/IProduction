@@ -61,11 +61,28 @@
             </button>
 
             <div class="ml-auto flex items-center gap-1">
-                <button type="button" onclick="toggleTheme()" class="rounded-md p-2 text-subtle hover:bg-hover hover:text-fg" title="Toggle dark mode">
-                    <x-icon name="moon" class="dark:hidden" />
-                    <x-icon name="sun" class="hidden dark:block" />
-                    <span class="sr-only">Toggle dark mode</span>
-                </button>
+                {{-- Theme: light, dim, dark or follow the system (resources/js/theme.js). --}}
+                <div x-data="{ open: false, theme: window.currentTheme() }" x-on:theme-changed.window="theme = $event.detail || 'system'"
+                     class="relative" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
+                    <button type="button" x-on:click="open = !open" :aria-expanded="open" aria-haspopup="menu" class="rounded-md p-2 text-subtle hover:bg-hover hover:text-fg" title="Theme">
+                        <x-icon name="sun" x-show="theme === 'light'" />
+                        <x-icon name="dim" x-show="theme === 'dim'" x-cloak />
+                        <x-icon name="moon" x-show="theme === 'dark'" x-cloak />
+                        <x-icon name="desktop" x-show="theme === 'system'" x-cloak />
+                        <span class="sr-only">Theme</span>
+                    </button>
+                    <div x-show="open" x-cloak x-transition role="menu" class="absolute right-0 mt-1 w-40 rounded-md bg-raised py-1 text-fg shadow-lg ring-1 ring-line-strong/40">
+                        @foreach (['light' => ['Light', 'sun'], 'dim' => ['Dim', 'dim'], 'dark' => ['Dark', 'moon'], 'system' => ['System', 'desktop']] as $value => [$label, $icon])
+                            <button type="button" role="menuitemradio" :aria-checked="theme === '{{ $value }}'"
+                                    x-on:click="setTheme('{{ $value }}'); open = false"
+                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-hover"
+                                    :class="theme === '{{ $value }}' ? 'font-semibold text-selected-fg' : ''">
+                                <x-icon :name="$icon" class="size-4" /> {{ $label }}
+                                <x-icon name="check" class="ml-auto size-4" x-show="theme === '{{ $value }}'" />
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
 
                 <div x-data="{ open: false }" class="relative" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
                     <button type="button" x-on:click="open = !open" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-hover" :aria-expanded="open">
