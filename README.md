@@ -100,6 +100,9 @@ Each customer gets their own deployment and database. Use a VPS (managed with La
    QUEUE_CONNECTION=redis
    CACHE_STORE=redis
    SESSION_DRIVER=redis
+   SESSION_SECURE_COOKIE=true   # the site must be served over HTTPS
+   LOG_STACK=daily
+   LOG_LEVEL=warning
    ```
 2. Deploy:
    ```bash

@@ -44,7 +44,7 @@
                     @foreach ($d->lines as $l)
                         <tr wire:key="dl-{{ $l->id }}">
                             <x-table.td class="font-mono text-xs"><a href="{{ route('sales.orders.show', $l->orderLine->sales_order_id) }}" wire:navigate class="text-link hover:underline">{{ $l->orderLine->order->number }}</a></x-table.td>
-                            <x-table.td>{{ $l->variant->fullLabel() }}@if ($l->source_status === 'rejected')<x-badge color="red">rejected stock</x-badge>@endif @if ($l->over_reason)<div class="text-xs text-warning">More than ordered: {{ $l->over_reason }}</div>@endif</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}@if ($l->source_status === 'rejected')<x-badge color="red">rejected stock</x-badge>@endif @if ($l->over_reason)<div class="text-xs text-warning">More than ordered: {{ $l->over_reason }}</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td>
                             <x-table.td class="text-xs">@foreach ($l->allocations as $a)<div><a href="{{ route('inventory.lots.show', $a->lot) }}" wire:navigate class="font-mono text-link hover:underline">{{ $a->lot->lot_number }}</a> · @qty($a->quantity)</div>@endforeach</x-table.td>
                             <x-table.td align="right">@qty($packed[$l->id] ?? '0')</x-table.td>

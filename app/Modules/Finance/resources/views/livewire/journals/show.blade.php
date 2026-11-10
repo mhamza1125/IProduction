@@ -1,7 +1,7 @@
 <div>
     <x-page-header :title="'Journal '.$journal->number" :description="\App\Support\Format::date($journal->journal_date).' · '.$journal->currency_code.' · '.$journal->description">
         @if ($journal->source && method_exists($journal->source, 'showUrl'))
-            <x-button variant="secondary" :href="$journal->source->showUrl()">Open {{ $journal->source->number }}</x-button>
+            <x-button variant="secondary" :href="$journal->source->showUrl()">Open {{ \App\Support\Documents\Reference::label($journal->source) }}</x-button>
         @endif
     </x-page-header>
     <x-card :padding="false" class="max-w-4xl">

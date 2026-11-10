@@ -19,7 +19,7 @@
                 @foreach ($openLines as $l)
                     <tr wire:key="bl-{{ $l->id }}">
                         <x-table.td class="font-mono text-xs">{{ $l->receipt->number }}</x-table.td>
-                        <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
+                        <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td>
                         <x-table.td align="right">@qty($l->payable_qty) {{ $l->orderLine->unit->symbol }}</x-table.td>
                         <x-table.td align="right">@qty($l->billed_qty)</x-table.td>
                         <x-table.td align="right">@money($l->rate, null, 4)</x-table.td>

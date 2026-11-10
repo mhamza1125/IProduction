@@ -22,7 +22,7 @@
                     </x-slot:head>
                     @foreach ($lines as $l)
                         <tr wire:key="l-{{ $l->id }}" class="align-top">
-                            <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td>
                             <x-table.td align="right">@qty($l->received_qty) {{ $l->orderLine->unit->symbol }}</x-table.td>
                             <x-table.td align="right">@qty($l->accepted_qty)</x-table.td>
                             <x-table.td align="right">@qty($l->rejected_qty) @if ((float) $l->rejected_qty)<div class="text-xs text-subtle">{{ $l->rejected_action === 'keep' ? 'kept' : 'returned' }} · {{ $l->rejectReason?->name }}</div>@endif</x-table.td>

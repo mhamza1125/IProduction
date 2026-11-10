@@ -35,7 +35,7 @@
                     <x-slot:head><x-table.th>Item</x-table.th><x-table.th>Stage</x-table.th><x-table.th align="right">Agreed</x-table.th>@can('cost.view')<x-table.th align="right">Rate</x-table.th>@endcan<x-table.th align="right">Received</x-table.th><x-table.th align="right">Accepted</x-table.th><x-table.th align="right">Rejected</x-table.th><x-table.th align="right">Paid</x-table.th><x-table.th align="right">Short</x-table.th></x-slot:head>
                     @foreach ($job->lines as $l)
                         <tr wire:key="l-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td>{{ $l->stage?->name ?? 'Finished' }}</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td>{{ $l->stage?->name ?? 'Finished' }}</x-table.td>
                             <x-table.td align="right">@qty($l->quantity)</x-table.td>@can('cost.view')<x-table.td align="right">@money($l->rate, null, 4)</x-table.td>@endcan
                             <x-table.td align="right">@qty($l->received_qty)</x-table.td><x-table.td align="right">@qty($l->accepted_qty)</x-table.td>
                             <x-table.td align="right">@qty($l->rejected_qty)</x-table.td><x-table.td align="right">@qty($l->paid_qty)</x-table.td><x-table.td align="right">@qty($l->short())</x-table.td>

@@ -30,6 +30,6 @@ class LedgerPrintController
             'currency' => LedgerSubjects::currency($type, $subject, $currency),
             'from' => $from,
             'to' => $to,
-        ], 'Ledger '.($subject->getAttribute('code') ?? $subject->getAttribute('name')));
+        ], 'Ledger '.LedgerSubjects::label($subject));
     }
 }

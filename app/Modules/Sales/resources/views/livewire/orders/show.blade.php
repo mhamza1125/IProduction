@@ -46,7 +46,7 @@
                     @foreach ($lines as $l)
                         @php($p = $pictures[$l->id] ?? null)
                         <tr wire:key="l-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }} @if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif @if ($p)<div class="text-xs text-warning">{{ $p['blocker'] }} → {{ $p['next'] }}</div>@endif</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }} @if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif @if ($p)<div class="text-xs text-warning">{{ $p['blocker'] }} → {{ $p['next'] }}</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td>
                             <x-table.td align="right">@money($l->unit_price, null, 4)</x-table.td>
                             <x-table.td align="right">@qty($reserved[$l->id] ?? '0')</x-table.td>

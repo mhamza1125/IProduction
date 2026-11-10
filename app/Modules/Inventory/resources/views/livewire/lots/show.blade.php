@@ -7,7 +7,7 @@
                 <dl class="grid gap-4 sm:grid-cols-3">
                     <x-people::detail label="Origin" :value="\App\Modules\Inventory\Models\Lot::ORIGINS[$lot->origin] ?? $lot->origin" />
                     <x-people::detail label="Received" :value="\App\Support\Format::date($lot->received_date)" />
-                    <x-people::detail label="Source document" :value="$lot->source?->number ?? ($lot->source ? class_basename($lot->source).' #'.$lot->source_id : null)" />
+                    <x-people::detail label="Source document" :value="\App\Support\Documents\Reference::label($lot->source) ?: null" />
                     <x-people::detail label="Vendor" :value="$lot->vendor?->name" />
                     <x-people::detail label="Contractor" :value="$lot->contractor?->name" />
                     @can('cost.view') <x-people::detail label="Unit cost" :value="\App\Support\Format::money($lot->unit_cost, 'PKR', 4)" /> @endcan

@@ -16,10 +16,11 @@
                         @foreach (collect($props->get('attributes'))->except([...$hidden, 'party_id', 'id'])->reject(fn ($v) => $activity->event === 'created' && ($v === null || $v === '')) as $field => $new)
                             <dt class="font-medium">{{ str_replace('_', ' ', $field) }}</dt>
                             <dd>
-                                @if (isset($props->get('old')[$field]))
-                                    <span class="line-through">{{ is_scalar($props->get('old')[$field]) ? $props->get('old')[$field] : json_encode($props->get('old')[$field]) }}</span> →
+                                @php($old = $props->get('old')[$field] ?? null)
+                                @if ($activity->event === 'updated' && $old !== null && $old !== '')
+                                    <span class="line-through">{{ \App\Modules\Core\Livewire\Shared\ActivityHistory::display($old) }}</span> →
                                 @endif
-                                {{ is_scalar($new) || $new === null ? ($new ?? '—') : json_encode($new) }}
+                                {{ \App\Modules\Core\Livewire\Shared\ActivityHistory::display($new) }}
                             </dd>
                         @endforeach
                     </dl>

@@ -22,7 +22,7 @@
                 <tr wire:key="ptc-{{ $p->id }}">
                     <x-table.td class="font-mono"><a href="{{ route('production.ptcs.show', $p) }}" wire:navigate class="text-link hover:underline">{{ $p->number }}</a>@if ($p->parent)<div class="text-xs text-subtle">child of {{ $p->parent->number }}</div>@endif</x-table.td>
                     <x-table.td>@date($p->start_date)</x-table.td>
-                    <x-table.td>{{ $p->variant->fullLabel() }}</x-table.td>
+                    <x-table.td wide>{{ $p->variant->fullLabel() }}</x-table.td>
                     <x-table.td>@if ($p->orderLine)<span class="font-mono text-xs">{{ $p->orderLine->order->number }}</span> · {{ $p->orderLine->order->customer->name }}@else <span class="text-subtle">Stock</span> @endif</x-table.td>
                     <x-table.td align="right">@qty($p->planned_qty)</x-table.td>
                     <x-table.td align="right">@qty($p->released_qty)</x-table.td>

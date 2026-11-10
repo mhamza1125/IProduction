@@ -14,7 +14,7 @@
                 <x-table>
                     <x-slot:head><x-table.th>Receipt</x-table.th><x-table.th>Item</x-table.th><x-table.th align="right">Qty</x-table.th><x-table.th align="right">Rate</x-table.th><x-table.th align="right">Amount</x-table.th></x-slot:head>
                     @foreach ($lines as $l)
-                        <tr><x-table.td class="font-mono text-xs">{{ $l->receiptLine->receipt->number }}</x-table.td><x-table.td>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td align="right">@qty($l->quantity)</x-table.td><x-table.td align="right">@money($l->rate, null, 4)</x-table.td><x-table.td align="right">@money($l->amount)</x-table.td></tr>
+                        <tr><x-table.td class="font-mono text-xs">{{ $l->receiptLine->receipt->number }}</x-table.td><x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td align="right">@qty($l->quantity)</x-table.td><x-table.td align="right">@money($l->rate, null, 4)</x-table.td><x-table.td align="right">@money($l->amount)</x-table.td></tr>
                     @endforeach
                     <tr><x-table.td colspan="4">Goods</x-table.td><x-table.td align="right">@money($bill->goods_amount)</x-table.td></tr>
                     <tr><x-table.td colspan="4">Tax</x-table.td><x-table.td align="right">@money($bill->tax_amount)</x-table.td></tr>

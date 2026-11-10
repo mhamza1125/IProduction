@@ -11,7 +11,7 @@
                 <x-table>
                     <x-slot:head><x-table.th>Item</x-table.th><x-table.th>Lot</x-table.th><x-table.th>From</x-table.th><x-table.th align="right">Qty</x-table.th><x-table.th align="right">Rate</x-table.th><x-table.th align="right">Amount</x-table.th></x-slot:head>
                     @foreach ($lines as $l)
-                        <tr><x-table.td>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td class="font-mono text-xs">{{ $l->lot->lot_number }}</x-table.td><x-table.td>{{ \Illuminate\Support\Str::headline($l->status) }} · {{ $l->location->name }}</x-table.td><x-table.td align="right">@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td><x-table.td align="right">@money($l->rate, null, 4)</x-table.td><x-table.td align="right">@money($l->amount)</x-table.td></tr>
+                        <tr><x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td><x-table.td class="font-mono text-xs">{{ $l->lot->lot_number }}</x-table.td><x-table.td>{{ \Illuminate\Support\Str::headline($l->status) }} · {{ $l->location->name }}</x-table.td><x-table.td align="right">@qty($l->quantity) {{ $l->variant->item->stockUnit->symbol }}</x-table.td><x-table.td align="right">@money($l->rate, null, 4)</x-table.td><x-table.td align="right">@money($l->amount)</x-table.td></tr>
                     @endforeach
                     <tr class="font-semibold"><x-table.td colspan="5">Total PKR</x-table.td><x-table.td align="right">@money($return->total)</x-table.td></tr>
                 </x-table>

@@ -6,6 +6,7 @@ use App\Modules\Inventory\Models\Lot;
 use App\Modules\Reports\Support\Column;
 use App\Modules\Reports\Support\Filter;
 use App\Modules\Reports\Support\Report;
+use App\Support\Documents\Reference;
 use Illuminate\Support\Facades\DB;
 
 /** Any lot traced back to its sources and forward to its customers. */
@@ -100,7 +101,7 @@ class LotTrace extends Report
     private function row(string $direction, int $level, Lot $lot, ?string $qty): array
     {
         return ['direction' => $direction, 'level' => $level ?: null, 'lot' => $lot->lot_number, 'url' => route('inventory.lots.show', $lot), 'sku' => $lot->variant->sku,
-            'origin' => (Lot::ORIGINS[$lot->origin] ?? $lot->origin).($lot->source_type ? ' · '.($lot->source?->getAttribute('number') ?? '') : ''),
+            'origin' => (Lot::ORIGINS[$lot->origin] ?? $lot->origin).($lot->source_type ? ' · '.Reference::label($lot->source) : ''),
             'party' => $lot->vendor->name ?? $lot->contractor?->name, 'quantity' => $qty, 'date' => $lot->received_date];
     }
 }

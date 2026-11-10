@@ -21,7 +21,7 @@
                         @php($l = $r['line'])
                         <tr wire:key="ol-{{ $l->id }}">
                             <x-table.td class="font-mono text-xs">{{ $l->order->number }} @if ($l->order->sells_rejected_stock)<x-badge color="red">rejected stock</x-badge>@endif</x-table.td>
-                            <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td>
                             <x-table.td align="right">@qty($r['remaining'])@if ((float) $r['on_deliveries'])<div class="text-xs text-subtle">+ @qty($r['on_deliveries']) on other deliveries</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($r['reserved'])</x-table.td>
                             <x-table.td align="right">@qty($r['ready'])</x-table.td>

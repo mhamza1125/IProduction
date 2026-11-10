@@ -45,7 +45,7 @@
                     </x-slot:head>
                     @foreach ($lines as $l)
                         <tr wire:key="l-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }} @if ($l->stage)<x-badge>{{ $l->stage->name }}</x-badge>@endif @if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }} @if ($l->stage)<x-badge>{{ $l->stage->name }}</x-badge>@endif @if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
                             <x-table.td align="right">@qty($l->quantity) {{ $l->unit->symbol }}</x-table.td>
                             <x-table.td align="right">@money($l->rate, null, 4)</x-table.td>
                             <x-table.td align="right">@money($l->amount)</x-table.td>

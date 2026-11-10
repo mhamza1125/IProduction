@@ -7,6 +7,7 @@ use App\Modules\Finance\Models\GlAccount;
 use App\Modules\Finance\Models\JournalLine;
 use App\Modules\Finance\Models\MoneyAccount;
 use App\Modules\Finance\Services\LedgerSubjects;
+use App\Support\Documents\Reference;
 use App\Support\Exports\ArrayExport;
 use App\Support\Format;
 use Carbon\Carbon;
@@ -85,11 +86,11 @@ class Index extends Component
         $rows = [['', '', 'Opening balance', '', '', $ledger['opening']]];
         foreach ($ledger['rows'] as $row) {
             $line = $row['line'];
-            $rows[] = [Format::date($line->line_date), $line->journal->source?->getAttribute('number') ?? $line->journal->number, $line->memo ?? $line->journal->description, $line->debit, $line->credit, $row['balance']];
+            $rows[] = [Format::date($line->line_date), Reference::number($line->journal->source) ?? $line->journal->number, $line->memo ?? $line->journal->description, $line->debit, $line->credit, $row['balance']];
         }
         $rows[] = ['', '', 'Closing balance', $ledger['debits'], $ledger['credits'], $ledger['closing']];
 
-        $name = str($subject->getAttribute('code') ?? $subject->getAttribute('name'))->slug().'-ledger.'.($format === 'csv' ? 'csv' : 'xlsx');
+        $name = str(LedgerSubjects::label($subject))->slug().'-ledger.'.($format === 'csv' ? 'csv' : 'xlsx');
 
         return Excel::download(new ArrayExport(['Date', 'Document', 'Description', 'Debit', 'Credit', 'Balance'], $rows), $name,
             $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX);

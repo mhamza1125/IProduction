@@ -19,7 +19,7 @@
                 <tr wire:key="pl-{{ $l->id }}" wire:click="select({{ $l->id }})" @class(['cursor-pointer hover:bg-hover', 'bg-selected' => $lineId === $l->id])>
                     <x-table.td class="font-mono text-xs">{{ $l->order->number }}</x-table.td>
                     <x-table.td>{{ $l->order->customer->name }}</x-table.td>
-                    <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
+                    <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td>
                     <x-table.td @class(['text-danger' => ($l->due_date ?? $l->order->due_date)?->isPast()])>@date($l->due_date ?? $l->order->due_date)</x-table.td>
                     <x-table.td align="right">@qty($r['required'])</x-table.td>
                     <x-table.td align="right">@qty($r['free'])</x-table.td>

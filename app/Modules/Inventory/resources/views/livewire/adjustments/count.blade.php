@@ -19,7 +19,7 @@
                 </x-slot:head>
                 @foreach ($rows as $row)
                     <tr wire:key="c-{{ $row->id }}">
-                        <x-table.td>{{ $row->variant->fullLabel() }}</x-table.td>
+                        <x-table.td wide>{{ $row->variant->fullLabel() }}</x-table.td>
                         <x-table.td>{{ $row->stage?->name ?? '—' }}</x-table.td>
                         <x-table.td class="font-mono text-xs">{{ $row->lot->lot_number }}</x-table.td>
                         <x-table.td align="right">@qty($row->quantity)</x-table.td>

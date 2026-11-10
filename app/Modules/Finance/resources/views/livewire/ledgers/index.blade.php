@@ -24,7 +24,7 @@
     </x-card>
 
     @if ($subject && $ledger)
-        <x-card :padding="false" :title="($subject->code ?? '').' '.$subject->name" :description="'Amounts in '.$ledgerCurrency.'. Balance = debit − credit.'">
+        <x-card :padding="false" :title="\App\Modules\Finance\Services\LedgerSubjects::label($subject)" :description="'Amounts in '.$ledgerCurrency.'. Balance = debit − credit.'">
             <x-table>
                 <x-slot:head>
                     <x-table.th>Date</x-table.th><x-table.th>Document</x-table.th><x-table.th>Description</x-table.th>
@@ -38,9 +38,9 @@
                         <x-table.td class="whitespace-nowrap">@date($line->line_date)</x-table.td>
                         <x-table.td class="whitespace-nowrap font-mono text-xs">
                             @if ($source && method_exists($source, 'showUrl'))
-                                <a href="{{ $source->showUrl() }}" wire:navigate class="text-link hover:underline">{{ $source->number }}</a>
+                                <a href="{{ $source->showUrl() }}" wire:navigate class="text-link hover:underline">{{ \App\Support\Documents\Reference::number($source) ?? $line->journal->number }}</a>
                             @else
-                                <a href="{{ route('finance.journals.show', $line->journal_id) }}" wire:navigate class="text-link hover:underline">{{ $source?->number ?? $line->journal->number }}</a>
+                                <a href="{{ route('finance.journals.show', $line->journal_id) }}" wire:navigate class="text-link hover:underline">{{ \App\Support\Documents\Reference::number($source) ?? $line->journal->number }}</a>
                             @endif
                         </x-table.td>
                         <x-table.td>{{ $line->memo ?? $line->journal->description }} @if ($type !== 'gl')<span class="text-xs text-subtle">· {{ $line->account->name }}</span>@endif</x-table.td>

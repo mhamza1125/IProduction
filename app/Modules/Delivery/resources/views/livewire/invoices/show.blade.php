@@ -13,7 +13,7 @@
                     <x-slot:head><x-table.th>Item</x-table.th><x-table.th>Delivery · order</x-table.th><x-table.th align="right">Qty</x-table.th><x-table.th align="right">Price</x-table.th><x-table.th align="right">Discount</x-table.th><x-table.th align="right">Tax</x-table.th><x-table.th align="right">Amount</x-table.th></x-slot:head>
                     @foreach ($inv->lines as $l)
                         <tr wire:key="il-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }}@if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}@if ($l->description)<div class="text-xs text-subtle">{{ $l->description }}</div>@endif</x-table.td>
                             <x-table.td class="font-mono text-xs">{{ $l->deliveryLine->delivery->number }} · {{ $l->orderLine->order->number }}</x-table.td>
                             <x-table.td align="right">@qty($l->quantity)</x-table.td>
                             <x-table.td align="right">@money($l->unit_price, null, 4)@if (\App\Support\Decimal::compare($l->unit_price, $l->order_price) !== 0)<div class="text-xs text-warning">order @money($l->order_price, null, 4)</div>@endif</x-table.td>

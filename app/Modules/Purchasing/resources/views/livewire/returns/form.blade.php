@@ -14,7 +14,7 @@
                 <x-slot:head><x-table.th>Item</x-table.th><x-table.th>Lot</x-table.th><x-table.th>Status · location</x-table.th><x-table.th align="right">In stock</x-table.th><x-table.th align="right">Return</x-table.th></x-slot:head>
                 @foreach ($buckets as $b)
                     <tr wire:key="rb-{{ $b->id }}">
-                        <x-table.td>{{ $b->variant->fullLabel() }}</x-table.td>
+                        <x-table.td wide>{{ $b->variant->fullLabel() }}</x-table.td>
                         <x-table.td class="font-mono text-xs">{{ $b->lot->lot_number }}</x-table.td>
                         <x-table.td>{{ \Illuminate\Support\Str::headline($b->status) }} · {{ $b->location->name }}</x-table.td>
                         <x-table.td align="right">@qty($b->quantity) {{ $b->variant->item->stockUnit->symbol }}</x-table.td>

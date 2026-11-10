@@ -2,7 +2,9 @@
 
 namespace App\Modules\Core\Livewire\Shared;
 
+use App\Support\Format;
 use App\Support\Models\PermissionScoped;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\Locked;
@@ -24,6 +26,35 @@ class ActivityHistory extends Component
         abort_unless(auth()->user()?->can($model->permissionKey().'.view'), 403);
 
         $this->model = $model;
+    }
+
+    /**
+     * A logged value as people read it: dates as dd-mm-yyyy in the company's
+     * timezone (they are logged in UTC), empty as "—", true/false as Yes/No.
+     */
+    public static function display(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '—';
+        }
+        if (is_bool($value)) {
+            return $value ? 'Yes' : 'No';
+        }
+        if (! is_scalar($value)) {
+            return (string) json_encode($value, JSON_UNESCAPED_UNICODE);
+        }
+
+        $text = (string) $value;
+        if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})$/', $text)) {
+            $moment = Carbon::parse($text)->setTimezone((string) config('app.timezone'));
+
+            return $moment->format('H:i:s') === '00:00:00' ? Format::date($moment) : Format::datetime($moment);
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $text)) {
+            return Format::date($text);
+        }
+
+        return $text;
     }
 
     public function render(): View

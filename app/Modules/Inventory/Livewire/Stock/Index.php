@@ -175,6 +175,11 @@ class Index extends Component
 
     public function render(): View
     {
+        // The view comes from the URL; an unknown value (old link, typo) shows the summary.
+        if (! in_array($this->view, ['summary', 'stages', 'locations'], true)) {
+            $this->view = 'summary';
+        }
+
         $data = [
             'types' => Item::TYPES,
             'locations' => Location::query()->orderBy('type')->orderBy('name')->pluck('name', 'id'),

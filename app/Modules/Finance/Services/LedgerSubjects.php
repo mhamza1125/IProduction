@@ -28,6 +28,18 @@ final class LedgerSubjects
         'gl' => ['Chart of accounts', GlAccount::class, 'chart_of_accounts.view'],
     ];
 
+    /**
+     * "CUS-0002 Rheinland GmbH", or just the name for subjects without a code
+     * (cash and bank accounts). Reads the raw attributes, so a model without a
+     * code column never trips strict mode.
+     */
+    public static function label(Model $subject): string
+    {
+        $attributes = $subject->getAttributes();
+
+        return trim(($attributes['code'] ?? '').' '.($attributes['name'] ?? ''));
+    }
+
     public static function find(string $type, int $id): ?Model
     {
         $class = self::TYPES[$type][1] ?? null;

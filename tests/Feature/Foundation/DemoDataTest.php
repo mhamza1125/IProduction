@@ -74,10 +74,16 @@ it('opens every screen and printout of the demo company without a server error',
     }
 
     $failures = [];
-    foreach ($urls as $url) {
-        $status = $this->get('/'.$url)->status();
+    // Printouts are also produced as PDFs (a different renderer, with its own failures).
+    $pdfs = array_map(fn ($u) => $u.'?pdf=1', array_values(array_filter($urls, fn ($u) => preg_match('#/(print|packing-list)$|/slip/#', $u))));
+
+    foreach ([...$urls, ...$pdfs] as $url) {
+        $response = $this->get('/'.$url);
+        $status = $response->status();
         if ($status >= 500) {
             $failures[] = "{$status} /{$url}";
+        } elseif (str_ends_with($url, '?pdf=1') && $status === 200 && ! str_contains((string) $response->headers->get('content-type'), 'pdf')) {
+            $failures[] = "not a PDF: /{$url}";
         }
     }
 

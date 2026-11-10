@@ -5,6 +5,7 @@ namespace App\Modules\Inventory\Livewire\Movements;
 use App\Modules\Inventory\Models\Location;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Models\StockStatus;
+use App\Support\Documents\Reference;
 use App\Support\Format;
 use App\Support\Livewire\WithDataTable;
 use App\Support\Livewire\WithExport;
@@ -83,9 +84,7 @@ class Index extends Component
 
     public static function documentLabel(StockMovement $m): string
     {
-        $source = $m->source;
-
-        return $source ? (string) ($source->getAttribute('number') ?? class_basename($source).' #'.$source->getKey()) : '';
+        return Reference::label($m->source);
     }
 
     public function render(): View

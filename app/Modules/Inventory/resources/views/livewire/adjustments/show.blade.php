@@ -21,7 +21,7 @@
                     </x-slot:head>
                     @foreach ($lines as $l)
                         <tr wire:key="l-{{ $l->id }}">
-                            <x-table.td>{{ $l->variant->fullLabel() }}</x-table.td>
+                            <x-table.td wide>{{ $l->variant->fullLabel() }}</x-table.td>
                             <x-table.td class="text-xs text-subtle">{{ collect([$l->location->name, $l->stage?->name, $statuses[$l->status]])->filter()->implode(' · ') }}</x-table.td>
                             <x-table.td class="font-mono text-xs">{{ $l->lot?->lot_number ?? ((float) $l->quantity > 0 ? 'new lot' : 'oldest first') }}</x-table.td>
                             @if ($adjustment->from_count) <x-table.td align="right">@qty($l->system_quantity)</x-table.td><x-table.td align="right">@qty($l->counted_quantity)</x-table.td> @endif

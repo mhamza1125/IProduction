@@ -1,7 +1,7 @@
 <x-print.layout :title="$title" heading="Ledger" :for-pdf="$forPdf">
     <x-slot:meta>
         <table class="meta">
-            <tr><td><strong>{{ $typeLabel }}:</strong> {{ $subject->code ?? '' }} {{ $subject->name }}</td>
+            <tr><td><strong>{{ $typeLabel }}:</strong> {{ \App\Modules\Finance\Services\LedgerSubjects::label($subject) }}</td>
                 <td style="text-align:right"><strong>Period:</strong> {{ $from ? \App\Support\Format::date($from) : 'Start' }} to {{ $to ? \App\Support\Format::date($to) : 'Today' }}</td></tr>
             <tr><td><strong>Currency:</strong> {{ $currency }}</td><td></td></tr>
         </table>
@@ -12,7 +12,7 @@
         @foreach ($ledger['rows'] as $row)
             <tr>
                 <td>{{ \App\Support\Format::date($row['line']->line_date) }}</td>
-                <td>{{ $row['line']->journal->source?->number ?? $row['line']->journal->number }}</td>
+                <td>{{ \App\Support\Documents\Reference::number($row['line']->journal->source) ?? $row['line']->journal->number }}</td>
                 <td>{{ $row['line']->memo ?? $row['line']->journal->description }}</td>
                 <td class="num">{{ (float) $row['line']->debit ? \App\Support\Format::money($row['line']->debit) : '' }}</td>
                 <td class="num">{{ (float) $row['line']->credit ? \App\Support\Format::money($row['line']->credit) : '' }}</td>
