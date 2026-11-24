@@ -7,7 +7,7 @@
             @can('payments.create') <x-button :href="route('finance.payments.create', ['kind' => 'vendor', 'payee' => $bill->vendor_id])" icon="banknotes">Pay</x-button> @endcan
         @endif
     </x-page-header>
-    <div class="mb-6"><x-document-actions :document="$bill" :edit-route="route('purchasing.bills.edit', $bill)" /></div>
+    <div class="mb-6"><x-document-actions :document="$bill" :edit-route="route('purchasing.bills.edit', $bill)" :print-route="$bill->isDraft() ? null : route('purchasing.bills.print', $bill)" /></div>
     <div class="grid gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
             <x-card :padding="false" title="Lines">

@@ -40,10 +40,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $vessel_flight
  * @property string|null $container_no
  * @property string|null $bl_awb_no
- * @property \Illuminate\Support\Carbon|null $bl_awb_date
+ * @property Carbon|null $bl_awb_date
  * @property string|null $fi_number
  * @property string|null $gd_number
- * @property \Illuminate\Support\Carbon|null $gd_date
+ * @property Carbon|null $gd_date
  * @property string|null $consignee
  * @property string|null $notify_party
  * @property string|null $shipping_marks

@@ -19,6 +19,7 @@ Route::middleware('auth')->prefix('purchasing')->name('purchasing.')->group(func
     Route::get('receipts/{receipt}', Receipts\Show::class)->middleware('can:goods_receipts.view')->name('receipts.show');
     Route::get('receipts/{receipt}/edit', Receipts\Form::class)->middleware('can:goods_receipts.edit')->name('receipts.edit');
     Route::get('receipts/{receipt}/print', [PrintController::class, 'receipt'])->middleware('can:goods_receipts.print')->name('receipts.print');
+    Route::get('bills/{bill}/print', [PrintController::class, 'bill'])->middleware('can:vendor_bills.print')->name('bills.print');
 
     Route::get('bills', Bills\Index::class)->middleware('can:vendor_bills.view')->name('bills.index');
     Route::get('bills/create', Bills\Form::class)->middleware('can:vendor_bills.create')->name('bills.create');

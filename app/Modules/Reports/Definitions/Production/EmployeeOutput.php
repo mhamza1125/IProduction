@@ -3,6 +3,7 @@
 namespace App\Modules\Reports\Definitions\Production;
 
 use App\Modules\Reports\Support\Column;
+use App\Modules\Reports\Support\Filter;
 use App\Modules\Reports\Support\Report;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,7 @@ class EmployeeOutput extends Report
 
     public function filters(): array
     {
-        return [...$this->dateRange()];
+        return [...$this->dateRange(), new Filter('department', 'Department', options: DB::table('lookups')->where('type', 'department')->orderBy('name')->pluck('name', 'id')->all())];
     }
 
     public function columns(): array
@@ -52,6 +53,7 @@ class EmployeeOutput extends Report
 
         return DB::table('wage_work as w')->join('employees as e', 'e.id', '=', 'w.employee_id')->where('w.status', '!=', 'rejected')
             ->whereBetween('w.work_date', [$this->from($filters)?->toDateString(), $this->to($filters)?->toDateString()])
+            ->when($filters['department'] ?? null, fn ($q, $d) => $q->where('e.department_id', $d))
             ->groupBy('e.name')->orderBy('e.name')
             ->get(['e.name as employee', DB::raw('SUM(w.quantity) as quantity'), DB::raw('SUM(w.rejected_qty) as rejected'), DB::raw('SUM(w.amount) as amount'),
                 DB::raw("SUM(CASE WHEN w.status = 'pending' THEN 1 ELSE 0 END) as pending")])

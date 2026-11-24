@@ -5,6 +5,7 @@ namespace App\Modules\Purchasing\Http;
 use App\Modules\Purchasing\Models\GoodsReceipt;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseReturn;
+use App\Modules\Purchasing\Models\VendorBill;
 use App\Support\Printing\Printer;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +19,15 @@ class PrintController
         return $printer->respond($request, 'purchasing::print.order', [
             'order' => $order->load(['vendor', 'lines.variant.item', 'lines.unit']),
         ], $order->number);
+    }
+
+    public function bill(Request $request, VendorBill $bill, Printer $printer): Response
+    {
+        abort_if($bill->isDraft(), 403, 'Approve the bill before printing it.');
+
+        return $printer->respond($request, 'purchasing::print.bill', [
+            'bill' => $bill->load(['vendor', 'lines.variant.item.stockUnit', 'lines.receiptLine.receipt']),
+        ], $bill->number);
     }
 
     public function receipt(Request $request, GoodsReceipt $receipt, Printer $printer): Response
