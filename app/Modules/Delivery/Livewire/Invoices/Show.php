@@ -25,6 +25,11 @@ class Show extends Component
 
     public string $credit_amount = '';
 
+    public bool $showShipping = false;
+
+    /** @var array<string, string|null> */
+    public array $shipping = [];
+
     public function mount(Invoice $invoice): void
     {
         $this->invoice = $invoice;
@@ -54,6 +59,42 @@ class Show extends Component
         $this->invoice->delete();
         session()->flash('toast', 'Draft deleted.');
         $this->redirectRoute('delivery.invoices.index', navigate: true);
+    }
+
+    public function editShipping(): void
+    {
+        $this->authorize('invoices.edit');
+        $this->resetValidation();
+        $this->shipping = [];
+        foreach (Invoice::SHIPPING_FIELDS as $field) {
+            $value = $this->invoice->getAttribute($field);
+            $this->shipping[$field] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d') : ($value === null ? '' : (string) $value);
+        }
+        $this->showShipping = true;
+    }
+
+    public function saveShipping(Invoices $invoices): void
+    {
+        $this->authorize('invoices.edit');
+        $this->validate([
+            'shipping.incoterm' => ['nullable', 'in:'.implode(',', array_keys(Invoice::INCOTERMS))],
+            'shipping.incoterm_place' => ['nullable', 'string', 'max:100'], 'shipping.port_of_loading' => ['nullable', 'string', 'max:100'],
+            'shipping.port_of_discharge' => ['nullable', 'string', 'max:100'], 'shipping.final_destination' => ['nullable', 'string', 'max:100'],
+            'shipping.vessel_flight' => ['nullable', 'string', 'max:100'], 'shipping.container_no' => ['nullable', 'string', 'max:100'],
+            'shipping.bl_awb_no' => ['nullable', 'string', 'max:60'], 'shipping.bl_awb_date' => ['nullable', 'date'],
+            'shipping.fi_number' => ['nullable', 'string', 'max:60'], 'shipping.gd_number' => ['nullable', 'string', 'max:60'], 'shipping.gd_date' => ['nullable', 'date'],
+            'shipping.consignee' => ['nullable', 'string', 'max:1000'], 'shipping.notify_party' => ['nullable', 'string', 'max:1000'], 'shipping.shipping_marks' => ['nullable', 'string', 'max:1000'],
+        ]);
+        try {
+            $invoices->updateShipping($this->invoice, $this->shipping);
+        } catch (DocumentException $e) {
+            $this->addError('shipping.incoterm', $e->getMessage());
+
+            return;
+        }
+        $this->showShipping = false;
+        $this->invoice->refresh();
+        $this->dispatch('toast', message: 'Shipping details saved.');
     }
 
     public function applyCredit(Invoices $invoices): void

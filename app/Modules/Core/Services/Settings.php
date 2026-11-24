@@ -31,6 +31,12 @@ class Settings
         'company.invoice_terms' => null,
         'company.print_header' => null,
         'company.print_footer' => null,
+        // Export documents (commercial and proforma invoices).
+        'company.country' => 'Pakistan',
+        'company.rex_number' => null,
+        'company.origin_statement' => null,
+        'company.bank_details' => null,
+        'sales.proforma_validity_days' => 30,
         'base_currency' => 'PKR',
         'fiscal_year.start_month' => 7,
         'period_lock.date' => null,

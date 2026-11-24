@@ -57,8 +57,45 @@
                     @if ($inv->cancel_reason) <x-people::detail label="Cancel reason" :value="$inv->cancel_reason" /> @endif
                 </dl>
             </x-card>
+            <x-card title="Shipping details" description="Printed on the commercial invoice. Can be completed after posting.">
+                @if (! $inv->isCancelled())
+                    @can('invoices.edit') <x-slot:actions><x-button variant="secondary" size="sm" wire:click="editShipping">Edit</x-button></x-slot:actions> @endcan
+                @endif
+                <dl class="grid gap-3">
+                    <x-people::detail label="Incoterm" :value="$inv->incoterm ? trim($inv->incoterm.' '.$inv->incoterm_place) : null" />
+                    <x-people::detail label="Port of loading → discharge" :value="($inv->port_of_loading || $inv->port_of_discharge) ? ($inv->port_of_loading ?: '—').' → '.($inv->port_of_discharge ?: '—') : null" />
+                    <x-people::detail label="Vessel / flight · container" :value="collect([$inv->vessel_flight, $inv->container_no])->filter()->implode(' · ') ?: null" />
+                    <x-people::detail label="BL / AWB" :value="$inv->bl_awb_no ? $inv->bl_awb_no.($inv->bl_awb_date ? ' · '.\App\Support\Format::date($inv->bl_awb_date) : '') : null" />
+                    <x-people::detail label="FI number" :value="$inv->fi_number" />
+                    <x-people::detail label="GD number" :value="$inv->gd_number ? $inv->gd_number.($inv->gd_date ? ' · '.\App\Support\Format::date($inv->gd_date) : '') : null" />
+                </dl>
+            </x-card>
             <x-card title="Notes"><livewire:core::shared.notes :model="$inv" :key="'n-'.$inv->id" /></x-card>
             <x-card title="History"><livewire:core::shared.activity-history :model="$inv" :key="'h-'.$inv->id" /></x-card>
         </div>
     </div>
+
+    <x-modal wire:model="showShipping" title="Shipping details" maxWidth="2xl">
+        <form wire:submit="saveShipping" id="shipping-form" class="grid gap-4 sm:grid-cols-2" data-save-shortcut>
+            <x-select label="Incoterm" wire:model="shipping.incoterm" :options="\App\Modules\Delivery\Models\Invoice::INCOTERMS" placeholder="None" />
+            <x-input label="Named place" wire:model="shipping.incoterm_place" help="e.g. FOB Karachi, CIF Hamburg" />
+            <x-input label="Port of loading" wire:model="shipping.port_of_loading" />
+            <x-input label="Port of discharge" wire:model="shipping.port_of_discharge" />
+            <x-input label="Final destination" wire:model="shipping.final_destination" />
+            <x-input label="Vessel / flight" wire:model="shipping.vessel_flight" />
+            <x-input label="Container no." wire:model="shipping.container_no" />
+            <x-input label="BL / AWB no." wire:model="shipping.bl_awb_no" />
+            <x-date-input label="BL / AWB date" wire:model="shipping.bl_awb_date" />
+            <x-input label="FI number" wire:model="shipping.fi_number" help="Financial Instrument number from the bank." />
+            <x-input label="GD number" wire:model="shipping.gd_number" help="Goods Declaration (customs)." />
+            <x-date-input label="GD date" wire:model="shipping.gd_date" />
+            <x-textarea label="Consignee" wire:model="shipping.consignee" rows="3" help="Leave empty if it is the buyer." />
+            <x-textarea label="Notify party" wire:model="shipping.notify_party" rows="3" />
+            <x-textarea label="Shipping marks" wire:model="shipping.shipping_marks" rows="2" class="sm:col-span-2" />
+        </form>
+        <x-slot:footer>
+            <x-button variant="secondary" x-on:click="open = false">Cancel</x-button>
+            <x-button type="submit" form="shipping-form">Save</x-button>
+        </x-slot:footer>
+    </x-modal>
 </div>

@@ -14,6 +14,9 @@
                 <x-input label="Country" wire:model="country" />
                 <x-input label="NTN" wire:model="ntn" />
                 <x-input label="Payment terms" wire:model="payment_terms" placeholder="e.g. 30% advance, balance before shipment" class="sm:col-span-2" />
+                <x-select label="Usual Incoterm" wire:model="default_incoterm" :options="\App\Modules\Delivery\Models\Invoice::INCOTERMS" placeholder="None" help="Copied onto new invoices and proformas." />
+                <x-input label="Named place" wire:model="default_incoterm_place" placeholder="e.g. Karachi" />
+                <x-input label="Usual port of discharge" wire:model="default_port_of_discharge" class="sm:col-span-2" />
             </div>
         </x-card>
 

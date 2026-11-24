@@ -11,5 +11,6 @@ Route::middleware('auth')->prefix('sales')->name('sales.')->group(function () {
     Route::get('orders/{order}', Orders\Show::class)->middleware('can:sales_orders.view')->name('orders.show');
     Route::get('orders/{order}/edit', Orders\Form::class)->middleware('can:sales_orders.edit')->name('orders.edit');
     Route::get('orders/{order}/print', [PrintController::class, 'order'])->middleware('can:sales_orders.print')->name('orders.print');
+    Route::get('orders/{order}/proforma', [PrintController::class, 'proforma'])->middleware('can:sales_orders.print')->name('orders.proforma');
     Route::get('planning', Planning\Index::class)->middleware('can:planning.view')->name('planning');
 });

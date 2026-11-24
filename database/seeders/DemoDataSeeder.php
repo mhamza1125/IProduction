@@ -180,6 +180,10 @@ class DemoDataSeeder extends Seeder
                 'company.phone' => '+92 52 0000000',
                 'company.email' => 'info@demo.test',
                 'company.ntn' => '0000000-0',
+                'company.country' => 'Pakistan',
+                'company.rex_number' => 'PKREXPK0000000000',
+                'company.bank_details' => "Meezan Bank, Sialkot Branch\nAccount title: Demo Sports Industries (Pvt) Ltd\nIBAN: PK00 MEZN 0000 0000 0000 0000\nSWIFT: MEZNPKKA",
+                'company.origin_statement' => 'The exporter of the products covered by this document (REX No {rex}) declares that, except where otherwise clearly indicated, these products are of {country} preferential origin according to the rules of origin of the Generalised System of Preferences of the European Union.',
             ]);
         }
 
@@ -201,13 +205,14 @@ class DemoDataSeeder extends Seeder
     private function seedParties(): void
     {
         foreach ([
-            'northfield' => ['Northfield Sports Inc', 'USD', 'United States', 'orders@northfield.demo.test', 'Net 30'],
-            'rheinland' => ['Rheinland Sportartikel GmbH', 'EUR', 'Germany', 'einkauf@rheinland.demo.test', 'Net 45'],
-            'albion' => ['Albion Fight Gear Ltd', 'GBP', 'United Kingdom', 'buying@albion.demo.test', 'Net 30'],
-            'gulf' => ['Gulf Athletics Trading LLC', 'AED', 'United Arab Emirates', 'sales@gulf.demo.test', 'Advance'],
-            'lahore' => ['Lahore Sports Mart', 'PKR', 'Pakistan', 'lahore@sportsmart.demo.test', 'Net 15'],
-        ] as $key => [$name, $currency, $country, $email, $terms]) {
-            $this->customers[$key] = Customer::query()->create(['name' => $name, 'currency_code' => $currency, 'country' => $country, 'email' => $email, 'payment_terms' => $terms, 'is_active' => true]);
+            'northfield' => ['Northfield Sports Inc', 'USD', 'United States', 'orders@northfield.demo.test', 'Net 30', 'FOB', 'Karachi', 'New York'],
+            'rheinland' => ['Rheinland Sportartikel GmbH', 'EUR', 'Germany', 'einkauf@rheinland.demo.test', 'Net 45', 'CIF', 'Hamburg', 'Hamburg'],
+            'albion' => ['Albion Fight Gear Ltd', 'GBP', 'United Kingdom', 'buying@albion.demo.test', 'Net 30', 'FOB', 'Karachi', 'Felixstowe'],
+            'gulf' => ['Gulf Athletics Trading LLC', 'AED', 'United Arab Emirates', 'sales@gulf.demo.test', 'Advance', 'CFR', 'Jebel Ali', 'Jebel Ali'],
+            'lahore' => ['Lahore Sports Mart', 'PKR', 'Pakistan', 'lahore@sportsmart.demo.test', 'Net 15', null, null, null],
+        ] as $key => [$name, $currency, $country, $email, $terms, $incoterm, $place, $port]) {
+            $this->customers[$key] = Customer::query()->create(['name' => $name, 'currency_code' => $currency, 'country' => $country, 'email' => $email, 'payment_terms' => $terms,
+                'default_incoterm' => $incoterm, 'default_incoterm_place' => $place, 'default_port_of_discharge' => $port, 'is_active' => true]);
         }
         Customer::query()->create(['name' => 'Old Trading Co (inactive)', 'currency_code' => 'USD', 'country' => 'Canada', 'is_active' => false]);
 
@@ -268,13 +273,13 @@ class DemoDataSeeder extends Seeder
         }
 
         foreach ([
-            'boxing' => ['FG-BOX', 'Pro Boxing Glove', 'pair', 'Gloves', '30'],
-            'keeper' => ['FG-GKP', 'Goalkeeper Glove', 'pair', 'Gloves', '24'],
-            'football' => ['FG-FTB', 'Match Football', 'pcs', 'Balls', '15'],
-        ] as $key => [$code, $name, $symbol, $cat, $price]) {
+            'boxing' => ['FG-BOX', 'Pro Boxing Glove', 'pair', 'Gloves', '30', '9506.91.00'],
+            'keeper' => ['FG-GKP', 'Goalkeeper Glove', 'pair', 'Gloves', '24', '4203.21.00'],
+            'football' => ['FG-FTB', 'Match Football', 'pcs', 'Balls', '15', '9506.62.00'],
+        ] as $key => [$code, $name, $symbol, $cat, $price, $hs]) {
             $this->items[$key] = Item::query()->create([
                 'code' => $code, 'name' => $name, 'type' => Item::FINISHED_GOOD, 'stock_unit_id' => $unit($symbol), 'category_id' => $category($cat),
-                'default_selling_price' => $price, 'can_make' => true, 'can_sell' => true, 'can_buy' => false, 'is_active' => true,
+                'hs_code' => $hs, 'default_selling_price' => $price, 'can_make' => true, 'can_sell' => true, 'can_buy' => false, 'is_active' => true,
             ]);
             $this->variants[$key] = $this->items[$key]->variants()->firstOrFail();
         }
@@ -556,6 +561,11 @@ class DemoDataSeeder extends Seeder
         $shipped = $this->orders['shipped']->lines()->orderBy('id')->get();
         $delivery = $this->dispatch('northfield', '2026-10-03', [[$shipped[0]->id, '200'], [$shipped[1]->id, '100']]);
         $invoice = $this->invoice('northfield', '2026-10-04', $delivery);
+        $invoices = app(Invoices::class);
+        $invoices->updateShipping($invoice, ['incoterm' => 'FOB', 'incoterm_place' => 'Karachi', 'port_of_loading' => 'Karachi', 'port_of_discharge' => 'New York',
+            'final_destination' => 'New York, USA', 'vessel_flight' => 'MSC AURORA V.0427E', 'container_no' => 'MSCU 1234565', 'bl_awb_no' => 'MEDUKH000427',
+            'bl_awb_date' => '2026-10-05', 'fi_number' => 'MEZN-EXP-2026-00118', 'gd_number' => 'KEXP-HC-0099812', 'gd_date' => '2026-10-03',
+            'shipping_marks' => "NORTHFIELD / NF-PO-8812\nNEW YORK\nC/NO. 1-2"]);
         $receipts->post($this->workflow->approve($receipts->save(null, ['receipt_date' => '2026-10-15', 'customer_id' => $this->customers['northfield']->id, 'amount' => (string) $invoice->total, 'money_account_id' => $this->money['usd']->id],
             [['gl_account_id' => GlAccount::system('bank_charges')->id, 'amount' => '50']],
             [['type' => $invoice->getMorphClass(), 'id' => $invoice->id, 'amount' => (string) $invoice->total]])));

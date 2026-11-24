@@ -39,6 +39,16 @@ class Company extends Component
 
     public string $print_footer = '';
 
+    public string $country = '';
+
+    public string $rex_number = '';
+
+    public string $origin_statement = '';
+
+    public string $bank_details = '';
+
+    public int $proforma_validity_days = 30;
+
     public string $over_receipt_percent = '0';
 
     public int $fiscal_year_start_month = 7;
@@ -60,6 +70,11 @@ class Company extends Component
         $this->invoice_terms = (string) $settings->get('company.invoice_terms');
         $this->print_header = (string) $settings->get('company.print_header');
         $this->print_footer = (string) $settings->get('company.print_footer');
+        $this->country = (string) $settings->get('company.country');
+        $this->rex_number = (string) $settings->get('company.rex_number');
+        $this->origin_statement = (string) $settings->get('company.origin_statement');
+        $this->bank_details = (string) $settings->get('company.bank_details');
+        $this->proforma_validity_days = (int) $settings->get('sales.proforma_validity_days');
         $this->over_receipt_percent = (string) $settings->get('tolerance.over_receipt_percent');
         $this->fiscal_year_start_month = (int) $settings->get('fiscal_year.start_month');
         $this->logoPath = $settings->get('company.logo_path');
@@ -80,6 +95,11 @@ class Company extends Component
             'invoice_terms' => ['nullable', 'string', 'max:2000'],
             'print_header' => ['nullable', 'string', 'max:300'],
             'print_footer' => ['nullable', 'string', 'max:300'],
+            'country' => ['nullable', 'string', 'max:60'],
+            'rex_number' => ['nullable', 'string', 'max:40'],
+            'origin_statement' => ['nullable', 'string', 'max:2000'],
+            'bank_details' => ['nullable', 'string', 'max:1000'],
+            'proforma_validity_days' => ['required', 'integer', 'between:1,365'],
             'over_receipt_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'fiscal_year_start_month' => ['required', 'integer', 'between:1,12'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
@@ -101,6 +121,11 @@ class Company extends Component
             'company.invoice_terms' => $data['invoice_terms'] ?: null,
             'company.print_header' => $data['print_header'] ?: null,
             'company.print_footer' => $data['print_footer'] ?: null,
+            'company.country' => $data['country'] ?: null,
+            'company.rex_number' => $data['rex_number'] ?: null,
+            'company.origin_statement' => $data['origin_statement'] ?: null,
+            'company.bank_details' => $data['bank_details'] ?: null,
+            'sales.proforma_validity_days' => $data['proforma_validity_days'],
             'tolerance.over_receipt_percent' => (string) $data['over_receipt_percent'],
             'company.logo_path' => $this->logoPath,
             'fiscal_year.start_month' => $data['fiscal_year_start_month'],

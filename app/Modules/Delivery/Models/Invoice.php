@@ -32,22 +32,51 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $tax_total
  * @property string $total
  * @property-read Customer $customer
+ * @property string|null $incoterm
+ * @property string|null $incoterm_place
+ * @property string|null $port_of_loading
+ * @property string|null $port_of_discharge
+ * @property string|null $final_destination
+ * @property string|null $vessel_flight
+ * @property string|null $container_no
+ * @property string|null $bl_awb_no
+ * @property \Illuminate\Support\Carbon|null $bl_awb_date
+ * @property string|null $fi_number
+ * @property string|null $gd_number
+ * @property \Illuminate\Support\Carbon|null $gd_date
+ * @property string|null $consignee
+ * @property string|null $notify_party
+ * @property string|null $shipping_marks
  */
 class Invoice extends Model implements Attachable, Document, Receivable
 {
+    /** Incoterms 2020. */
+    public const INCOTERMS = [
+        'EXW' => 'EXW · Ex Works', 'FCA' => 'FCA · Free Carrier', 'FAS' => 'FAS · Free Alongside Ship', 'FOB' => 'FOB · Free On Board',
+        'CFR' => 'CFR · Cost and Freight', 'CIF' => 'CIF · Cost, Insurance and Freight', 'CPT' => 'CPT · Carriage Paid To',
+        'CIP' => 'CIP · Carriage and Insurance Paid To', 'DAP' => 'DAP · Delivered At Place', 'DPU' => 'DPU · Delivered at Place Unloaded',
+        'DDP' => 'DDP · Delivered Duty Paid',
+    ];
+
+    /** Shipping and customs details: printed on the commercial invoice, editable after posting (no accounting effect). */
+    public const SHIPPING_FIELDS = [
+        'incoterm', 'incoterm_place', 'port_of_loading', 'port_of_discharge', 'final_destination', 'vessel_flight', 'container_no',
+        'bl_awb_no', 'bl_awb_date', 'fi_number', 'gd_number', 'gd_date', 'consignee', 'notify_party', 'shipping_marks',
+    ];
+
     use HasAttachmentsAndNotes, HasDocumentWorkflow, LogsActivity;
 
-    protected $fillable = ['number', 'customer_id', 'currency_code', 'invoice_date', 'due_date', 'payment_terms', 'notes', 'created_by'];
+    protected $fillable = ['number', 'customer_id', 'currency_code', 'invoice_date', 'due_date', 'payment_terms', 'notes', 'created_by', ...self::SHIPPING_FIELDS];
 
     protected function casts(): array
     {
-        return ['invoice_date' => 'date', 'due_date' => 'date', 'subtotal' => 'decimal:2', 'discount_total' => 'decimal:2', 'tax_total' => 'decimal:2', 'total' => 'decimal:2', 'approved_at' => 'datetime', 'posted_at' => 'datetime', 'cancelled_at' => 'datetime'];
+        return ['invoice_date' => 'date', 'due_date' => 'date', 'bl_awb_date' => 'date', 'gd_date' => 'date', 'subtotal' => 'decimal:2', 'discount_total' => 'decimal:2', 'tax_total' => 'decimal:2', 'total' => 'decimal:2', 'approved_at' => 'datetime', 'posted_at' => 'datetime', 'cancelled_at' => 'datetime'];
     }
 
     /** @return list<string> */
     public function mutableWhenLocked(): array
     {
-        return ['subtotal', 'discount_total', 'tax_total', 'total', 'due_date', 'notes'];
+        return ['subtotal', 'discount_total', 'tax_total', 'total', 'due_date', 'notes', ...self::SHIPPING_FIELDS];
     }
 
     public function documentType(): string

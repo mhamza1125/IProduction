@@ -111,7 +111,12 @@ class Invoices
                 'customer_id' => $customer->id, 'currency_code' => $currency, 'invoice_date' => $header['invoice_date'],
                 'due_date' => $header['due_date'] ?? null ?: null, 'payment_terms' => $header['payment_terms'] ?? null ?: $customer->payment_terms,
                 'notes' => $header['notes'] ?? null ?: null,
-            ])->save();
+            ]);
+            if (! $invoice->exists) {
+                // The customer's usual delivery terms; changed later under Shipping details.
+                $invoice->fill(['incoterm' => $customer->default_incoterm, 'incoterm_place' => $customer->default_incoterm_place, 'port_of_discharge' => $customer->default_port_of_discharge]);
+            }
+            $invoice->save();
             $invoice->lines()->delete();
             foreach ($rows as $r) {
                 unset($r['gross']);
@@ -125,6 +130,31 @@ class Invoices
 
             return $invoice;
         });
+    }
+
+    /**
+     * Shipping and customs details (Incoterm, ports, BL/AWB, FI and GD numbers…).
+     * Allowed in any status except cancelled: they often arrive after posting
+     * and do not touch the accounts.
+     *
+     * @param  array<string, mixed>  $details
+     */
+    public function updateShipping(Invoice $invoice, array $details): Invoice
+    {
+        if ($invoice->isCancelled()) {
+            throw new DocumentException("{$invoice->number} is cancelled.");
+        }
+        $data = [];
+        foreach (Invoice::SHIPPING_FIELDS as $field) {
+            $value = $details[$field] ?? null;
+            $data[$field] = is_string($value) ? (trim($value) === '' ? null : trim($value)) : $value;
+        }
+        if ($data['incoterm'] !== null && ! isset(Invoice::INCOTERMS[$data['incoterm']])) {
+            throw new DocumentException('Choose an Incoterm from the list.');
+        }
+        $invoice->update($data);
+
+        return $invoice;
     }
 
     public function post(Invoice $invoice, ?string $overrideReason = null): Invoice

@@ -25,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $ntn
  * @property string|null $payment_terms
  * @property string|null $notes
+ * @property string|null $default_incoterm
+ * @property string|null $default_incoterm_place
+ * @property string|null $default_port_of_discharge
  */
 #[UseFactory(CustomerFactory::class)]
 class Customer extends Model implements Attachable
@@ -34,7 +37,7 @@ class Customer extends Model implements Attachable
 
     protected $fillable = [
         'party_id', 'code', 'name', 'company', 'currency_code', 'email', 'phone', 'country',
-        'billing_address', 'shipping_address', 'ntn', 'payment_terms', 'notes', 'is_active',
+        'billing_address', 'shipping_address', 'ntn', 'payment_terms', 'default_incoterm', 'default_incoterm_place', 'default_port_of_discharge', 'notes', 'is_active',
     ];
 
     protected function casts(): array

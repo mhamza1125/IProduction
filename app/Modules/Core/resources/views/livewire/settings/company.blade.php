@@ -23,6 +23,17 @@
             </div>
         </x-card>
 
+        <x-card title="Export documents" description="Printed on commercial and proforma invoices.">
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-input label="Country" wire:model="country" help="Country of origin for items that don't name their own." />
+                <x-input label="REX number" wire:model="rex_number" help="Registered Exporter number, for EU GSP preference." />
+                <x-textarea label="Statement of origin" wire:model="origin_statement" rows="4" class="sm:col-span-2"
+                            help="Printed on commercial invoices when filled in. {rex} is replaced by the REX number and {country} by the country. Use the exact wording your buyer's customs require." />
+                <x-textarea label="Bank details" wire:model="bank_details" rows="3" class="sm:col-span-2" help="Bank, account title, IBAN and SWIFT for the buyer's payment." />
+                <x-input label="Proforma valid for (days)" type="number" min="1" max="365" wire:model="proforma_validity_days" />
+            </div>
+        </x-card>
+
         <x-card title="Logo">
             <div class="flex items-center gap-6">
                 <div class="flex h-20 w-40 items-center justify-center rounded-md bg-hover">

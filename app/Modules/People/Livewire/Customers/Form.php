@@ -3,6 +3,7 @@
 namespace App\Modules\People\Livewire\Customers;
 
 use App\Modules\Core\Models\Currency;
+use App\Modules\Delivery\Models\Invoice;
 use App\Modules\People\Models\Customer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,12 @@ class Form extends Component
 
     public string $payment_terms = '';
 
+    public string $default_incoterm = '';
+
+    public string $default_incoterm_place = '';
+
+    public string $default_port_of_discharge = '';
+
     public string $notes = '';
 
     public bool $is_active = true;
@@ -46,7 +53,7 @@ class Form extends Component
             $this->customer = $customer;
             $this->fill(array_map(fn ($v) => $v ?? '', $customer->only([
                 'code', 'name', 'company', 'currency_code', 'email', 'phone', 'country', 'billing_address',
-                'shipping_address', 'ntn', 'payment_terms', 'notes', 'is_active',
+                'shipping_address', 'ntn', 'payment_terms', 'default_incoterm', 'default_incoterm_place', 'default_port_of_discharge', 'notes', 'is_active',
             ])));
         }
     }
@@ -72,6 +79,9 @@ class Form extends Component
             'shipping_address' => ['nullable', 'string', 'max:1000'],
             'ntn' => ['nullable', 'string', 'max:30'],
             'payment_terms' => ['nullable', 'string', 'max:150'],
+            'default_incoterm' => ['nullable', Rule::in(array_keys(Invoice::INCOTERMS))],
+            'default_incoterm_place' => ['nullable', 'string', 'max:100'],
+            'default_port_of_discharge' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'is_active' => ['boolean'],
         ]);

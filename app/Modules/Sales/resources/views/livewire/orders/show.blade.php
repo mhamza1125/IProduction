@@ -25,6 +25,9 @@
         @if (! $order->isDraft())
             @can('sales_orders.print') <a href="{{ route('sales.orders.print', $order) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-muted hover:bg-hover"><x-icon name="printer" class="size-4" /> Print</a> @endcan
         @endif
+        @if (! $order->isCancelled())
+            @can('sales_orders.print') <a href="{{ route('sales.orders.proforma', $order) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium text-muted hover:bg-hover"><x-icon name="printer" class="size-4" /> Proforma invoice</a> @endcan
+        @endif
         <div x-show="ask" x-cloak class="mt-2 flex w-full flex-wrap items-end gap-2 rounded-md bg-sunken p-3">
             <x-input label="Reason" wire:model="reason" class="min-w-64 flex-1" />
             <x-button x-show="ask === 'cancel'" variant="danger" wire:click="cancel" x-on:click="ask = null">Cancel order</x-button>

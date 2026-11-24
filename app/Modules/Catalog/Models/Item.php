@@ -44,6 +44,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $track_by_lot
  * @property string|null $over_receipt_percent
  * @property bool $is_active
+ * @property string|null $hs_code
+ * @property string|null $origin_country
  */
 #[UseFactory(ItemFactory::class)]
 class Item extends Model implements Attachable
@@ -64,7 +66,7 @@ class Item extends Model implements Attachable
     ];
 
     protected $fillable = [
-        'code', 'name', 'category_id', 'type', 'description', 'stock_unit_id', 'purchase_unit_id', 'sales_unit_id',
+        'code', 'name', 'hs_code', 'origin_country', 'category_id', 'type', 'description', 'stock_unit_id', 'purchase_unit_id', 'sales_unit_id',
         'default_selling_price', 'default_purchase_cost', 'min_stock', 'tax_rate', 'tax_notes', 'image_path',
         'can_buy', 'can_make', 'can_sell', 'track_by_lot', 'over_receipt_percent', 'is_active',
     ];

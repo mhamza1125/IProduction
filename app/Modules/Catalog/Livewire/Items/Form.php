@@ -29,6 +29,10 @@ class Form extends Component
 
     public string $name = '';
 
+    public string $hs_code = '';
+
+    public string $origin_country = '';
+
     public ?int $category_id = null;
 
     public string $type = Item::RAW_MATERIAL;
@@ -70,7 +74,7 @@ class Form extends Component
         if ($item?->exists) {
             $this->item = $item;
             $this->fill(array_map(fn ($v) => $v ?? '', $item->only([
-                'code', 'name', 'type', 'description', 'default_selling_price', 'min_stock', 'tax_rate', 'tax_notes',
+                'code', 'name', 'hs_code', 'origin_country', 'type', 'description', 'default_selling_price', 'min_stock', 'tax_rate', 'tax_notes',
                 'over_receipt_percent', 'can_buy', 'can_make', 'can_sell', 'track_by_lot', 'is_active',
             ])));
             $this->category_id = $item->category_id;
@@ -103,6 +107,8 @@ class Form extends Component
         $data = $this->validate([
             'code' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('items', 'code')->ignore($this->item?->id)],
             'name' => ['required', 'string', 'max:150'],
+            'hs_code' => ['nullable', 'string', 'max:20', 'regex:/^[0-9. ]+$/'],
+            'origin_country' => ['nullable', 'string', 'max:60'],
             'category_id' => ['nullable', Rule::exists('lookups', 'id')->where('type', 'item_category')],
             'type' => ['required', Rule::in(array_keys(Item::TYPES))],
             'description' => ['nullable', 'string', 'max:2000'],
@@ -121,7 +127,7 @@ class Form extends Component
             'track_by_lot' => ['boolean'],
             'is_active' => ['boolean'],
             'image' => ['nullable', 'image', 'max:4096'],
-        ], ['code.regex' => 'Use letters, numbers, dots, dashes or underscores.']);
+        ], ['code.regex' => 'Use letters, numbers, dots, dashes or underscores.', 'hs_code.regex' => 'An HS code is digits, optionally with dots, e.g. 4203.29.10.']);
 
         if (! $data['can_buy'] && ! $data['can_make']) {
             $this->addError('can_buy', 'An item must be bought, made, or both.');

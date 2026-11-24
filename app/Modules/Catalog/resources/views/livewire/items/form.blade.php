@@ -39,6 +39,8 @@
                 <x-input label="Over-receipt tolerance (%)" type="number" step="0.01" min="0" max="100" wire:model="over_receipt_percent" help="Empty = vendor or company default." />
                 <x-input label="Tax rate (%)" type="number" step="0.01" min="0" max="100" wire:model="tax_rate" />
                 <x-input label="Tax notes" wire:model="tax_notes" class="sm:col-span-2" />
+                <x-input label="HS code" wire:model="hs_code" placeholder="e.g. 4203.29.10" help="Harmonized System code, printed on commercial invoices." />
+                <x-input label="Country of origin" wire:model="origin_country" :placeholder="app(\App\Modules\Core\Services\Settings::class)->get('company.country')" help="Leave empty to use the company's country." />
             </div>
         </x-card>
 
