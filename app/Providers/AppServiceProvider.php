@@ -8,6 +8,7 @@ use App\Support\Modules\ModuleRegistry;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -23,6 +24,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // /up (load balancers, uptime monitors) also checks the database and that storage is writable;
+        // an exception here makes it answer 500.
+        Event::listen(DiagnosingHealth::class, function () {
+            DB::select('select 1');
+            if (! is_writable(storage_path('framework'))) {
+                throw new \RuntimeException('storage/framework is not writable.');
+            }
+        });
+
         // Catch N+1 queries, silently discarded attributes and typos in
         // attribute names while developing. Production logs, never throws.
         Model::shouldBeStrict(! $this->app->isProduction());

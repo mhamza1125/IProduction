@@ -37,6 +37,8 @@ class Index extends Component
 
     public string $description = '';
 
+    public string $term = 'current';
+
     public bool $is_active = true;
 
     protected function sortable(): array
@@ -47,7 +49,7 @@ class Index extends Component
     public function create(): void
     {
         $this->resetValidation();
-        $this->reset('editingId', 'code', 'name', 'parent_id', 'description', 'is_active');
+        $this->reset('editingId', 'code', 'name', 'parent_id', 'description', 'is_active', 'term');
         $this->accountType = $this->type !== '' ? $this->type : 'expense';
         $this->showForm = true;
     }
@@ -62,6 +64,7 @@ class Index extends Component
         $this->accountType = $account->type;
         $this->parent_id = $account->parent_id;
         $this->description = (string) $account->description;
+        $this->term = $account->term ?? 'current';
         $this->is_active = $account->is_active;
         $this->showForm = true;
     }
@@ -76,6 +79,7 @@ class Index extends Component
             'accountType' => ['required', Rule::in(array_keys(GlAccount::TYPES))],
             'parent_id' => ['nullable', Rule::exists('gl_accounts', 'id')->whereNull('deleted_at'), Rule::notIn([$this->editingId])],
             'description' => ['nullable', 'string', 'max:500'],
+            'term' => ['required', Rule::in(array_keys(GlAccount::TERMS))],
             'is_active' => ['boolean'],
         ]);
 
@@ -84,6 +88,7 @@ class Index extends Component
                 'code' => $data['code'],
                 'name' => $data['name'],
                 'type' => $data['accountType'],
+                'term' => in_array($data['accountType'], ['asset', 'liability', 'clearing'], true) ? $data['term'] : null,
                 'parent_id' => $data['parent_id'],
                 'description' => $data['description'] ?: null,
                 'is_active' => $data['is_active'],

@@ -53,6 +53,8 @@ class Company extends Component
 
     public int $fiscal_year_start_month = 7;
 
+    public bool $auto_depreciation = false;
+
     public ?TemporaryUploadedFile $logo = null;
 
     #[Locked]
@@ -77,6 +79,7 @@ class Company extends Component
         $this->proforma_validity_days = (int) $settings->get('sales.proforma_validity_days');
         $this->over_receipt_percent = (string) $settings->get('tolerance.over_receipt_percent');
         $this->fiscal_year_start_month = (int) $settings->get('fiscal_year.start_month');
+        $this->auto_depreciation = (bool) $settings->get('finance.auto_depreciation');
         $this->logoPath = $settings->get('company.logo_path');
     }
 
@@ -102,6 +105,7 @@ class Company extends Component
             'proforma_validity_days' => ['required', 'integer', 'between:1,365'],
             'over_receipt_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'fiscal_year_start_month' => ['required', 'integer', 'between:1,12'],
+            'auto_depreciation' => ['boolean'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
         ]);
 
@@ -129,6 +133,7 @@ class Company extends Component
             'tolerance.over_receipt_percent' => (string) $data['over_receipt_percent'],
             'company.logo_path' => $this->logoPath,
             'fiscal_year.start_month' => $data['fiscal_year_start_month'],
+            'finance.auto_depreciation' => (bool) $data['auto_depreciation'],
         ]);
 
         $this->dispatch('toast', message: 'Settings saved.');

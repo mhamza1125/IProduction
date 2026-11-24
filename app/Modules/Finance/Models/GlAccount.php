@@ -25,6 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $system_key
  * @property string|null $description
  * @property bool $is_active
+ * @property string|null $term current | non_current (assets and liabilities)
  */
 class GlAccount extends Model
 {
@@ -43,7 +44,15 @@ class GlAccount extends Model
     /** Debit-normal types: balance = debits − credits. Others are credit-normal. */
     public const DEBIT_NORMAL = ['asset', 'cost', 'expense', 'clearing'];
 
-    protected $fillable = ['code', 'name', 'type', 'parent_id', 'description', 'is_active'];
+    protected $fillable = ['code', 'name', 'type', 'term', 'parent_id', 'description', 'is_active'];
+
+    /** Balance sheet classification of assets and liabilities. */
+    public const TERMS = ['current' => 'Current', 'non_current' => 'Non-current'];
+
+    public function hasTerm(): bool
+    {
+        return in_array($this->type, ['asset', 'liability', 'clearing'], true);
+    }
 
     protected function casts(): array
     {
@@ -52,6 +61,15 @@ class GlAccount extends Model
 
     protected static function booted(): void
     {
+        // Assets and liabilities are current unless classified otherwise; other types have no term.
+        static::saving(function (GlAccount $account) {
+            if (! $account->hasTerm()) {
+                $account->term = null;
+            } elseif ($account->term === null) {
+                $account->term = 'current';
+            }
+        });
+
         static::updating(function (GlAccount $account) {
             if ($account->system_key !== null && $account->isDirty(['type', 'system_key'])) {
                 throw new DocumentException('System accounts cannot change type.');

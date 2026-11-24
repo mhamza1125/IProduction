@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
  */
 class ChartOfAccountsSeeder extends Seeder
 {
-    /** system_key => [code, name, type] */
+    /** system_key => [code, name, type, term?] (term: current | non_current, assets and liabilities only; default current) */
     public const ACCOUNTS = [
         // Assets
         'cash' => ['1100', 'Cash', 'asset'],
@@ -25,6 +25,8 @@ class ChartOfAccountsSeeder extends Seeder
         'employee_loans' => ['1520', 'Employee Loans', 'asset'],
         'vendor_advances' => ['1530', 'Vendor Advances', 'asset'],
         'contractor_advances' => ['1540', 'Contractor Advances', 'asset'],
+        'fixed_assets' => ['1600', 'Fixed Assets', 'asset', 'non_current'],
+        'accumulated_depreciation' => ['1690', 'Accumulated Depreciation', 'asset', 'non_current'],
         // Liabilities
         'accounts_payable' => ['2100', 'Accounts Payable', 'liability'],
         'contractor_payable' => ['2200', 'Contractor Payable', 'liability'],
@@ -51,6 +53,7 @@ class ChartOfAccountsSeeder extends Seeder
         'rent' => ['6400', 'Rent', 'expense'],
         'utilities' => ['6500', 'Utilities', 'expense'],
         'freight' => ['6600', 'Freight', 'expense'],
+        'depreciation' => ['6700', 'Depreciation', 'expense'],
         'other_expenses' => ['6900', 'Other Expenses', 'expense'],
         // Clearing
         'currency_exchange_clearing' => ['9100', 'Currency Exchange Clearing', 'clearing'],
@@ -58,12 +61,18 @@ class ChartOfAccountsSeeder extends Seeder
 
     public function run(): void
     {
-        foreach (self::ACCOUNTS as $key => [$code, $name, $type]) {
+        foreach (self::ACCOUNTS as $key => $definition) {
+            [$code, $name, $type] = $definition;
+            $term = in_array($type, ['asset', 'liability', 'clearing'], true) ? ($definition[3] ?? 'current') : null;
             $account = GlAccount::query()->withTrashed()->where('system_key', $key)->first();
 
             if ($account === null) {
                 $account = new GlAccount(['code' => $code, 'name' => $name, 'type' => $type]);
                 $account->system_key = $key;
+                $account->term = $term;
+                $account->save();
+            } elseif ($account->term === null && $term !== null) {
+                $account->term = $term;
                 $account->save();
             }
         }

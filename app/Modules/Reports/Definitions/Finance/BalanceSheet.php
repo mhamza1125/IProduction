@@ -51,21 +51,42 @@ class BalanceSheet extends Report
     {
         $lines = DB::table('journal_lines as l')->join('gl_accounts as a', 'a.id', '=', 'l.gl_account_id')
             ->where('l.currency_code', $filters['currency'] ?: 'PKR')->where('l.line_date', '<=', $this->to($filters)?->toDateString() ?? now()->toDateString())
-            ->groupBy('a.code', 'a.name', 'a.type')->orderBy('a.code')
-            ->get(['a.code', 'a.name', 'a.type', DB::raw('SUM(l.debit) - SUM(l.credit) as net')]);
+            ->groupBy('a.code', 'a.name', 'a.type', 'a.term')->orderBy('a.code')
+            ->get(['a.code', 'a.name', 'a.type', 'a.term', DB::raw('SUM(l.debit) - SUM(l.credit) as net')]);
+        $total = fn ($rows, $sign) => Decimal::mul(Decimal::sum($rows->pluck('net')->map(fn ($v) => (string) $v)), $sign);
+        $isAsset = fn ($r) => in_array($r->type, ['asset', 'clearing'], true);
+        $profit = $total($lines->whereIn('type', ['income', 'cost', 'expense']), '-1');
+
+        // Assets and liabilities in current and non-current groups, each with a subtotal.
+        $groups = [
+            ['Assets', 'Current assets', $lines->filter(fn ($r) => $isAsset($r) && $r->term !== 'non_current'), '1'],
+            ['Assets', 'Non-current assets', $lines->filter(fn ($r) => $isAsset($r) && $r->term === 'non_current'), '1'],
+            ['Liabilities', 'Current liabilities', $lines->filter(fn ($r) => $r->type === 'liability' && $r->term !== 'non_current'), '-1'],
+            ['Liabilities', 'Non-current liabilities', $lines->filter(fn ($r) => $r->type === 'liability' && $r->term === 'non_current'), '-1'],
+        ];
         $rows = collect();
-        $sum = fn ($types, $sign) => Decimal::mul(Decimal::sum($lines->whereIn('type', $types)->pluck('net')->map(fn ($v) => (string) $v)), $sign);
-        foreach (['Assets' => [['asset', 'clearing'], '1'], 'Liabilities' => [['liability'], '-1'], 'Equity' => [['equity'], '-1']] as $label => [$types, $sign]) {
-            foreach ($lines->whereIn('type', $types) as $r) {
-                if (! Decimal::isZero((string) $r->net)) {
+        foreach (['Assets', 'Liabilities'] as $section) {
+            foreach (array_filter($groups, fn ($g) => $g[0] === $section) as [, $label, $accounts, $sign]) {
+                $shown = $accounts->filter(fn ($r) => ! Decimal::isZero((string) $r->net));
+                if ($shown->isEmpty()) {
+                    continue;
+                }
+                foreach ($shown as $r) {
                     $rows->push(['section' => $label, 'code' => $r->code, 'account' => $r->name, 'amount' => Decimal::mul((string) $r->net, $sign)]);
                 }
+                $rows->push(['section' => $label, 'code' => '', 'account' => 'Total '.strtolower($label), 'amount' => $total($accounts, $sign)]);
             }
-            if ($label === 'Equity') {
-                $rows->push(['section' => $label, 'code' => '', 'account' => 'Profit not yet closed', 'amount' => $sum(['income', 'cost', 'expense'], '-1')]);
-            }
-            $rows->push(['section' => $label, 'code' => '', 'account' => 'Total '.strtolower($label), 'amount' => Decimal::add($sum($types, $sign), $label === 'Equity' ? $sum(['income', 'cost', 'expense'], '-1') : '0')]);
+            $all = $section === 'Assets' ? $lines->filter($isAsset) : $lines->where('type', 'liability');
+            $rows->push(['section' => $section, 'code' => '', 'account' => 'Total '.strtolower($section), 'amount' => $total($all, $section === 'Assets' ? '1' : '-1')]);
         }
+
+        foreach ($lines->where('type', 'equity') as $r) {
+            if (! Decimal::isZero((string) $r->net)) {
+                $rows->push(['section' => 'Equity', 'code' => $r->code, 'account' => $r->name, 'amount' => Decimal::mul((string) $r->net, '-1')]);
+            }
+        }
+        $rows->push(['section' => 'Equity', 'code' => '', 'account' => 'Profit not yet closed', 'amount' => $profit]);
+        $rows->push(['section' => 'Equity', 'code' => '', 'account' => 'Total equity', 'amount' => Decimal::add($total($lines->where('type', 'equity'), '-1'), $profit)]);
 
         return $rows;
     }

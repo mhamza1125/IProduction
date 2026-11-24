@@ -61,6 +61,7 @@
                       help="Pakistan: July. Used for fiscal-year reports." />
             <x-input label="Over-receipt tolerance (%)" type="number" step="0.01" min="0" max="100" wire:model="over_receipt_percent"
                      help="Extra quantity a vendor or contractor may deliver without an authorised decision. Default 0." />
+            <x-checkbox wire:model="auto_depreciation" label="Post last month's depreciation automatically on the 1st" help="Otherwise run it from Finance › Assets." class="sm:col-span-2" />
             </div>
         </x-card>
 

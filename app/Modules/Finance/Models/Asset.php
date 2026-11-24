@@ -7,6 +7,7 @@ use App\Support\Models\Attachable;
 use App\Support\Models\HasAttachmentsAndNotes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
@@ -26,6 +27,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $serial_number
  * @property string $status
  * @property string|null $notes
+ * @property int|null $useful_life_months
+ * @property string|null $salvage_value
+ * @property Carbon|null $depreciation_start
  * @property-read Employee|null $assignedTo
  */
 class Asset extends Model implements Attachable
@@ -34,11 +38,11 @@ class Asset extends Model implements Attachable
 
     public const STATUSES = ['in_use' => 'In use', 'in_store' => 'In store', 'in_repair' => 'In repair', 'disposed' => 'Disposed', 'lost' => 'Lost'];
 
-    protected $fillable = ['code', 'name', 'category', 'purchase_date', 'value', 'location', 'assigned_employee_id', 'serial_number', 'status', 'notes'];
+    protected $fillable = ['code', 'name', 'category', 'purchase_date', 'value', 'location', 'assigned_employee_id', 'serial_number', 'status', 'notes', 'useful_life_months', 'salvage_value', 'depreciation_start'];
 
     protected function casts(): array
     {
-        return ['purchase_date' => 'date', 'value' => 'decimal:2'];
+        return ['purchase_date' => 'date', 'value' => 'decimal:2', 'salvage_value' => 'decimal:2', 'depreciation_start' => 'date', 'useful_life_months' => 'integer'];
     }
 
     public function permissionKey(): string
@@ -55,5 +59,11 @@ class Asset extends Model implements Attachable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['code', 'name', 'category', 'value', 'location', 'assigned_employee_id', 'status'])->logOnlyDirty()->useLogName('masters');
+    }
+
+    /** @return HasMany<AssetDepreciation, $this> */
+    public function depreciations(): HasMany
+    {
+        return $this->hasMany(AssetDepreciation::class)->orderBy('period');
     }
 }

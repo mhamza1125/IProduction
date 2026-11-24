@@ -54,6 +54,10 @@ class FinanceServiceProvider extends ModuleServiceProvider
     {
         parent::boot();
 
+        if ($this->app->runningInConsole()) {
+            $this->commands([Console\RunDepreciation::class]);
+        }
+
         // Anything with journal lines can only be deactivated.
         foreach ([Customer::class, Vendor::class, Employee::class, Contractor::class] as $class) {
             $class::whenUsed('finance.journals', fn ($p) => JournalLine::query()->where('ledgerable_type', $p->getMorphClass())->where('ledgerable_id', $p->getKey())->exists());
@@ -98,7 +102,7 @@ class FinanceServiceProvider extends ModuleServiceProvider
             new PermissionSet('transfers', 'Transfers', PermissionSet::DOCUMENT, 'Finance'),
             new PermissionSet('expenses', 'Expenses', PermissionSet::DOCUMENT, 'Finance'),
             new PermissionSet('journal_vouchers', 'Journal vouchers', PermissionSet::DOCUMENT, 'Finance'),
-            new PermissionSet('assets', 'Asset register', PermissionSet::MASTER, 'Finance'),
+            new PermissionSet('assets', 'Asset register', [...PermissionSet::MASTER, 'post'], 'Finance'),
         ];
     }
 

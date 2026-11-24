@@ -37,6 +37,8 @@ class Settings
         'company.origin_statement' => null,
         'company.bank_details' => null,
         'sales.proforma_validity_days' => 30,
+        // Post last month's depreciation automatically on the 1st (assets:depreciate --scheduled).
+        'finance.auto_depreciation' => false,
         'base_currency' => 'PKR',
         'fiscal_year.start_month' => 7,
         'period_lock.date' => null,

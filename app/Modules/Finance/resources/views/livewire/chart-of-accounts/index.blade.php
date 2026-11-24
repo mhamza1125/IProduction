@@ -55,7 +55,10 @@
     <x-modal wire:model="showForm" :title="$editingId ? 'Edit account' : 'New account'">
         <form wire:submit="save" id="account-form" class="grid gap-4 sm:grid-cols-2">
             <x-input label="Code" wire:model="code" required />
-            <x-select label="Type" wire:model="accountType" :options="$types" required />
+            <x-select label="Type" wire:model.live="accountType" :options="$types" required />
+            @if (in_array($accountType, ['asset', 'liability', 'clearing'], true))
+                <x-select label="Balance sheet" wire:model="term" :options="\App\Modules\Finance\Models\GlAccount::TERMS" required help="Non-current: fixed assets and long-term loans (due after 12 months)." />
+            @endif
             <x-input label="Name" wire:model="name" required class="sm:col-span-2" />
             <x-select label="Parent account" wire:model="parent_id" :options="$parents" placeholder="None" class="sm:col-span-2" />
             <x-textarea label="Description" wire:model="description" rows="2" class="sm:col-span-2" />
