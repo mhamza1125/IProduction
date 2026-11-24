@@ -64,7 +64,7 @@ return [
 
         'Production' => [
             'allow' => [
-                ...$on(['ptcs', 'material_processes', 'contractor_jobs', 'rejections', 'wage_work', 'production_transactions'], $documentWork),
+                ...$on(['ptcs', 'material_processes', 'contractor_jobs', 'rejections', 'wage_work', 'production_transactions', 'worker_rates'], $documentWork),
                 'items.view', 'routes.view', 'boms.view', 'stock.view', 'lots.view', 'contractors.view', 'employees.view', 'planning.view',
             ],
             'except' => ['*.approve', '*.override'],
@@ -83,7 +83,7 @@ return [
             'allow' => [
                 ...$on(['employees', 'attendance', 'wage_work', 'loans', 'advances'], $documentWork),
                 'payroll.view', 'payroll.create', 'payroll.edit', 'payroll.delete', 'payroll.print', 'payroll.export',
-                'salary.view', 'ledgers.view',
+                'salary.view', 'ledgers.view', 'worker_rates.view', 'worker_rates.export',
             ],
             'except' => ['*.approve', '*.override'],
         ],

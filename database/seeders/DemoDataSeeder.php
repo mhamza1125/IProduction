@@ -42,6 +42,7 @@ use App\Modules\People\Models\Employee;
 use App\Modules\People\Models\Vendor;
 use App\Modules\Production\Models\Ptc;
 use App\Modules\Production\Models\WageWork;
+use App\Modules\Production\Models\WorkerRate;
 use App\Modules\Production\Services\ContractorJobs;
 use App\Modules\Production\Services\Ptcs;
 use App\Modules\Production\Services\PtcTransactions;
@@ -461,6 +462,14 @@ class DemoDataSeeder extends Seeder
     {
         $tx = app(PtcTransactions::class);
         $ptcs = app(Ptcs::class);
+
+        // Individual piece rates: Javed stitches boxing gloves at Rs. 48 (route: 45);
+        // the stitching contractor gets Rs. 58 for any item (route: 55).
+        $stitching = Stage::query()->where('name', 'Stitching')->value('id');
+        WorkerRate::query()->create(['worker_type' => 'employee', 'employee_id' => $this->employees['stitcher2']->id, 'stage_id' => $stitching,
+            'item_id' => $this->items['boxing']->id, 'rate' => '48', 'effective_from' => '2026-09-01', 'notes' => 'Senior stitcher']);
+        WorkerRate::query()->create(['worker_type' => 'contractor', 'contractor_id' => $this->contractors['stitching']->id, 'stage_id' => $stitching,
+            'rate' => '58', 'effective_from' => '2026-09-01']);
 
         // Made for stock: finished, with a few pieces rejected at stitching.
         $ptc = $this->ptc('boxing12oz', 'boxing', '300', '2026-09-10');

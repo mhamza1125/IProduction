@@ -71,6 +71,7 @@ class ProductionServiceProvider extends ModuleServiceProvider
             new PermissionSet('contractor_jobs', 'Contractor jobs', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('material_processes', 'Material processing', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('rejections', 'Rejections', [...PermissionSet::DOCUMENT], 'Production'),
+            new PermissionSet('worker_rates', 'Worker rates', ['view', 'create', 'edit', 'delete', 'export'], 'Production'),
         ];
     }
 
@@ -93,6 +94,7 @@ class ProductionServiceProvider extends ModuleServiceProvider
             new NavItem('Material Processing', 'production.processes.index', 'arrows', 'material_processes.view', 'Production', 220, 'production.processes.*'),
             new NavItem('Rejections', 'production.rejections.index', 'shield', 'rejections.view', 'Production', 230, 'production.rejections.*'),
             new NavItem('Wage Work', 'production.wage-work', 'clock', 'wage_work.view', 'Production', 240),
+            new NavItem('Worker Rates', 'production.worker-rates', 'currency', 'worker_rates.view', 'Production', 250),
         ];
     }
 }

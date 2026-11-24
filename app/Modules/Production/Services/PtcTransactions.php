@@ -46,6 +46,7 @@ class PtcTransactions
         private readonly Rejections $rejections,
         private readonly SupplyLinks $supply,
         private readonly PeriodLock $periodLock,
+        private readonly StageRates $rates,
     ) {}
 
     /**
@@ -203,12 +204,15 @@ class PtcTransactions
                 ]);
             }
 
-            if ($receive !== null && $worker->model instanceof Employee && $worker->model->employee_type === Employee::TYPE_WAGE && $stage->wage_rate !== null) {
-                $this->wages->record($worker->model, $ptc, $stage, $receive, $good, $rejected, $stage->wage_rate, $date);
+            // Piece pay: the worker's individual rate if one is in force, else the stage's standard rate.
+            $paid = $receive !== null && ($worker->isContractor() || ($worker->model instanceof Employee && $worker->model->employee_type === Employee::TYPE_WAGE));
+            $rate = $paid ? $this->rates->resolve($worker, $ptc, $stage, $date)['rate'] : null;
+            if ($rate !== null && $worker->model instanceof Employee) {
+                $this->wages->record($worker->model, $ptc, $stage, $receive, $good, $rejected, $rate, $date);
             }
-            if ($receive !== null && $worker->isContractor() && $stage->contractor_rate !== null) {
-                $amount = Decimal::mul($good, $stage->contractor_rate);
-                $this->accounting->labor($worker->model, $amount, $date, $ptc, "{$ptc->number} {$stage->stage->name}: {$good} accepted × {$stage->contractor_rate}");
+            if ($rate !== null && $worker->isContractor()) {
+                $amount = Decimal::mul($good, $rate);
+                $this->accounting->labor($worker->model, $amount, $date, $ptc, "{$ptc->number} {$stage->stage->name}: {$good} accepted × {$rate}");
                 $this->costing->add($ptc, 'contractor', $amount, $receive, "{$worker->model->name} at {$stage->stage->name}");
             }
         });

@@ -6,6 +6,7 @@ use App\Modules\Production\Livewire\Processes;
 use App\Modules\Production\Livewire\Ptcs;
 use App\Modules\Production\Livewire\Rejections;
 use App\Modules\Production\Livewire\WageWork;
+use App\Modules\Production\Livewire\WorkerRates;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('production')->name('production.')->group(function () {
@@ -30,4 +31,5 @@ Route::middleware('auth')->prefix('production')->name('production.')->group(func
     Route::get('rejections/{rejection}', Rejections\Show::class)->middleware('can:rejections.view')->name('rejections.show');
 
     Route::get('wage-work', WageWork\Index::class)->middleware('can:wage_work.view')->name('wage-work');
+    Route::get('worker-rates', WorkerRates\Index::class)->middleware('can:worker_rates.view')->name('worker-rates');
 });
