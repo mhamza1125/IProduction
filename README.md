@@ -11,14 +11,16 @@ Built with Laravel 13, Livewire 4, Alpine.js and Tailwind CSS 4 on MySQL 8.
 
 | Area | Details |
 |---|---|
-| Sign-in | Login, password reset, two-factor authentication (authenticator app). No public registration: admins create users. Deactivated users cannot sign in. |
-| Users & roles | Users screen with search/sort/filter, roles with a permission matrix per module, built-in **Super Admin** role. |
-| Company settings | Name, address, NTN/STRN, logo, fiscal year start month (default July). |
-| Currencies | PKR base currency plus foreign currencies. Exchange rates are entered per transaction. |
-| Document numbers | Gapless, per fiscal year: `SO/2026-27/00001`. |
-| Audit trail | Changes to users and currencies are logged (Spatie Activitylog). |
-| UI kit | Tailwind Blade components: buttons, inputs, selects, tables with sorting, modals, toasts, dark mode, mobile sidebar. |
-| Modules | `app/Modules/{Name}`: each module brings its own routes, views, migrations, permissions and menu items. |
+| Sales | Customers (each in their own currency), sales orders, proforma invoices, planning (reserve stock, buy or make), deliveries with packing lists, commercial invoices with export details (HS code, origin, Incoterms, ports, BL/AWB, FI and GD numbers, REX statement), returns and credit notes. |
+| Purchasing | Vendors, purchase orders, goods receipts with rejections and over-receipt tolerance, vendor bills (printable), purchase returns. |
+| Production | PTCs (Product Travel Cards) following each batch through its route of stages, material issue and reconciliation, rejections with reasons, contractor jobs, material processing, wage work, and individual piece rates per worker, stage and item with effective dates. |
+| Inventory | Stock ledger by item, stage, status, location and lot; FIFO lot costing; reservations; counts and adjustments; lot traceability. |
+| Finance | Double-entry journals posted automatically, cash and bank accounts in any currency, receipts, payments, currency conversions (PKR typed in as received), transfers, expenses, journal vouchers, ledgers and statements, fixed assets with straight-line depreciation. |
+| Payroll | Attendance, salaried and piece-rate staff, overtime, loans, advances, fines, payslips. |
+| Reports | 35 reports with print, PDF, Excel and CSV: trial balance, P&L, balance sheet (current / non-current), cash flow statement, sales tax summary, receivables and payables, stock valuation, production, wastage and yield, order cost and customer profitability. |
+| Control | Roles and permissions per action, approvals per document type, period lock, posted documents never edited (reversals, returns and credit notes instead), history on every document, audit log, two-factor sign-in. |
+| Operations | Nightly backups with a restore test, health check at `/up` (database and storage), security headers, go-live import of opening balances, demo company for training. |
+| UI | Light, Dim and Dark themes, mobile layout, keyboard shortcuts, Excel/CSV export on every list. |
 
 ## Requirements
 

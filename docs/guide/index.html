@@ -394,8 +394,10 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
                     <h3>Invoice and collect payment</h3>
                     <div class="body">
                         <ul class="meta"><li><b>Who</b> Sales, then Accountant</li><li><b>Where</b> Sales › Invoices; Finance › Receipts</li></ul>
+                        <p>Before shipment, <strong>Proforma invoice</strong> on the sales order prints the lines, HS codes, the customer's usual Incoterm, bank details and a validity date for the buyer's advance or letter of credit.</p>
                         <p>An invoice is made from dispatched delivery lines; each line can be invoiced once. Prices come from the order and can be adjusted on the invoice; tax is optional per line and defaults to none, so export invoices show no tax.</p>
                         <figure><img src="img/invoice.webp" width="1440" height="900" loading="lazy" alt="Invoice INV-26-0002 for Rheinland Sportartikel in EUR, total 4,184.00, with a balance of 2,010.00 after a receipt of 2,000 and a credit note of 174."><figcaption><span class="mono">INV-26-0002</span>: EUR 4,184 invoiced, part paid, and reduced by a credit note for returned pairs.</figcaption></figure>
+                        <p>It prints as a commercial invoice. Shipping details (Incoterm, ports, vessel, container, BL/AWB, FI and GD numbers, consignee) can be completed after posting, as they arrive; HS codes and origin come from the items, and the REX statement of origin from Settings.</p>
                         <p class="effect"><strong>Posting the invoice</strong> posts Dr Accounts Receivable / Cr Sales, plus Taxes Payable when tax applies, in the customer's currency.</p>
                         <p>When money arrives, record a receipt in the customer's currency into a bank account of that currency. Bank charges and other deductions are entered on the receipt, so the amount cleared equals the deductions plus the net received. Allocate it to invoices; anything left is a customer advance that can be applied to a later invoice.</p>
                         <p>Finally, when foreign currency is converted, record a currency conversion and type the PKR actually credited by the bank. That is the only point where foreign money becomes PKR value in the books.</p>
@@ -426,7 +428,8 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
             <details>
                 <summary>Finance</summary>
                 <div>
-                    <p class="prose">Accounts lists the cash and bank accounts with balances in their own currencies. Besides receipts and payments, Finance covers transfers between accounts of the same currency, currency conversions, expenses (paid now, or owed to a vendor and paid later), journal vouchers for anything else (optionally deducted through payroll), ledgers for any customer, vendor, employee, contractor or account, the automatic journals, the chart of accounts, and fixed assets.</p>
+                    <p class="prose">Accounts lists the cash and bank accounts with balances in their own currencies. Besides receipts and payments, Finance covers transfers between accounts of the same currency, currency conversions, expenses (paid now, or owed to a vendor and paid later), journal vouchers for anything else (optionally deducted through payroll), ledgers for any customer, vendor, employee, contractor or account, the automatic journals, and the chart of accounts, where each asset and liability account is marked current or non-current for the balance sheet.</p>
+                    <p class="prose">Fixed assets carry their cost, useful life, salvage value and start month. <strong>Run depreciation</strong> on the asset register previews and posts a month's straight-line depreciation as one journal (Dr Depreciation, Cr Accumulated Depreciation); a month is never posted twice, and it can run automatically on the 1st.</p>
                     <figure><img src="img/ledgers.webp" width="1440" height="900" loading="lazy" alt="Cash and bank accounts: Cash Book in PKR and Meezan Bank accounts in PKR, USD and EUR with their balances."><figcaption>Foreign currency accounts keep their balance in that currency.</figcaption></figure>
                 </div>
             </details>
@@ -434,7 +437,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
             <details>
                 <summary>HR and payroll</summary>
                 <div>
-                    <p class="prose">Employees are salaried or paid by wage. Enter attendance for the month (working days, leaves, late hours, overtime), then create the month's payroll. Salaried staff get salary plus overtime, minus unpaid days and late hours; wage employees get their approved wage work. Allowances, fines, loan installments, advances and any amount brought forward apply to both. Nothing changes until the payroll is approved and posted; after that, payments settle each employee's line and payslips can be printed.</p>
+                    <p class="prose">Employees are salaried or paid by wage. Enter attendance for the month (working days, leaves, late hours, overtime), then create the month's payroll. Salaried staff get salary plus overtime, minus unpaid days and late hours; wage employees get their approved wage work, paid at the stage's standard rate or the worker's own rate from Production › Worker Rates (per stage, optionally per item, from a date). Allowances, fines, loan installments, advances and any amount brought forward apply to both. Nothing changes until the payroll is approved and posted; after that, payments settle each employee's line and payslips can be printed.</p>
                     <figure><img src="img/payroll.webp" width="1440" height="900" loading="lazy" alt="Payroll for October 2026, partly paid, listing each employee's salary or wage work, overtime and allowances, attendance deductions, fines, loan and advance recoveries and net payable."><figcaption>October payroll <span class="mono">PRL-26-0001</span>, posted and partly paid.</figcaption></figure>
                 </div>
             </details>
@@ -442,7 +445,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
             <details>
                 <summary>Reports</summary>
                 <div>
-                    <p class="prose">Reports are grouped by area and read posted documents only. Each one has filters, prints, and exports to Excel or CSV. Reports showing cost, salary or profit need their own permission. Order cost shows the direct cost of an order; profit uses a reference PKR value and posts nothing.</p>
+                    <p class="prose">Reports are grouped by area and read posted documents only. Each one has filters, prints, and exports to Excel or CSV. Reports showing cost, salary or profit need their own permission. Order cost shows the direct cost of an order; profit uses a reference PKR value and posts nothing. Finance also has a cash flow statement (direct method, per currency) and a sales tax summary; Costing has customer profitability, which values foreign revenue at the rate your actual currency conversions achieved.</p>
                     <figure><img src="img/trial-balance.webp" width="1440" height="900" loading="lazy" alt="Trial balance report as of a date, in PKR, listing accounts with debit and credit balances."><figcaption>The trial balance is per currency, because foreign documents stay in their currency.</figcaption></figure>
                 </div>
             </details>
@@ -501,6 +504,7 @@ composer lint     # fix code style</code></pre>
                 <dt>Reservation</dt><dd>Available stock held for a specific order line.</dd>
                 <dt>Route</dt><dd>The ordered list of stages an item passes through, such as Cutting, Stitching, Logo Embossing and Packing.</dd>
                 <dt>Stage</dt><dd>One step of production. Stock in production is held by stage.</dd>
+                <dt>Worker rate</dt><dd>A worker's own piece rate for a stage (optionally one item) from a date, replacing the stage's standard rate.</dd>
                 <dt>Wage work</dt><dd>Pieces done by wage employees at a stage, approved before they are paid through payroll.</dd>
             </dl>
         </section>
