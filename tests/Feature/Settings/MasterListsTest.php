@@ -13,6 +13,7 @@ use App\Modules\Core\Services\Settings;
 use App\Modules\Finance\Database\Seeders\ChartOfAccountsSeeder;
 use App\Modules\Finance\Models\GlAccount;
 use App\Support\Documents\DocumentException;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -92,7 +93,18 @@ it('seeds the default chart of accounts and protects system accounts', function 
         ->and(fn () => $ar->update(['type' => 'income']))->toThrow(DocumentException::class);
 
     // Users can add their own accounts, e.g. a new expense head.
-    $custom = GlAccount::create(['code' => '6700', 'name' => 'Repairs', 'type' => 'expense']);
+    $custom = GlAccount::create(['code' => '6750', 'name' => 'Repairs', 'type' => 'expense']);
     $custom->delete();
-    expect(GlAccount::where('code', '6700')->exists())->toBeFalse();
+    expect(GlAccount::where('code', '6750')->exists())->toBeFalse();
+});
+
+it('gives a new system account the next free code when the company already uses its code', function () {
+    seedBase();
+    DB::table('gl_accounts')->where('system_key', 'depreciation')->delete();   // as before this version
+    GlAccount::create(['code' => '6700', 'name' => 'Repairs', 'type' => 'expense']);
+
+    (new ChartOfAccountsSeeder)->run();
+
+    expect(GlAccount::system('depreciation')->code)->toBe('6701')
+        ->and(GlAccount::where('code', '6700')->value('name'))->toBe('Repairs');
 });

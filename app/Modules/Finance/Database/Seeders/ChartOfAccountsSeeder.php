@@ -67,6 +67,11 @@ class ChartOfAccountsSeeder extends Seeder
             $account = GlAccount::query()->withTrashed()->where('system_key', $key)->first();
 
             if ($account === null) {
+                // A company may already use this code for its own account (accounts added
+                // in a later version): take the next free code rather than fail the deploy.
+                while (GlAccount::query()->withTrashed()->where('code', $code)->exists()) {
+                    $code = (string) ((int) $code + 1);
+                }
                 $account = new GlAccount(['code' => $code, 'name' => $name, 'type' => $type]);
                 $account->system_key = $key;
                 $account->term = $term;
