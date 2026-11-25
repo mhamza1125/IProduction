@@ -60,7 +60,7 @@ class EmployeeAdvances extends BaseType
                 'advance_date' => $batch->batch_date, 'amount' => Decimal::round((string) $d['remaining']), 'salary_month' => $this->month((string) $d['salary_month'])->format('Y-m-d'),
                 'money_account_id' => MoneyAccount::cashBook()->id, 'notes' => "Opening balance from {$batch->number}", 'created_by' => auth()->id(),
             ]);
-            app(LoansAndAdvances::class)->postOpening($advance->refresh(), 'opening advance balance');
+            app(LoansAndAdvances::class)->postOpening($advance->refresh(), 'opening advance balance', $batch);
             $row->update(['result_type' => $advance->getMorphClass(), 'result_id' => $advance->id]);
             $this->add('PKR', (string) $d['remaining']);
         }

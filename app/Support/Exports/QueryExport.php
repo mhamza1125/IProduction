@@ -49,7 +49,7 @@ class QueryExport implements FromQuery, WithHeadings, WithMapping
         $out = [];
 
         foreach ($this->columns as $column) {
-            $out[] = $column instanceof Closure ? $column($row) : data_get($row, $column);
+            $out[] = SafeCell::value($column instanceof Closure ? $column($row) : data_get($row, $column));
         }
 
         return $out;

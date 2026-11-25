@@ -57,7 +57,7 @@ beforeEach(function () {
     $this->leather = Item::factory()->rawMaterial('kg')->create(['code' => 'LEA'])->variants()->first();
     $bom = app(BomService::class)->newVersion($this->glove);
     $bom->lines()->create(['component_item_id' => $this->leather->item_id, 'quantity' => '0.2', 'unit_id' => Unit::where('symbol', 'kg')->value('id'), 'wastage_percent' => 0]);
-    app(BomService::class)->approve($bom);
+    approver(BomService::class)->approve($bom);
 
     $this->cutter = Employee::factory()->create(['employee_type' => Employee::TYPE_SALARY]);
     $this->stitcher = Employee::factory()->create(['employee_type' => Employee::TYPE_WAGE]);
@@ -78,7 +78,7 @@ function newPtc(string $qty = '100', array $extra = []): Ptc
 {
     $ptc = app(Ptcs::class)->save(null, $extra + ['item_variant_id' => test()->variant->id, 'planned_qty' => $qty, 'route_id' => test()->route->id, 'start_date' => '2026-11-05']);
 
-    return app(Ptcs::class)->approve($ptc);
+    return approver(Ptcs::class)->approve($ptc);
 }
 
 function emp(Employee $e): Worker
@@ -127,7 +127,7 @@ it('runs the normal flow: issue material, stages, wage work, release at cost', f
     // The wage employee's 96 accepted pieces at Rs 10 wait for review; rejected pieces are unpaid.
     $work = WageWork::query()->sole();
     expect($work->quantity)->toBe('96.0000')->and($work->amount)->toBe('960.00')->and($work->status)->toBe('pending');
-    app(WageWorks::class)->approve($work);
+    approver(WageWorks::class)->approve($work);
     expect(app(Ledgers::class)->partyBalance($this->stitcher))->toBe('-960.00');
 
     expect(Rejection::query()->sole()->quantity)->toBe('4.0000')
@@ -205,12 +205,12 @@ it('rolls child PTC cost up to the order and reserves released goods to it', fun
     $order = app(SalesOrders::class)->save(null, ['customer_id' => $customer->id, 'order_date' => '2026-11-01'], [[
         'item_variant_id' => $this->variant->id, 'description' => '', 'quantity' => '100', 'unit_price' => '300', 'tax_rate' => '', 'due_date' => null,
     ]]);
-    $order = app(DocumentWorkflow::class)->approve($order);
+    $order = approver(DocumentWorkflow::class)->approve($order);
     $line = $order->lines()->first();
     prodStock($this->leather, '30', '500');
 
     $parent = newPtc('50', ['sales_order_line_id' => $line->id]);
-    $child = app(Ptcs::class)->approve($this->ptcs->createChild($parent, '50', null));
+    $child = approver(Ptcs::class)->approve($this->ptcs->createChild($parent, '50', null));
     expect($child->sales_order_line_id)->toBe($line->id)
         ->and(app(Planning::class)->picture($line->fresh())['in_production'])->toBe('100.0000');
 
@@ -233,7 +233,7 @@ it('merges only PTCs of the same order, variant, route and stage', function () {
         $o = app(SalesOrders::class)->save(null, ['customer_id' => $customer->id, 'order_date' => '2026-11-01'], [[
             'item_variant_id' => $this->variant->id, 'description' => '', 'quantity' => '10', 'unit_price' => '1', 'tax_rate' => '', 'due_date' => null]]);
 
-        return app(DocumentWorkflow::class)->approve($o)->lines()->first();
+        return approver(DocumentWorkflow::class)->approve($o)->lines()->first();
     });
     $a = newPtc('10', ['sales_order_line_id' => $lines[0]->id]);
     $b = newPtc('10', ['sales_order_line_id' => $lines[1]->id]);
@@ -268,6 +268,13 @@ it('pays a contractor at the stage rate for accepted pieces', function () {
 
     $this->tx->receiveStage($ptc, $s['Stitching'], $c, '18', '2', $this->day, 'Torn');
 
+    // Owed only once approved, and not by the person who recorded the work.
+    $work = WageWork::query()->sole();
+    expect($work->contractor_id)->toBe($contractor->id)->and($work->status)->toBe('pending')
+        ->and(app(Ledgers::class)->partyBalance($contractor))->toBe('0.00')
+        ->and(fn () => app(WageWorks::class)->approve($work))->toThrow(DocumentException::class, 'another user');
+    approver(WageWorks::class)->approve($work);
+
     expect(app(Ledgers::class)->partyBalance($contractor))->toBe('-216.00')
         ->and($this->costing->byCategory($ptc)['contractor'])->toBe('216.00')
         ->and(Rejection::query()->sole()->responsible_id)->toBe($contractor->id);
@@ -292,7 +299,7 @@ it('decides rejections: rework, scrap, sell and recover, keeping history', funct
     // Decisions need approval before posting.
     expect(fn () => $rej->post($scrap))->toThrow(DocumentException::class);
     foreach ([$rework, $scrap, $sell, $charge] as $d) {
-        $rej->post($wf->approve($d));
+        $rej->post(approver(DocumentWorkflow::class)->approve($d));
     }
 
     expect($this->stock->onHand($this->variant->id, $this->stages[1]->id, StockStatus::REJECTED))->toBe('3.0000')
@@ -320,7 +327,7 @@ it('keeps rejected pieces in a zero-cost rejects lot so their cost is not counte
 
     // Scrapping them writes off nothing more: the loss is already in the good pieces.
     $scrap = app(Rejections::class)->decide($rejection, ['decision' => 'scrap', 'quantity' => '4', 'reason' => 'Beyond repair']);
-    app(Rejections::class)->post(app(DocumentWorkflow::class)->approve($scrap));
+    app(Rejections::class)->post(approver(DocumentWorkflow::class)->approve($scrap));
     expect($scrap->fresh()->journal_id)->toBeNull();
 
     // Rejecting pieces found later at a stage moves them to the same rejects lot.
@@ -351,6 +358,24 @@ it('values pieces still inside a PTC at zero after a partial release', function 
         ->and(StockValuation::unitCost($released))->toBe($ptc->outputLot->unit_cost)
         // Released pieces left the PTC even though they sit at a stage: only floor pieces share the pool.
         ->and($this->costing->unitsInPipeline($ptc))->toBe('60.0000');
+});
+
+it('passes a landed cost on material already issued to a running PTC into its cost', function () {
+    $lot = prodStock($this->leather, '30', '500');
+    $ptc = newPtc('100');
+    $this->tx->issueMaterial($ptc, $ptc->stages()->first(), $this->leather->id, '20', emp($this->cutter), $this->day);
+    $before = $this->costing->pool($ptc);
+
+    // Freight of Rs 5 per kg arrives later: the 20 kg the PTC holds take Rs 100.
+    $added = DB::transaction(function () use ($lot, $ptc) {
+        $this->stock->addLotCost($lot->id, '5');
+
+        return $this->costing->addLandedCost($lot->id, '5', $ptc, 'Landed cost test');
+    });
+
+    expect($added)->toBe('100.00')
+        ->and(Decimal::sub($this->costing->pool($ptc), $before))->toBe('100.00')
+        ->and($lot->fresh()->unit_cost)->toBe('505.0000');
 });
 
 it('never uses rejected stock in normal issues', function () {

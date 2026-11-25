@@ -16,7 +16,7 @@
                             <x-table.td class="text-xs">@if ($d->targetPtc)Into {{ $d->targetPtc->number }} · @endif{{ $d->reason }}@if ($d->cancel_reason)<div>Cancelled: {{ $d->cancel_reason }}</div>@endif</x-table.td>
                             <x-table.td><x-status :status="$d->status" /></x-table.td>
                             <x-table.td class="whitespace-nowrap">
-                                @if ($d->isDraft()) @can('rejections.approve') <x-button size="sm" variant="secondary" wire:click="act({{ $d->id }}, 'approve')">Approve</x-button> @endcan @endif
+                                @if ($d->isDraft()) @can('rejections.approve') @if (\App\Support\Documents\SeparationOfDuties::blocks($d)) <span class="text-xs text-subtle">Awaiting another user</span> @else <x-button size="sm" variant="secondary" wire:click="act({{ $d->id }}, 'approve')">Approve</x-button> @endif @endcan @endif
                                 @if ($d->isApproved() && ! $d->isPosted()) @can('rejections.post') <x-button size="sm" wire:click="act({{ $d->id }}, 'post')" wire:confirm="Post this decision?">Post</x-button> @endcan @endif
                                 @if (! $d->isPosted() && ! $d->isCancelled()) @can('rejections.cancel') <x-button size="sm" variant="ghost" wire:click="act({{ $d->id }}, 'cancel')">Cancel</x-button> @endcan @endif
                             </x-table.td>

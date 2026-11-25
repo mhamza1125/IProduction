@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Route;
  */
 it('protects every module route with a permission', function () {
     // Attachment downloads check the parent document's view permission in the controller.
-    $open = ['dashboard', 'core.attachments.download'];
+    // The inbox is every signed-in user's own: it lists only what they may approve.
+    $open = ['dashboard', 'core.attachments.download', 'core.inbox'];
     $unprotected = collect(Route::getRoutes()->getRoutes())
         ->filter(fn ($r) => str_contains((string) $r->getActionName(), 'App\\Modules\\') || str_starts_with((string) $r->getName(), 'reports.'))
         ->reject(fn ($r) => in_array($r->getName(), $open, true))

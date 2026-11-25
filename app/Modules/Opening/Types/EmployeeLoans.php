@@ -63,7 +63,7 @@ class EmployeeLoans extends BaseType
                 'installment' => Decimal::round((string) $d['installment']), 'start_month' => $this->month((string) $d['start_month'])->format('Y-m-d'),
                 'notes' => "Opening balance from {$batch->number}", 'created_by' => auth()->id(),
             ]);
-            app(LoansAndAdvances::class)->postOpening($loan->refresh(), 'opening loan balance');
+            app(LoansAndAdvances::class)->postOpening($loan->refresh(), 'opening loan balance', $batch);
             $row->update(['result_type' => $loan->getMorphClass(), 'result_id' => $loan->id]);
             $this->add('PKR', (string) $d['remaining']);
         }

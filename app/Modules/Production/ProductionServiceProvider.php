@@ -2,9 +2,11 @@
 
 namespace App\Modules\Production;
 
+use App\Models\User;
 use App\Modules\Catalog\Models\Item;
 use App\Modules\Catalog\Models\ItemVariant;
 use App\Modules\Catalog\Models\ProductionRoute;
+use App\Modules\Core\Services\ApprovalInbox;
 use App\Modules\People\Models\Contractor;
 use App\Modules\People\Models\Employee;
 use App\Modules\Production\Actions\PostMaterialProcess;
@@ -22,6 +24,8 @@ use App\Modules\Production\Services\Ptcs;
 use App\Modules\Production\Services\PtcTransactions;
 use App\Modules\Production\Services\Rejections;
 use App\Modules\Production\Services\WageWorks;
+use App\Modules\Purchasing\Models\LandedCost;
+use App\Modules\Purchasing\Services\LandedCosts;
 use App\Support\Modules\DocumentType;
 use App\Support\Modules\ModuleServiceProvider;
 use App\Support\Modules\NavItem;
@@ -60,6 +64,18 @@ class ProductionServiceProvider extends ModuleServiceProvider
         Employee::whenUsed('production.employee', fn (Employee $e) => PtcTransaction::query()->where('employee_id', $e->id)->exists() || WageWork::query()->where('employee_id', $e->id)->exists());
         Contractor::whenUsed('production.contractor', fn (Contractor $c) => ContractorJob::query()->where('contractor_id', $c->id)->exists()
             || PtcTransaction::query()->where('contractor_id', $c->id)->exists() || MaterialProcess::query()->where('contractor_id', $c->id)->exists());
+
+        // Landed cost on a material lot: PTCs still holding that material take their share.
+        LandedCosts::afterLotCost('production.held_material', fn (int $lotId, string $perUnit, LandedCost $doc) => app(PtcCosting::class)
+            ->addLandedCost($lotId, $perUnit, $doc, "Landed cost {$doc->number}"));
+
+        // Pending piece work shows in "Awaiting your approval" for people who may approve it.
+        app(ApprovalInbox::class)->register('production.piece_work', fn (User $user) => [
+            'label' => 'Piece work', 'url' => route('production.wage-work'),
+            'count' => $user->can('wage_work.approve')
+                ? WageWork::query()->where('status', 'pending')->where(fn ($q) => $q->whereNull('created_by')->orWhere('created_by', '!=', $user->id))->count()
+                : 0,
+        ]);
     }
 
     public function permissions(): array
@@ -67,7 +83,7 @@ class ProductionServiceProvider extends ModuleServiceProvider
         return [
             new PermissionSet('ptcs', 'PTCs', [...PermissionSet::DOCUMENT, 'override'], 'Production'),
             new PermissionSet('production_transactions', 'Stage transactions', ['view', 'create', 'export'], 'Production'),
-            new PermissionSet('wage_work', 'Wage work', ['view', 'create', 'approve', 'override', 'export'], 'Production'),
+            new PermissionSet('wage_work', 'Piece work (wages and contractors)', ['view', 'create', 'approve', 'override', 'export'], 'Production'),
             new PermissionSet('contractor_jobs', 'Contractor jobs', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('material_processes', 'Material processing', PermissionSet::DOCUMENT, 'Production'),
             new PermissionSet('rejections', 'Rejections', [...PermissionSet::DOCUMENT], 'Production'),
@@ -93,7 +109,7 @@ class ProductionServiceProvider extends ModuleServiceProvider
             new NavItem('Contractor Jobs', 'production.jobs.index', 'users', 'contractor_jobs.view', 'Production', 210, 'production.jobs.*'),
             new NavItem('Material Processing', 'production.processes.index', 'arrows', 'material_processes.view', 'Production', 220, 'production.processes.*'),
             new NavItem('Rejections', 'production.rejections.index', 'shield', 'rejections.view', 'Production', 230, 'production.rejections.*'),
-            new NavItem('Wage Work', 'production.wage-work', 'clock', 'wage_work.view', 'Production', 240),
+            new NavItem('Piece Work', 'production.wage-work', 'clock', 'wage_work.view', 'Production', 240),
             new NavItem('Worker Rates', 'production.worker-rates', 'currency', 'worker_rates.view', 'Production', 250),
         ];
     }

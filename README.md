@@ -5,21 +5,22 @@ Built with Laravel 13, Livewire 4, Alpine.js and Tailwind CSS 4 on MySQL 8.
 
 > **Status:** built phase by phase from the Manufacturing ERP Build Specification.
 > Done: 1 Foundation, 2 Settings and people, 3 Catalog, 4 Inventory, 5 Finance core, 6 Purchasing, 7 Sales and planning, 8 Production, 9 Delivery and billing, 10 Remaining finance, 11 Payroll, 12 Costing and reporting, 13 Go-live (opening balances, cutover report, go-live lock, backup restore test; see `docs/GO-LIVE.md`).
-> Next: 13 Go-live (opening balances, permissions review, backup test, cutover).
+> Since then: fixes and additions from the audit of November 2026 (`docs/AUDIT_2026-11-24.md`).
 
 ## What's included
 
 | Area | Details |
 |---|---|
 | Sales | Customers (each in their own currency), sales orders, proforma invoices, planning (reserve stock, buy or make), deliveries with packing lists, commercial invoices with export details (HS code, origin, Incoterms, ports, BL/AWB, FI and GD numbers, REX statement), returns and credit notes. |
-| Purchasing | Vendors, purchase orders, goods receipts with rejections and over-receipt tolerance, vendor bills (printable), purchase returns. |
-| Production | PTCs (Product Travel Cards) following each batch through its route of stages, material issue and reconciliation, rejections with reasons, contractor jobs, material processing, wage work, and individual piece rates per worker, stage and item with effective dates. |
+| Purchasing | Vendors, purchase orders, goods receipts with rejections and over-receipt tolerance, vendor bills (printable), purchase returns, landed costs (freight, delivery, duty and other charges added to the goods' cost). |
+| Production | PTCs (Product Travel Cards) following each batch through its route of stages, material issue and reconciliation, rejections with reasons, contractor jobs, material processing, piece work for wage employees and contractors (owed once approved), and individual piece rates per worker, stage and item with effective dates. |
 | Inventory | Stock ledger by item, stage, status, location and lot; FIFO lot costing; reservations; counts and adjustments; lot traceability. |
 | Finance | Double-entry journals posted automatically, cash and bank accounts in any currency, receipts, payments, currency conversions (PKR typed in as received), transfers, expenses, journal vouchers, ledgers and statements, fixed assets with straight-line depreciation. |
 | Payroll | Attendance, salaried and piece-rate staff, overtime, loans, advances, fines, payslips. |
 | Reports | 35 reports with print, PDF, Excel and CSV: trial balance, P&L, balance sheet (current / non-current), cash flow statement, sales tax summary, receivables and payables, stock valuation, production, wastage and yield, order cost and customer profitability. |
-| Control | Roles and permissions per action, approvals per document type, period lock, posted documents never edited (reversals, returns and credit notes instead), history on every document, audit log, two-factor sign-in. |
-| Operations | Nightly backups with a restore test, health check at `/up` (database and storage), security headers, go-live import of opening balances, demo company for training. |
+| Control | Roles and permissions per action, approvals per document type (nobody approves what they created, Super Admin included), an inbox of what is waiting for your approval, period lock, posted documents never edited (reversals, returns and credit notes instead), history on every document, audit log, two-factor sign-in. |
+| Operations | Nightly backups with a restore test and an optional second copy on another disk, alerts in the app when a backup or background job fails, health check at `/up` (database and storage), security headers, go-live import of opening balances, demo company for training. |
+| Standalone | No email, cloud or third-party service and no CDN: everything runs and is stored on your own server, and works without an internet connection. Passwords are reset by an administrator (Settings › Users). |
 | UI | Light, Dim and Dark themes, mobile layout, keyboard shortcuts, Excel/CSV export on every list. |
 
 ## Requirements
@@ -118,6 +119,8 @@ Each customer gets their own deployment and database. Use a VPS (managed with La
    ```
 3. Run `php artisan horizon` under Supervisor, and add the scheduler cron entry: `* * * * * php /path/to/artisan schedule:run`.
 4. Sign in as the Super Admin, change the password, turn on two-factor authentication and fill in **Company settings**.
+5. Backups: set `BACKUP_COPY_PATH` to a folder on a second disk (another drive, a USB drive or a network share mounted on the server) so a disk failure does not take the backups with it. Failures show in the bell at the top of the app.
+6. Create a second user who can approve: the person who creates a document cannot approve it.
 
 Updates: pull, then repeat step 2 and `php artisan horizon:terminate`.
 

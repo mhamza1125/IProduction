@@ -48,7 +48,7 @@ function approvedJob(string $qty = '100', string $rate = '50', string $expected 
         [['item_variant_id' => test()->ball->id, 'stage_id' => null, 'quantity' => $qty, 'rate' => $rate]],
         [['item_variant_id' => test()->panel->id, 'expected_qty' => $expected]]);
 
-    return app(ContractorJobs::class)->approve($job);
+    return approver(ContractorJobs::class)->approve($job);
 }
 
 it('reconciles a contractor job: material issued, used, returned, wasted and still held', function () {
@@ -109,7 +109,7 @@ it('processes several inputs into variable output with yield and cost per unit',
         [['quantity' => '3', 'loss_type' => 'wastage', 'reason' => 'Edges']]);
 
     expect(fn () => $post($process))->toThrow(DocumentException::class);
-    $post(app(DocumentWorkflow::class)->approve($process));
+    $post(approver(DocumentWorkflow::class)->approve($process));
     $process->refresh();
 
     // (40 × 300 + 20 × 100) + 2000 − 500 = 15,500 over 385 pieces.
@@ -130,7 +130,7 @@ it('rolls back the whole process when one input is short', function () {
     cpStock($a, '10', '1');
     cpStock($b, '1', '1');
     $post = app(PostMaterialProcess::class);
-    $process = app(DocumentWorkflow::class)->approve($post->save(null, ['process_date' => '2026-11-05', 'process_name' => 'Mix'],
+    $process = approver(DocumentWorkflow::class)->approve($post->save(null, ['process_date' => '2026-11-05', 'process_name' => 'Mix'],
         [['item_variant_id' => $a->id, 'quantity' => '5'], ['item_variant_id' => $b->id, 'quantity' => '2']], [['item_variant_id' => $out->id, 'quantity' => '6']], []));
 
     expect(fn () => $post($process))->toThrow(DocumentException::class, 'short by 1');

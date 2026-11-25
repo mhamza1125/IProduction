@@ -62,12 +62,14 @@ class Index extends Component
 
     protected function sortable(): array
     {
-        return ['effective_from', 'rate'];
+        // Sorting by rate would reveal the order of pay to people who cannot see it.
+        return auth()->user()?->can('salary.view') ? ['effective_from', 'rate'] : ['effective_from'];
     }
 
     public function create(): void
     {
         $this->authorize('worker_rates.create');
+        $this->authorize('salary.view'); // setting pay needs seeing pay
         $this->resetValidation();
         $this->reset('editingId', 'employee_id', 'contractor_id', 'stage_id', 'item_id', 'rate', 'notes', 'is_active');
         $this->worker_type = 'employee';
@@ -78,6 +80,7 @@ class Index extends Component
     public function edit(int $id): void
     {
         $this->authorize('worker_rates.edit');
+        $this->authorize('salary.view');
         $r = WorkerRate::query()->findOrFail($id);
         $this->resetValidation();
         $this->editingId = $r->id;
@@ -96,6 +99,7 @@ class Index extends Component
     public function save(): void
     {
         $this->authorize($this->editingId ? 'worker_rates.edit' : 'worker_rates.create');
+        $this->authorize('salary.view');
         $this->rate = str_replace(',', '', $this->rate);
 
         $employee = $this->worker_type === 'employee';
@@ -135,11 +139,15 @@ class Index extends Component
         $this->dispatch('toast', message: 'Rate saved. It applies to work received from '.Format::date($data['effective_from']).' onwards.');
     }
 
-    public function delete(int $id): void
+    /**
+     * Rates are never deleted: a deactivated rate stays on record for the work
+     * it was in force for, and stops applying to new work.
+     */
+    public function deactivate(int $id): void
     {
         $this->authorize('worker_rates.delete');
-        WorkerRate::query()->findOrFail($id)->delete();
-        $this->dispatch('toast', message: 'Rate deleted. Work already recorded keeps the rate it was paid at.');
+        WorkerRate::query()->findOrFail($id)->update(['is_active' => false]);
+        $this->dispatch('toast', message: 'Rate deactivated. Work already recorded keeps the rate it was paid at.');
     }
 
     /** @return Builder<WorkerRate> */
@@ -180,11 +188,10 @@ class Index extends Component
             'Type' => fn (WorkerRate $r) => ucfirst($r->worker_type),
             'Stage' => fn (WorkerRate $r) => $r->stage->name,
             'Item' => fn (WorkerRate $r) => $r->item ? $r->item->code.' '.$r->item->name : 'All items',
-            'Rate' => fn (WorkerRate $r) => (string) $r->rate,
             'Effective from' => fn (WorkerRate $r) => Format::date($r->effective_from),
             'Active' => fn (WorkerRate $r) => $r->is_active ? 'Yes' : 'No',
             'Notes' => 'notes',
-        ];
+        ] + (auth()->user()?->can('salary.view') ? ['Rate' => fn (WorkerRate $r) => (string) $r->rate] : []);
     }
 
     public function render(): View

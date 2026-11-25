@@ -81,7 +81,7 @@ class OpenPurchaseOrders extends BaseType
                     return ['item_variant_id' => $variant->id, 'stage_id' => null, 'description' => null, 'quantity' => (string) $r->data['remaining_qty'],
                         'unit_id' => $variant->item->stock_unit_id, 'rate' => (string) $r->data['rate'], 'expected_date' => $r->data['expected_date'] ?: null];
                 })->values()->all());
-            app(DocumentWorkflow::class)->approve($po);
+            app(DocumentWorkflow::class)->approveAsPartOf($po, $batch);
             foreach ($group as $r) {
                 $r->update(['result_type' => $po->getMorphClass(), 'result_id' => $po->id]);
                 $this->add('PKR', Decimal::mul((string) $r->data['remaining_qty'], (string) $r->data['rate']));

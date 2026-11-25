@@ -21,7 +21,7 @@ beforeEach(function () {
     seedBase();
     $this->actingAs(admin());
     $moves = app(MoneyMovements::class);
-    $moves->postVoucher(app(DocumentWorkflow::class)->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-01', 'description' => 'Float'], [
+    $moves->postVoucher(approver(DocumentWorkflow::class)->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-01', 'description' => 'Float'], [
         ['account' => 'money:'.MoneyAccount::cashBook()->id, 'debit' => '500000'], ['account' => 'gl:'.GlAccount::system('owner_capital')->id, 'credit' => '500000']])));
     $this->emp = Employee::factory()->create(['name' => 'Sana', 'employee_type' => Employee::TYPE_SALARY, 'monthly_salary' => '30000']);
 });
@@ -32,10 +32,10 @@ it('runs payroll from the screens: attendance, loan, advance, run, edit, post, s
 
     Livewire::test(Loans\Form::class)->set('employee_id', $this->emp->id)->set('amount', '20000')->set('installment', '5000')->set('start_month', '2026-11')->call('save')->assertHasNoErrors();
     $loan = EmployeeLoan::query()->sole();
-    Livewire::test(Loans\Show::class, ['loan' => $loan])->call('approveDocument')->call('postDocumentAction');
+    asApprover(fn () => Livewire::test(Loans\Show::class, ['loan' => $loan])->call('approveDocument')->call('postDocumentAction'));
     Livewire::test(Advances\Form::class)->set('employee_id', $this->emp->id)->set('amount', '3000')->set('salary_month', '2026-11')->call('save')->assertHasNoErrors();
     $adv = SalaryAdvance::query()->sole();
-    Livewire::test(Advances\Show::class, ['advance' => $adv])->call('approveDocument')->call('postDocumentAction');
+    asApprover(fn () => Livewire::test(Advances\Show::class, ['advance' => $adv])->call('approveDocument')->call('postDocumentAction'));
 
     Livewire::test(Runs\Index::class)->set('newMonth', '2026-11')->call('createRun')->assertRedirect();
     $run = PayrollRun::query()->sole();
@@ -43,8 +43,8 @@ it('runs payroll from the screens: attendance, loan, advance, run, edit, post, s
     // 30,000 − 1,000 (1 unpaid day) − 5,000 loan − 3,000 advance.
     expect($line->net_payable)->toBe('21000.00');
 
-    Livewire::test(Runs\Show::class, ['run' => $run])->call('edit', $line->id)->set('allowances', '500')->call('saveLine')->assertHasNoErrors()
-        ->call('approveDocument')->call('postDocumentAction');
+    Livewire::test(Runs\Show::class, ['run' => $run])->call('edit', $line->id)->set('allowances', '500')->call('saveLine')->assertHasNoErrors();
+    asApprover(fn () => Livewire::test(Runs\Show::class, ['run' => $run])->call('approveDocument')->call('postDocumentAction'));
     expect($run->fresh()->status)->toBe('posted')->and($run->fresh()->total_net)->toBe('21500.00');
 
     $this->get(route('payroll.runs.slip', [$run, $run->lines()->sole()]))->assertOk()->assertSee('21,500.00');

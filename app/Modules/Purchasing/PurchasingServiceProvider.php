@@ -6,6 +6,7 @@ use App\Modules\Catalog\Models\Item;
 use App\Modules\Catalog\Models\ItemVariant;
 use App\Modules\Finance\Services\Payables;
 use App\Modules\People\Models\Vendor;
+use App\Modules\Purchasing\Models\LandedCost;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseOrderLine;
 use App\Modules\Purchasing\Models\VendorBill;
@@ -44,6 +45,9 @@ class PurchasingServiceProvider extends ModuleServiceProvider
         ItemVariant::whenUsed('purchasing.lines', fn (ItemVariant $v) => PurchaseOrderLine::query()->where('item_variant_id', $v->id)->exists());
         Item::whenUsed('purchasing.lines', fn (Item $i) => PurchaseOrderLine::query()->whereIn('item_variant_id', $i->variants()->withTrashed()->select('id'))->exists());
 
+        Payables::register('purchasing.landed_costs', fn (Model $payee) => $payee instanceof Vendor
+            ? LandedCost::query()->where('vendor_id', $payee->id)->whereNull('money_account_id')->whereNotNull('posted_at')->whereColumn('paid_amount', '<', 'total')->orderBy('cost_date')->get()
+            : collect());
         Payables::register('purchasing.bills', fn (Model $payee) => $payee instanceof Vendor
             ? VendorBill::query()->where('vendor_id', $payee->id)->whereNotNull('posted_at')->whereColumn('paid_amount', '<', 'total')->orderBy('bill_date')->get()
             : collect());
@@ -56,6 +60,7 @@ class PurchasingServiceProvider extends ModuleServiceProvider
             new PermissionSet('goods_receipts', 'Goods receipts', [...PermissionSet::DOCUMENT, 'override'], 'Purchasing'),
             new PermissionSet('vendor_bills', 'Vendor bills', [...PermissionSet::DOCUMENT, 'override'], 'Purchasing'),
             new PermissionSet('purchase_returns', 'Purchase returns', PermissionSet::DOCUMENT, 'Purchasing'),
+            new PermissionSet('landed_costs', 'Landed costs (purchase charges)', PermissionSet::DOCUMENT, 'Purchasing'),
         ];
     }
 
@@ -66,6 +71,7 @@ class PurchasingServiceProvider extends ModuleServiceProvider
             new DocumentType('goods_receipt', 'Goods Receipt', 'GRN'),
             new DocumentType('vendor_bill', 'Vendor Bill', 'BILL'),
             new DocumentType('purchase_return', 'Purchase Return', 'PR'),
+            new DocumentType('landed_cost', 'Landed Cost', 'LC'),
         ];
     }
 
@@ -76,6 +82,7 @@ class PurchasingServiceProvider extends ModuleServiceProvider
             new NavItem('Goods Receipts', 'purchasing.receipts.index', 'inbox', 'goods_receipts.view', 'Purchasing', 220, 'purchasing.receipts.*'),
             new NavItem('Vendor Bills', 'purchasing.bills.index', 'document', 'vendor_bills.view', 'Purchasing', 230, 'purchasing.bills.*'),
             new NavItem('Purchase Returns', 'purchasing.returns.index', 'arrow-uturn-left', 'purchase_returns.view', 'Purchasing', 240, 'purchasing.returns.*'),
+            new NavItem('Landed Costs', 'purchasing.landed-costs.index', 'truck', 'landed_costs.view', 'Purchasing', 250, 'purchasing.landed-costs.*'),
         ];
     }
 }

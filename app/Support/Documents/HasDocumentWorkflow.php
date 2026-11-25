@@ -37,6 +37,13 @@ trait HasDocumentWorkflow
 
     public static function bootHasDocumentWorkflow(): void
     {
+        // The creator is recorded on every document: they may not approve it.
+        static::creating(function (self $document) {
+            if ($document->getAttribute('created_by') === null && auth()->id() !== null) {
+                $document->setAttribute('created_by', auth()->id());
+            }
+        });
+
         static::updating(function (self $document) {
             if ($document->getOriginal('status') === DocumentStatus::DRAFT || $document->getOriginal('status') === null) {
                 return;

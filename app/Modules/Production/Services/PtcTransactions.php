@@ -11,6 +11,7 @@ use App\Modules\Inventory\Models\StockStatus;
 use App\Modules\Inventory\Services\StockBucket;
 use App\Modules\Inventory\Services\StockLedger;
 use App\Modules\Inventory\Services\StockSource;
+use App\Modules\People\Models\Contractor;
 use App\Modules\People\Models\Employee;
 use App\Modules\Production\Models\Ptc;
 use App\Modules\Production\Models\PtcStage;
@@ -208,13 +209,10 @@ class PtcTransactions
             // Piece pay: the worker's individual rate if one is in force, else the stage's standard rate.
             $paid = $receive !== null && ($worker->isContractor() || ($worker->model instanceof Employee && $worker->model->employee_type === Employee::TYPE_WAGE));
             $rate = $paid ? $this->rates->resolve($worker, $ptc, $stage, $date)['rate'] : null;
-            if ($rate !== null && $worker->model instanceof Employee) {
+            // Wage employees and contractors alike: pending piece work, owed only once
+            // another user approves it (WageWorks::approve).
+            if ($rate !== null) {
                 $this->wages->record($worker->model, $ptc, $stage, $receive, $good, $rejected, $rate, $date);
-            }
-            if ($rate !== null && $worker->isContractor()) {
-                $amount = Decimal::mul($good, $rate);
-                $this->accounting->labor($worker->model, $amount, $date, $ptc, "{$ptc->number} {$stage->stage->name}: {$good} accepted × {$rate}");
-                $this->costing->add($ptc, 'contractor', $amount, $receive, "{$worker->model->name} at {$stage->stage->name}");
             }
         });
     }

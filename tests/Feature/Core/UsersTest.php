@@ -3,9 +3,8 @@
 use App\Models\User;
 use App\Modules\Core\Livewire\Users\Form;
 use App\Modules\Core\Livewire\Users\Index;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
@@ -111,15 +110,13 @@ it('records changes in the activity log', function () {
         ->and($activity->properties['attributes']['name'])->toBe('Changed Name');
 });
 
-it('emails a password reset link and exports the list', function () {
-    Notification::fake();
+it('exports the list, and offers no password reset by email (the system sends none)', function () {
     $this->actingAs(admin());
-    $user = User::factory()->create();
-
-    Livewire::test(Index::class)->call('sendResetLink', $user->id);
-    Notification::assertSentTo($user, ResetPassword::class);
 
     Livewire::test(Index::class)->call('export', 'csv')->assertFileDownloaded();
+    expect(Route::has('password.request'))->toBeFalse();
+    $this->post('/logout');
+    $this->get(route('login'))->assertOk()->assertSee('Ask an administrator');
 });
 
 it('does not let users without users.export download the list', function () {

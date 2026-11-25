@@ -36,7 +36,7 @@ function screenPtc(): Ptc
 {
     $p = app(PtcService::class)->save(null, ['item_variant_id' => test()->variant->id, 'planned_qty' => '10', 'route_id' => test()->route->id, 'start_date' => '2026-11-05']);
 
-    return app(PtcService::class)->approve($p);
+    return approver(PtcService::class)->approve($p);
 }
 
 it('creates a PTC from the form and records stage transactions from its screen', function () {
@@ -45,7 +45,7 @@ it('creates a PTC from the form and records stage transactions from its screen',
         ->call('save')->assertHasNoErrors()->assertRedirect();
     $ptc = Ptc::query()->sole();
 
-    Livewire::test(Ptcs\Show::class, ['ptc' => $ptc])->call('approve');
+    asApprover(fn () => Livewire::test(Ptcs\Show::class, ['ptc' => $ptc])->call('approve'));
     $ptc->refresh();
     $stageId = $ptc->stages()->first()->id;
 
@@ -59,7 +59,7 @@ it('creates a PTC from the form and records stage transactions from its screen',
     expect($ptc->fresh()->status)->toBe('in_progress')
         ->and(Rejection::query()->sole()->quantity)->toBe('1.0000');
 
-    Livewire::test(WageWork\Index::class)->assertSee($this->employee->name)->call('approve', App\Modules\Production\Models\WageWork::query()->value('id'));
+    asApprover(fn () => Livewire::test(WageWork\Index::class)->assertSee($this->employee->name)->call('approve', App\Modules\Production\Models\WageWork::query()->value('id')));
     expect(App\Modules\Production\Models\WageWork::query()->value('status'))->toBe('approved');
 });
 
@@ -67,7 +67,7 @@ it('renders every production screen and print', function () {
     $ptc = screenPtc();
     app(PtcTransactions::class)->issueStage($ptc, $ptc->stages()->first(), '5', Worker::from('employee', $this->employee->id, null), Carbon::parse('2026-11-05'));
     $contractor = Contractor::factory()->create();
-    $job = app(ContractorJobs::class)->approve(app(ContractorJobs::class)->save(null, ['contractor_id' => $contractor->id, 'job_date' => '2026-11-05'], [['item_variant_id' => $this->variant->id, 'stage_id' => null, 'quantity' => '10', 'rate' => '5']], []));
+    $job = approver(ContractorJobs::class)->approve(app(ContractorJobs::class)->save(null, ['contractor_id' => $contractor->id, 'job_date' => '2026-11-05'], [['item_variant_id' => $this->variant->id, 'stage_id' => null, 'quantity' => '10', 'rate' => '5']], []));
     $rejection = app(Rejections::class)->record(null, ['rejection_date' => '2026-11-05', 'item_variant_id' => $this->variant->id, 'lot_id' => $ptc->output_lot_id,
         'location_id' => Location::mainStore()->id, 'quantity' => '1', 'reason' => 'Test']);
 

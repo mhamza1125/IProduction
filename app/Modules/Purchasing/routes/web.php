@@ -2,6 +2,7 @@
 
 use App\Modules\Purchasing\Http\PrintController;
 use App\Modules\Purchasing\Livewire\Bills;
+use App\Modules\Purchasing\Livewire\LandedCosts;
 use App\Modules\Purchasing\Livewire\Orders;
 use App\Modules\Purchasing\Livewire\Receipts;
 use App\Modules\Purchasing\Livewire\Returns;
@@ -30,4 +31,9 @@ Route::middleware('auth')->prefix('purchasing')->name('purchasing.')->group(func
     Route::get('returns/create', Returns\Form::class)->middleware('can:purchase_returns.create')->name('returns.create');
     Route::get('returns/{return}', Returns\Show::class)->middleware('can:purchase_returns.view')->name('returns.show');
     Route::get('returns/{return}/print', [PrintController::class, 'return'])->middleware('can:purchase_returns.print')->name('returns.print');
+
+    Route::get('landed-costs', LandedCosts\Index::class)->middleware('can:landed_costs.view')->name('landed-costs.index');
+    Route::get('landed-costs/create', LandedCosts\Form::class)->middleware('can:landed_costs.create')->name('landed-costs.create');
+    Route::get('landed-costs/{landedCost}', LandedCosts\Show::class)->middleware('can:landed_costs.view')->name('landed-costs.show');
+    Route::get('landed-costs/{landedCost}/edit', LandedCosts\Form::class)->middleware('can:landed_costs.edit')->name('landed-costs.edit');
 });

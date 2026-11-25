@@ -27,6 +27,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $is_active
  * @property string|null $notes
  * @property Carbon|null $approved_at
+ * @property int|null $created_by
  */
 class Bom extends Model implements Attachable
 {

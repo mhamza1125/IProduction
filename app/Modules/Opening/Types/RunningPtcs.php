@@ -93,7 +93,7 @@ class RunningPtcs extends BaseType
             $route = ProductionRoute::query()->where('item_id', $variant->item_id)->where('is_default', true)->firstOrFail();
             $line = $d['order_number'] ? SalesOrder::query()->where('number', $d['order_number'])->firstOrFail()->lines()->where('item_variant_id', $variant->id)->first() : null;
             $ptc = $ptcs->approve($ptcs->save(null, ['item_variant_id' => $variant->id, 'planned_qty' => (string) $d['quantity'], 'route_id' => $route->id, 'start_stage_id' => $stage->id,
-                'sales_order_line_id' => $line?->id, 'start_date' => $batch->batch_date->toDateString(), 'notes' => "Opening job {$d['ptc_ref']} ({$batch->number})"]));
+                'sales_order_line_id' => $line?->id, 'start_date' => $batch->batch_date->toDateString(), 'notes' => "Opening job {$d['ptc_ref']} ({$batch->number})"]), $batch);
             $tx->openingPieces($ptc, $ptc->stages()->where('stage_id', $stage->id)->firstOrFail(), (string) $d['quantity'], (string) $d['unit_cost'], $batch->batch_date, $batch);
             $value = Decimal::add($value, Decimal::mul((string) $d['quantity'], (string) $d['unit_cost']));
             if ($d['material_sku']) {

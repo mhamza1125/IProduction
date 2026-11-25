@@ -61,6 +61,8 @@
             </button>
 
             <div class="ml-auto flex items-center gap-1">
+                <livewire:core::inbox.bell />
+
                 {{-- Theme: light, dim, dark or follow the system (resources/js/theme.js). --}}
                 <div x-data="{ open: false, theme: window.currentTheme() }" x-on:theme-changed.window="theme = $event.detail || 'system'"
                      class="relative" x-on:click.outside="open = false" x-on:keydown.escape="open = false">

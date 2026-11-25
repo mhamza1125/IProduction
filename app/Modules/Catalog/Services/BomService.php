@@ -6,6 +6,7 @@ use App\Modules\Catalog\Models\Bom;
 use App\Modules\Catalog\Models\BomLine;
 use App\Modules\Catalog\Models\Item;
 use App\Support\Documents\DocumentException;
+use App\Support\Documents\SeparationOfDuties;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -69,6 +70,7 @@ class BomService
             if (! $bom->isDraft()) {
                 throw new DocumentException("Version {$bom->version} is already approved.");
             }
+            SeparationOfDuties::assertNotCreator($bom->created_by, "BOM version {$bom->version}");
 
             $lines = $bom->lines()->with('componentItem')->get();
 

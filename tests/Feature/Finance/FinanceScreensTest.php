@@ -33,7 +33,7 @@ it('records a receipt and a balanced voucher from the screens', function () {
         ->assertSee('480.00')
         ->call('save')->assertHasNoErrors()->assertRedirect();
     $receipt = Receipt::query()->sole();
-    Livewire::test(Receipts\Show::class, ['receipt' => $receipt])->call('approveDocument')->call('postDocumentAction')->assertSee('Unallocated');
+    asApprover(fn () => Livewire::test(Receipts\Show::class, ['receipt' => $receipt])->call('approveDocument')->call('postDocumentAction')->assertSee('Unallocated'));
     expect($receipt->fresh()->isPosted())->toBeTrue();
 
     Livewire::test(Vouchers\Form::class)
@@ -48,9 +48,9 @@ it('records a receipt and a balanced voucher from the screens', function () {
 it('renders every finance screen and print', function () {
     $moves = app(MoneyMovements::class);
     $wf = app(DocumentWorkflow::class);
-    $jv = $moves->postVoucher($wf->approve($moves->saveVoucher(null, ['voucher_date' => '2026-11-01', 'description' => 'Float'], [
+    $jv = $moves->postVoucher(approver(DocumentWorkflow::class)->approve($moves->saveVoucher(null, ['voucher_date' => '2026-11-01', 'description' => 'Float'], [
         ['account' => 'money:'.$this->cash->id, 'debit' => '5000'], ['account' => 'gl:'.GlAccount::system('owner_capital')->id, 'credit' => '5000']])));
-    $receipt = app(ReceiptService::class)->post($wf->approve(app(ReceiptService::class)->save(null, ['receipt_date' => '2026-11-02', 'customer_id' => $this->customer->id, 'amount' => '100', 'money_account_id' => $this->usd->id], [], [])));
+    $receipt = app(ReceiptService::class)->post(approver(DocumentWorkflow::class)->approve(app(ReceiptService::class)->save(null, ['receipt_date' => '2026-11-02', 'customer_id' => $this->customer->id, 'amount' => '100', 'money_account_id' => $this->usd->id], [], [])));
     $conv = $moves->saveConversion(null, ['conversion_date' => '2026-11-03', 'from_account_id' => $this->usd->id, 'from_amount' => '50', 'to_account_id' => $this->cash->id, 'pkr_received' => '14000']);
     $bank = app(MoneyAccounts::class)->create(['name' => 'PKR Bank', 'type' => MoneyAccount::BANK, 'currency_code' => 'PKR']);
     $transfer = $moves->saveTransfer(null, ['transfer_date' => '2026-11-03', 'from_account_id' => $this->cash->id, 'to_account_id' => $bank->id, 'amount' => '100']);

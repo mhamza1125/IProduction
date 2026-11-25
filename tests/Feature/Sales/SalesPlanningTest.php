@@ -53,7 +53,7 @@ function salesOrder(ItemVariant $variant, string $qty = '100', bool $approve = t
         'item_variant_id' => $variant->id, 'description' => '', 'quantity' => $qty, 'unit_price' => '12.5', 'tax_rate' => '', 'due_date' => null,
     ]]);
 
-    return $approve ? app(DocumentWorkflow::class)->approve($order) : $order;
+    return $approve ? approver(DocumentWorkflow::class)->approve($order) : $order;
 }
 
 it('takes the currency from the customer and totals the lines', function () {
@@ -103,7 +103,7 @@ function soReceive(PurchaseOrder $po, string $qty): GoodsReceipt
 
         return $grn;
     });
-    app(DocumentWorkflow::class)->approve($grn);
+    approver(DocumentWorkflow::class)->approve($grn);
 
     return app(PostGoodsReceipt::class)($grn);
 }
@@ -115,7 +115,7 @@ it('plans materials with wastage, existing stock and open purchase orders', func
     $bom = app(BomService::class)->newVersion($this->glove->item);
     $bom->lines()->create(['component_item_id' => $leather->id, 'quantity' => '0.2', 'unit_id' => $kg, 'wastage_percent' => 10]);
     $bom->lines()->create(['component_item_id' => $thread->id, 'quantity' => '2', 'unit_id' => Unit::where('symbol', 'pcs')->value('id'), 'wastage_percent' => 0]);
-    app(BomService::class)->approve($bom);
+    approver(BomService::class)->approve($bom);
     $route = ProductionRoute::create(['item_id' => $this->glove->item_id, 'name' => 'Standard', 'is_default' => true]);
 
     $leatherVariant = $leather->variants()->first();
@@ -163,7 +163,7 @@ it('reserves bought finished goods to the order when they are received', functio
 
     expect($this->planning->picture($line->fresh())['on_order'])->toBe('100.0000');
 
-    soReceive(app(DocumentWorkflow::class)->approve($po), '60');
+    soReceive(approver(DocumentWorkflow::class)->approve($po), '60');
 
     $picture = $this->planning->picture($line->fresh());
     expect($picture['reserved'])->toBe('60.0000')

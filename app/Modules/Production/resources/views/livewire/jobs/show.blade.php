@@ -6,7 +6,7 @@
     <div class="mb-6 flex flex-wrap items-center gap-2">
         @if ($job->isDraft())
             @can('contractor_jobs.edit') <x-button variant="secondary" :href="route('production.jobs.edit', $job)" icon="pencil">Edit</x-button> @endcan
-            @can('contractor_jobs.approve') <x-button wire:click="approve" wire:confirm="Approve {{ $job->number }}?">Approve</x-button> @endcan
+            @can('contractor_jobs.approve') @if (\App\Support\Documents\SeparationOfDuties::blocks($job)) <span class="text-xs text-subtle" title="The person who created a document cannot approve it.">Awaiting approval by another user</span> @else <x-button wire:click="approve" wire:confirm="Approve {{ $job->number }}?">Approve</x-button> @endif @endcan
             @can('contractor_jobs.delete') <x-button variant="ghost" icon="trash" wire:click="delete" wire:confirm="Delete draft?">Delete</x-button> @endcan
         @endif
         @if ($job->status === 'approved')

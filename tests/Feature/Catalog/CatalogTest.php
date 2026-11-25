@@ -60,7 +60,7 @@ function approvedBom(Item $item, array $lines, string $output = '1'): Bom
         ]);
     }
 
-    return app(BomService::class)->approve($bom);
+    return approver(BomService::class)->approve($bom);
 }
 
 it('gives every item a variant and numbers it automatically', function () {
@@ -188,7 +188,7 @@ it('applies attribute and variant overrides, variant-specific winning', function
     $bom->overrides()->create(['match_attribute_value_id' => $a['l']->id, 'bom_line_id' => $leatherLine->id, 'quantity' => '0.18']);
     $bom->overrides()->create(['match_variant_id' => $redLarge->id, 'bom_line_id' => $leatherLine->id, 'quantity' => '0.2']);
     $bom->overrides()->create(['match_attribute_value_id' => $a['red']->id, 'bom_line_id' => $threadLine->id, 'component_variant_id' => $redThread->id]);
-    app(BomService::class)->approve($bom);
+    approver(BomService::class)->approve($bom);
 
     $req = fn (string $label) => collect(app(BomExplosion::class)->explode($glove->variants()->where('label', $label)->first(), '10'))
         ->mapWithKeys(fn ($r) => [$r['variant']->sku => $r['quantity']])->all();
@@ -225,7 +225,7 @@ it('rejects circular BOMs', function () {
     $bom = app(BomService::class)->newVersion($c);
     $bom->lines()->create(['component_item_id' => $a->id, 'quantity' => '1', 'unit_id' => unitId('pcs'), 'wastage_percent' => 0]);
 
-    expect(fn () => app(BomService::class)->approve($bom))->toThrow(DocumentException::class, 'Circular BOM: C → A → B → C');
+    expect(fn () => approver(BomService::class)->approve($bom))->toThrow(DocumentException::class, 'Circular BOM: C → A → B → C');
 
     Livewire::test(BomEdit::class, ['bom' => $bom])->call('save')->assertHasErrors('lines');
 });
@@ -244,7 +244,7 @@ it('versions BOMs: approved versions are locked and new versions copy the last o
     expect(fn () => app(BomService::class)->newVersion($glove))->toThrow(DocumentException::class, 'draft');
 
     $v2->lines()->first()->update(['quantity' => '0.16']);
-    app(BomService::class)->approve($v2);
+    approver(BomService::class)->approve($v2);
 
     expect($v1->fresh())->status->toBe(Bom::SUPERSEDED)->is_active->toBeFalse()
         ->and($glove->activeBom()->version)->toBe(2);

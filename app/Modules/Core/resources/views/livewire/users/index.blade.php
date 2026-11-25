@@ -44,7 +44,6 @@
                     <x-table.td align="right" class="whitespace-nowrap">
                         @can('users.edit')
                             <x-button variant="ghost" size="sm" :href="route('core.users.edit', $user)" icon="pencil">Edit</x-button>
-                            <x-button variant="ghost" size="sm" wire:click="sendResetLink({{ $user->id }})" wire:confirm="Email a password reset link to {{ $user->email }}?">Reset password</x-button>
                             @unless ($user->is(auth()->user()))
                                 <x-button variant="ghost" size="sm" wire:click="toggleActive({{ $user->id }})"
                                           wire:confirm="{{ $user->is_active ? 'Deactivate' : 'Activate' }} {{ $user->name }}?">

@@ -1,5 +1,5 @@
 <div>
-    <x-page-header title="Wage work" description="Pieces accepted from wage employees at the route rate. Review before payroll; approval posts the wages payable. Rejected pieces are unpaid unless approved." />
+    <x-page-header title="Piece work" description="Pieces accepted from wage employees and contractors at the rate in force. Nothing is owed until another user approves it: approval posts the wages payable or the contractor payable. The person who recorded the work cannot approve it. Rejected pieces are unpaid unless approved." />
     @can('wage_work.create')
         <x-card class="mb-6" title="Add work done (not from a PTC)">
             <form wire:submit="addManual" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
@@ -13,16 +13,16 @@
         </x-card>
     @endcan
     <x-card :padding="false">
-        <x-table.toolbar placeholder="Search employee, PTC…" dates :export="auth()->user()->can('wage_work.export')">
+        <x-table.toolbar placeholder="Search worker, PTC…" dates :export="auth()->user()->can('wage_work.export')">
             <select wire:model.live="status" aria-label="Status" class="rounded-md border-0 bg-surface py-2 pl-3 pr-8 text-sm ring-1 ring-inset ring-line-strong">
                 <option value="">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
             </select>
             @can('wage_work.approve') <input wire:model="reason" placeholder="Reason (to reject)" aria-label="Reason" class="rounded-md border-0 py-2 text-sm ring-1 ring-inset ring-line-strong bg-surface"> @endcan
         </x-table.toolbar>
-        <x-table empty="No wage work.">
+        <x-table empty="No piece work.">
             <x-slot:head>
                 <x-table.th sortable="work_date" :sort-field="$sortField" :sort-direction="$sortDirection">Date</x-table.th>
-                <x-table.th>Employee</x-table.th><x-table.th>PTC · stage</x-table.th>
+                <x-table.th>Worker</x-table.th><x-table.th>PTC · stage</x-table.th>
                 <x-table.th sortable="quantity" :sort-field="$sortField" :sort-direction="$sortDirection" align="right">Accepted</x-table.th><x-table.th align="right">Rejected</x-table.th>
                 @can('salary.view')<x-table.th align="right">Rate</x-table.th><x-table.th sortable="amount" :sort-field="$sortField" :sort-direction="$sortDirection" align="right">Amount</x-table.th>@endcan
                 <x-table.th>Status</x-table.th><x-table.th></x-table.th>
@@ -30,7 +30,7 @@
             @foreach ($rows as $w)
                 <tr wire:key="ww-{{ $w->id }}">
                     <x-table.td>@date($w->work_date)</x-table.td>
-                    <x-table.td>{{ $w->employee->name }}</x-table.td>
+                    <x-table.td>{{ $w->worker()->name }}@if ($w->contractor_id)<div class="text-xs text-subtle">Contractor</div>@endif</x-table.td>
                     <x-table.td class="text-xs">{{ $w->description }} @if ($w->ptc)<a href="{{ route('production.ptcs.show', $w->ptc) }}" wire:navigate class="font-mono text-link hover:underline">{{ $w->ptc->number }}</a>@endif {{ $w->stage?->name }}</x-table.td>
                     <x-table.td align="right">@qty($w->quantity)</x-table.td>
                     <x-table.td align="right">@qty($w->rejected_qty)@if ((float) $w->paid_rejected_qty)<div class="text-xs">paid @qty($w->paid_rejected_qty)</div>@endif</x-table.td>
@@ -40,7 +40,11 @@
                         @if ($w->status === 'pending')
                             @can('wage_work.approve')
                                 @can('wage_work.override') @if ((float) $w->rejected_qty)<input type="number" step="any" min="0" wire:model="paidRejected.{{ $w->id }}" placeholder="Pay rejected" aria-label="Rejected pieces to pay" class="w-24 rounded-md border-0 py-1 text-right text-xs ring-1 ring-line-strong bg-surface">@endif @endcan
-                                <x-button size="sm" wire:click="approve({{ $w->id }})">Approve</x-button>
+                                @if (\App\Support\Documents\SeparationOfDuties::isCreator($w->created_by))
+                                    <span class="text-xs text-subtle">You recorded this; another user approves.</span>
+                                @else
+                                    <x-button size="sm" wire:click="approve({{ $w->id }})">Approve</x-button>
+                                @endif
                                 <x-button size="sm" variant="ghost" wire:click="reject({{ $w->id }})">Reject</x-button>
                             @endcan
                         @endif

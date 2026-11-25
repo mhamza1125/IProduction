@@ -19,12 +19,12 @@ class RowsExport implements FromArray, WithHeadings
     /** @return list<list<mixed>> */
     public function array(): array
     {
-        return $this->rows;
+        return SafeCell::rows($this->rows);
     }
 
     /** @return list<string> */
     public function headings(): array
     {
-        return $this->headings;
+        return SafeCell::row($this->headings);
     }
 }

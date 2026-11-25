@@ -28,3 +28,27 @@ it('writes a compressed database backup and prunes old ones', function () {
 
     File::deleteDirectory($dir);
 })->skip(fn () => trim((string) shell_exec('command -v mysqldump')) === '', 'mysqldump is not installed');
+
+it('copies the backup to a second disk, and alerts in the app when it cannot', function () {
+    seedBase();
+    $admin = admin();
+    $dir = storage_path('framework/testing/backups');
+    $copy = storage_path('framework/testing/backups-copy');
+    File::deleteDirectory($dir);
+    File::deleteDirectory($copy);
+    config(['iproduction.backup.path' => $dir, 'iproduction.backup.copy_path' => $copy]);
+
+    $this->artisan('db:backup')->assertSuccessful();
+    expect(File::glob($copy.'/*.sql.gz'))->toHaveCount(1)
+        ->and($admin->unreadNotifications()->count())->toBe(0);
+
+    // A copy path that is a file, not a folder: the copy fails and an alert is raised.
+    File::put($blocked = storage_path('framework/testing/not-a-folder'), 'x');
+    config(['iproduction.backup.copy_path' => $blocked]);
+    $this->artisan('db:backup')->assertFailed();
+    expect($admin->unreadNotifications()->sole()->data['title'])->toBe('Backup copy failed');
+
+    File::deleteDirectory($dir);
+    File::deleteDirectory($copy);
+    File::delete($blocked);
+})->skip(fn () => trim((string) shell_exec('command -v mysqldump')) === '', 'mysqldump is not installed');

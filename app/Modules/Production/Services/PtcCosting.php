@@ -33,6 +33,27 @@ class PtcCosting
         ]);
     }
 
+    /**
+     * Landed cost added to a material lot after part of it was issued: PTCs still
+     * holding that material take the extra cost too (the cost they recorded at
+     * issue was the old one), so what they release carries it. Returns the total.
+     */
+    public function addLandedCost(int $lotId, string $perUnit, Model $source, string $memo): string
+    {
+        $total = '0';
+        $ptcIds = PtcTransaction::query()->where('lot_id', $lotId)->whereIn('type', ['material_issue', 'extra_issue'])->distinct()->pluck('ptc_id');
+        foreach (Ptc::query()->whereIn('id', $ptcIds)->get() as $ptc) {
+            $held = Decimal::sum($this->heldMaterial($ptc)->where('lot_id', $lotId)->pluck('quantity'), 4);
+            $amount = Decimal::mul($held, $perUnit);
+            if (Decimal::compare($amount, '0') > 0) {
+                $this->add($ptc, 'material', $amount, $source, $memo);
+                $total = Decimal::add($total, $amount);
+            }
+        }
+
+        return $total;
+    }
+
     /** Cost not yet released to stock. */
     public function pool(Ptc $ptc): string
     {

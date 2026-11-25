@@ -30,20 +30,20 @@ beforeEach(function () {
     $this->nov = Carbon::parse('2026-11-01');
     // Money in the Cash Book to pay loans, advances and salaries from.
     $moves = app(MoneyMovements::class);
-    $moves->postVoucher($this->wf->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-01', 'description' => 'Float'], [
+    $moves->postVoucher(approver(DocumentWorkflow::class)->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-01', 'description' => 'Float'], [
         ['account' => 'money:'.$this->cash->id, 'debit' => '1000000'], ['account' => 'gl:'.GlAccount::system('owner_capital')->id, 'credit' => '1000000']])));
     $this->ali = Employee::factory()->create(['name' => 'Ali', 'employee_type' => Employee::TYPE_SALARY, 'monthly_salary' => '50000']);
 });
 
 function loan(Employee $e, string $amount, string $installment, string $start = '2026-11-01'): EmployeeLoan
 {
-    return app(LoansAndAdvances::class)->postLoan(app(DocumentWorkflow::class)->approve(app(LoansAndAdvances::class)->saveLoan(null, [
+    return app(LoansAndAdvances::class)->postLoan(approver(DocumentWorkflow::class)->approve(app(LoansAndAdvances::class)->saveLoan(null, [
         'employee_id' => $e->id, 'loan_date' => '2026-10-15', 'amount' => $amount, 'money_account_id' => MoneyAccount::cashBook()->id, 'installment' => $installment, 'start_month' => $start])));
 }
 
 function advance(Employee $e, string $amount, string $month = '2026-11-01'): void
 {
-    app(LoansAndAdvances::class)->postAdvance(app(DocumentWorkflow::class)->approve(app(LoansAndAdvances::class)->saveAdvance(null, [
+    app(LoansAndAdvances::class)->postAdvance(approver(DocumentWorkflow::class)->approve(app(LoansAndAdvances::class)->saveAdvance(null, [
         'employee_id' => $e->id, 'advance_date' => '2026-11-10', 'amount' => $amount, 'salary_month' => $month, 'money_account_id' => MoneyAccount::cashBook()->id])));
 }
 
@@ -54,7 +54,7 @@ function runFor(Carbon $month, ?string $type = null)
 
 function postRun($run)
 {
-    return app(Payrolls::class)->post(app(DocumentWorkflow::class)->approve($run));
+    return app(Payrolls::class)->post(approver(DocumentWorkflow::class)->approve($run));
 }
 
 it('pays 15,000 on a 50,000 salary with a 10,000 loan installment and a 25,000 advance', function () {
@@ -147,11 +147,11 @@ it('pays wage employees for approved wage work once, deducts payroll fines, and 
     $wages = app(WageWorks::class);
     $w = $wages->recordManual($karim, Carbon::parse('2026-11-05'), 'Packing cartons', '100', '30');
     $pending = $wages->recordManual($karim, Carbon::parse('2026-11-06'), 'Extra packing', '10', '30');
-    $wages->approve($w);
+    approver(WageWorks::class)->approve($w);
     expect($this->ledgers->partyBalance($karim))->toBe('-3000.00');
 
     $moves = app(MoneyMovements::class);
-    $moves->postVoucher($this->wf->approve($moves->saveVoucher(null, ['voucher_date' => '2026-11-20', 'description' => 'Jacket damaged'], [
+    $moves->postVoucher(approver(DocumentWorkflow::class)->approve($moves->saveVoucher(null, ['voucher_date' => '2026-11-20', 'description' => 'Jacket damaged'], [
         ['account' => 'gl:'.GlAccount::system('wages_payable')->id, 'party' => $karim->getMorphClass().':'.$karim->id, 'debit' => '5000', 'deduct_from_payroll' => true],
         ['account' => 'gl:'.GlAccount::system('damage_recoveries')->id, 'credit' => '5000']])));
 
@@ -165,7 +165,7 @@ it('pays wage employees for approved wage work once, deducts payroll fines, and 
         ->and($this->ledgers->partyBalance($karim))->toBe('2000.00');
 
     // December: the pending work is approved, and the 2,000 brought forward is deducted.
-    $wages->approve($pending);
+    approver(WageWorks::class)->approve($pending);
     $dec = runFor(Carbon::parse('2026-12-01'), Employee::TYPE_WAGE)->lines()->sole();
     expect($dec->earnings)->toBe('300.00')->and($dec->brought_forward)->toBe('2000.00')->and($dec->fines)->toBe('0.00')
         ->and($dec->carried_forward)->toBe('1700.00');
@@ -177,7 +177,7 @@ it('pays net payroll in one or several payments and tracks the run status', func
     $pay = function (string $amount) use ($line) {
         $p = Payment::query()->create(['number' => 'PAY-'.uniqid(), 'payment_date' => '2026-12-01', 'payee_kind' => 'employee', 'payee_type' => $this->ali->getMorphClass(),
             'payee_id' => $this->ali->id, 'money_account_id' => $this->cash->id, 'amount' => $amount]);
-        app(PostPayment::class)($this->wf->approve($p), [['allocatable' => $line->fresh(), 'amount' => $amount]]);
+        app(PostPayment::class)(approver(DocumentWorkflow::class)->approve($p), [['allocatable' => $line->fresh(), 'amount' => $amount]]);
     };
 
     $pay('20000');

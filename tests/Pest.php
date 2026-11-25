@@ -82,3 +82,47 @@ function userWith(array $permissions = []): User
 
     return $user;
 }
+
+/** A second admin: whoever created a document cannot approve it (separation of duties). */
+function approverUser(): User
+{
+    return User::query()->where('email', 'approver@test.local')->first()
+        ?? User::factory()->create(['email' => 'approver@test.local'])->fresh()->assignRole(SyncPermissions::ADMIN);
+}
+
+/**
+ * Runs $action signed in as the second admin, then switches back.
+ *
+ * @template T
+ *
+ * @param  Closure(): T  $action
+ * @return T
+ */
+function asApprover(Closure $action): mixed
+{
+    $me = auth()->user();
+    auth()->setUser(approverUser());
+    try {
+        return $action();
+    } finally {
+        $me ? auth()->setUser($me) : auth()->forgetUser();
+    }
+}
+
+/**
+ * Calls a service as the second admin.
+ * Usage: approver(DocumentWorkflow::class)->approve($doc).
+ */
+function approver(string $service): object
+{
+    return new class($service)
+    {
+        public function __construct(private readonly string $service) {}
+
+        /** @param  array<int, mixed>  $arguments */
+        public function __call(string $method, array $arguments): mixed
+        {
+            return asApprover(fn () => app($this->service)->{$method}(...$arguments));
+        }
+    };
+}

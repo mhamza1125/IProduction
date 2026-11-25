@@ -3,7 +3,7 @@
         <x-status :status="$bom->is_active ? 'active' : $bom->status" />
         @if ($bom->isDraft())
             @can('boms.approve')
-                <x-button wire:click="approve" wire:confirm="Approve version {{ $bom->version }}? It becomes the active BOM and can no longer be edited.">Approve</x-button>
+                @if (\App\Support\Documents\SeparationOfDuties::isCreator($bom->created_by)) <span class="text-xs text-subtle" title="The person who created a document cannot approve it.">Awaiting approval by another user</span> @else <x-button wire:click="approve" wire:confirm="Approve version {{ $bom->version }}? It becomes the active BOM and can no longer be edited.">Approve</x-button> @endif
             @endcan
             @can('boms.delete')
                 <x-button variant="ghost" icon="trash" wire:click="deleteDraft" wire:confirm="Delete this draft?">Delete draft</x-button>

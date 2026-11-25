@@ -35,7 +35,7 @@ it('adds stock through Draft, Approved and Posted with a new Adjustment lot', fu
     $adj = makeAdjustment([['quantity' => '12.5', 'unit_cost' => '1450']]);
     expect($adj->number)->toBe('ADJ-26-0001')->and($adj->status)->toBe('draft');
 
-    app(DocumentWorkflow::class)->approve($adj);
+    approver(DocumentWorkflow::class)->approve($adj);
     app(PostStockAdjustment::class)($adj);
 
     $lot = Lot::firstOrFail();
@@ -55,12 +55,12 @@ it('defaults the unit cost from the item when none is given', function () {
 
 it('rolls back every line when one line is short', function () {
     $in = makeAdjustment([['quantity' => '10', 'unit_cost' => '100']]);
-    app(DocumentWorkflow::class)->approve($in);
+    approver(DocumentWorkflow::class)->approve($in);
     app(PostStockAdjustment::class)($in);
 
     $other = Item::factory()->create()->variants()->first();
     $adj = makeAdjustment([['quantity' => '-3'], ['quantity' => '-1', 'item_variant_id' => $other->id]]);
-    app(DocumentWorkflow::class)->approve($adj);
+    approver(DocumentWorkflow::class)->approve($adj);
 
     expect(fn () => app(PostStockAdjustment::class)($adj))->toThrow(DocumentException::class, 'Not enough');
 
@@ -70,7 +70,7 @@ it('rolls back every line when one line is short', function () {
 
 it('turns a physical count into a draft adjustment of the differences', function () {
     $in = makeAdjustment([['quantity' => '10', 'unit_cost' => '100']]);
-    app(DocumentWorkflow::class)->approve($in);
+    approver(DocumentWorkflow::class)->approve($in);
     app(PostStockAdjustment::class)($in);
     $balance = StockBalance::firstOrFail();
 
@@ -83,7 +83,7 @@ it('turns a physical count into a draft adjustment of the differences', function
     $count = StockAdjustment::where('from_count', true)->firstOrFail();
     expect($count->lines()->first())->quantity->toBe('-1.5000')->system_quantity->toBe('10.0000')->counted_quantity->toBe('8.5000')->lot_id->toBe($balance->lot_id);
 
-    app(DocumentWorkflow::class)->approve($count);
+    approver(DocumentWorkflow::class)->approve($count);
     app(PostStockAdjustment::class)($count);
     expect(app(StockLedger::class)->onHand($this->variant->id))->toBe('8.5000');
 });
@@ -104,7 +104,7 @@ it('enforces adjustment permissions: store staff draft, managers approve and pos
 
 it('renders every inventory page', function () {
     $adj = makeAdjustment([['quantity' => '3', 'unit_cost' => '10']]);
-    app(DocumentWorkflow::class)->approve($adj);
+    approver(DocumentWorkflow::class)->approve($adj);
     app(PostStockAdjustment::class)($adj);
     $lot = Lot::firstOrFail();
 

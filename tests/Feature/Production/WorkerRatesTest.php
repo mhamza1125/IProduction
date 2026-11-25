@@ -39,7 +39,7 @@ beforeEach(function () {
         $item->setRelation('stdRoute', $route);
         $bom = app(BomService::class)->newVersion($item);
         $bom->lines()->create(['component_item_id' => Item::factory()->rawMaterial('pcs')->create()->id, 'quantity' => '1', 'unit_id' => Unit::where('symbol', 'pcs')->value('id'), 'wastage_percent' => 0]);
-        app(BomService::class)->approve($bom);
+        approver(BomService::class)->approve($bom);
     }
 
     $this->workerA = Employee::factory()->create(['employee_type' => Employee::TYPE_WAGE, 'name' => 'Worker A']);
@@ -52,7 +52,7 @@ function ratedPtc(Item $item, string $qty): Ptc
 {
     $ptc = app(Ptcs::class)->save(null, ['item_variant_id' => $item->variants()->first()->id, 'planned_qty' => $qty, 'route_id' => $item->stdRoute->id, 'start_date' => '2026-11-01']);
 
-    return app(Ptcs::class)->approve($ptc);
+    return approver(Ptcs::class)->approve($ptc);
 }
 
 /** Cuts the pieces, then has $worker stitch them; returns the PTC. */
@@ -75,8 +75,12 @@ function rate(array $attributes): WorkerRate
     return WorkerRate::query()->create($attributes + ['stage_id' => test()->stitch->id, 'effective_from' => '2026-11-01', 'is_active' => true]);
 }
 
+/** Contractor piece work is owed once approved (by someone other than the recorder). */
 function contractorCost(Ptc $ptc): string
 {
+    WageWork::query()->where('ptc_id', $ptc->id)->whereNotNull('contractor_id')->where('status', 'pending')->get()
+        ->each(fn (WageWork $w) => approver(WageWorks::class)->approve($w));
+
     return (string) PtcCost::query()->where('ptc_id', $ptc->id)->where('category', 'contractor')->sum('amount');
 }
 
@@ -84,7 +88,7 @@ it('pays the standard stage rate when a worker has no rate of their own', functi
     stitchBy($this->glove, Worker::from('employee', $this->workerA->id, null), '50', $this->day);
     $ptc = stitchBy($this->glove, Worker::from('contractor', null, $this->workerB->id), '20', $this->day);
 
-    expect(WageWork::query()->sole())->rate->toBe('10.0000')->amount->toBe('500.00')
+    expect(WageWork::query()->whereNotNull('employee_id')->sole())->rate->toBe('10.0000')->amount->toBe('500.00')
         ->and(contractorCost($ptc))->toBe('220.00');
 });
 
@@ -98,7 +102,7 @@ it("pays each worker's individual rate: 500 pieces at Rs. 12 is Rs. 6,000", func
 
     expect(contractorCost($b))->toBe('6000.00')
         ->and(contractorCost($c))->toBe('900.00')
-        ->and(WageWork::query()->sole()->amount)->toBe('400.00');   // Worker A: standard Rs. 10
+        ->and(WageWork::query()->whereNotNull('employee_id')->sole()->amount)->toBe('400.00');   // Worker A: standard Rs. 10
 });
 
 it('prefers an item-specific rate, uses the rate in force on the work date, and ignores inactive rates', function () {
@@ -118,7 +122,7 @@ it('prefers an item-specific rate, uses the rate in force on the work date, and 
 it('keeps approved work at the rate it was paid when the rate is revised later', function () {
     $r = rate(['worker_type' => 'employee', 'employee_id' => $this->workerA->id, 'rate' => '12']);
     stitchBy($this->glove, Worker::from('employee', $this->workerA->id, null), '100', $this->day);
-    app(WageWorks::class)->approve(WageWork::query()->sole());
+    approver(WageWorks::class)->approve(WageWork::query()->sole());
 
     $r->update(['rate' => '20']);
 
@@ -145,4 +149,21 @@ it('manages rates on the screen with validation and permissions', function () {
     Livewire::test(RatesScreen::class)->call('create')->assertForbidden();
     $this->actingAs(userWith([]));
     $this->get(route('production.worker-rates'))->assertForbidden();
+});
+
+it('shows piece rates only to people who may see pay, and deactivates instead of deleting', function () {
+    $rate = rate(['worker_type' => 'employee', 'employee_id' => $this->workerA->id, 'rate' => '12.75']);
+
+    // A supervisor with the screen but without salary.view sees who has a rate, not the amount.
+    $this->actingAs(userWith(['worker_rates.view', 'worker_rates.create', 'worker_rates.edit', 'worker_rates.export']));
+    Livewire::test(RatesScreen::class)->assertSee('Worker A')->assertDontSee('12.75')
+        ->call('create')->assertForbidden();
+    Livewire::test(RatesScreen::class)->call('edit', $rate->id)->assertForbidden();
+    Livewire::test(RatesScreen::class)->call('export', 'csv')->assertFileDownloaded();
+    $screen = new RatesScreen;
+    expect(array_keys((fn () => $this->exportColumns())->call($screen)))->not->toContain('Rate');
+
+    $this->actingAs(userWith(['worker_rates.view', 'worker_rates.delete', 'salary.view']));
+    Livewire::test(RatesScreen::class)->assertSee('12.75')->call('deactivate', $rate->id);
+    expect($rate->fresh())->not->toBeNull()->is_active->toBeFalse();
 });

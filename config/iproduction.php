@@ -19,6 +19,9 @@ return [
     // `php artisan db:backup` runs daily (routes/console.php).
     'backup' => [
         'path' => env('BACKUP_PATH', storage_path('app/private/backups')),
+        // Optional second copy on another disk (a second drive, USB or network
+        // share mounted on this machine). No cloud service is used.
+        'copy_path' => env('BACKUP_COPY_PATH'),
         'keep_days' => (int) env('BACKUP_KEEP_DAYS', 14),
         'time' => env('BACKUP_TIME', '02:15'),
     ],

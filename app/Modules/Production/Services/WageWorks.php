@@ -2,6 +2,7 @@
 
 namespace App\Modules\Production\Services;
 
+use App\Modules\People\Models\Contractor;
 use App\Modules\People\Models\Employee;
 use App\Modules\Production\Models\Ptc;
 use App\Modules\Production\Models\PtcStage;
@@ -9,6 +10,7 @@ use App\Modules\Production\Models\PtcTransaction;
 use App\Modules\Production\Models\WageWork;
 use App\Support\Decimal;
 use App\Support\Documents\DocumentException;
+use App\Support\Documents\SeparationOfDuties;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -23,10 +25,11 @@ class WageWorks
 {
     public function __construct(private readonly ProductionAccounting $accounting, private readonly PtcCosting $costing) {}
 
-    public function record(Employee $employee, Ptc $ptc, PtcStage $stage, PtcTransaction $receive, string $good, string $rejected, string $rate, CarbonInterface $date): WageWork
+    public function record(Employee|Contractor $worker, Ptc $ptc, PtcStage $stage, PtcTransaction $receive, string $good, string $rejected, string $rate, CarbonInterface $date): WageWork
     {
         return WageWork::query()->create([
-            'employee_id' => $employee->id, 'ptc_id' => $ptc->id, 'ptc_stage_id' => $stage->id, 'stage_id' => $stage->stage_id,
+            'employee_id' => $worker instanceof Employee ? $worker->id : null, 'contractor_id' => $worker instanceof Contractor ? $worker->id : null,
+            'created_by' => auth()->id(), 'ptc_id' => $ptc->id, 'ptc_stage_id' => $stage->id, 'stage_id' => $stage->stage_id,
             'ptc_transaction_id' => $receive->id, 'work_date' => $date->format('Y-m-d'), 'quantity' => $good, 'rejected_qty' => $rejected,
             'rate' => $rate, 'amount' => Decimal::mul($good, $rate), 'status' => 'pending',
         ]);
@@ -38,10 +41,11 @@ class WageWorks
     public function approve(WageWork $work, string $paidRejected = '0'): WageWork
     {
         return DB::transaction(function () use ($work, $paidRejected) {
-            $work = WageWork::query()->with(['employee', 'ptc', 'stage'])->lockForUpdate()->findOrFail($work->id);
+            $work = WageWork::query()->with(['employee', 'contractor', 'ptc', 'stage'])->lockForUpdate()->findOrFail($work->id);
             if ($work->status !== 'pending') {
                 throw new DocumentException('This wage work was already reviewed.');
             }
+            SeparationOfDuties::assertNotCreator($work->created_by, 'this piece work entry');
             if (Decimal::compare($paidRejected, '0') > 0) {
                 if (! auth()->user()?->can('wage_work.override')) {
                     throw new DocumentException('Paying for rejected pieces needs permission.');
@@ -52,13 +56,14 @@ class WageWorks
             }
 
             $amount = Decimal::mul(Decimal::add($work->quantity, $paidRejected, 4), $work->rate);
-            $journal = $this->accounting->labor($work->employee, $amount, $work->work_date, $work,
-                "Wage work {$work->employee->name}".($work->ptc ? " {$work->ptc->number}" : '').($work->stage ? " {$work->stage->name}" : ''));
+            $worker = $work->worker();
+            $journal = $this->accounting->labor($worker, $amount, $work->work_date, $work,
+                ($worker instanceof Contractor ? 'Contractor work ' : 'Wage work ').$worker->name.($work->ptc ? " {$work->ptc->number}" : '').($work->stage ? " {$work->stage->name}" : ''));
 
             $work->update(['status' => 'approved', 'paid_rejected_qty' => $paidRejected, 'amount' => $amount, 'approved_by' => auth()->id(), 'approved_at' => now(), 'journal_id' => $journal?->id]);
 
             if ($work->ptc) {
-                $this->costing->add($work->ptc, 'wage', $amount, $work, $work->employee->name);
+                $this->costing->add($work->ptc, $worker instanceof Contractor ? 'contractor' : 'wage', $amount, $work, $worker->name);
                 if ($work->ptc->isFinished()) {
                     // Arrived after the PTC finished: goes straight onto the output lot.
                     app(PtcTransactions::class)->settleLateCost($work->ptc);
@@ -80,7 +85,7 @@ class WageWorks
         }
 
         return WageWork::query()->create([
-            'employee_id' => $employee->id, 'work_date' => $date->format('Y-m-d'), 'description' => $description,
+            'employee_id' => $employee->id, 'created_by' => auth()->id(), 'work_date' => $date->format('Y-m-d'), 'description' => $description,
             'quantity' => $quantity, 'rate' => $rate, 'amount' => Decimal::mul($quantity, $rate), 'status' => 'pending',
         ]);
     }

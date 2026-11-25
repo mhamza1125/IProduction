@@ -27,8 +27,8 @@ it('moves a document from draft to approved to posted and runs its effects once'
     $doc = draftDocument();
     $workflow = app(DocumentWorkflow::class);
 
-    $workflow->approve($doc);
-    expect($doc->status)->toBe(DocumentStatus::APPROVED)->and($doc->approved_by)->toBe(auth()->id());
+    approver(DocumentWorkflow::class)->approve($doc);
+    expect($doc->status)->toBe(DocumentStatus::APPROVED)->and($doc->approved_by)->not->toBe(auth()->id())->and($doc->approved_by)->not->toBeNull();
 
     $workflow->post($doc, fn (TestDocument $locked) => $locked->increment('effects_run'));
 
@@ -41,7 +41,7 @@ it('moves a document from draft to approved to posted and runs its effects once'
 it('cannot post twice (double click or retry)', function () {
     $doc = draftDocument();
     $workflow = app(DocumentWorkflow::class);
-    $workflow->approve($doc);
+    approver(DocumentWorkflow::class)->approve($doc);
 
     $stale = TestDocument::find($doc->id); // a second request holding the old state
     $workflow->post($doc, fn (TestDocument $d) => $d->increment('effects_run'));
@@ -67,7 +67,7 @@ it('requires approval before posting unless the setting is off', function () {
 it('saves nothing when an effect fails', function () {
     $doc = draftDocument();
     $workflow = app(DocumentWorkflow::class);
-    $workflow->approve($doc);
+    approver(DocumentWorkflow::class)->approve($doc);
 
     expect(fn () => $workflow->post($doc, function (TestDocument $d) {
         $d->increment('effects_run');
@@ -81,7 +81,7 @@ it('locks a document once it leaves draft', function () {
     $doc = draftDocument();
     $doc->update(['title' => 'Edited while draft']);
 
-    app(DocumentWorkflow::class)->approve($doc);
+    approver(DocumentWorkflow::class)->approve($doc);
 
     expect(fn () => $doc->update(['title' => 'Edited after approval']))->toThrow(DocumentException::class, 'cannot be edited')
         ->and(fn () => $doc->delete())->toThrow(DocumentException::class, 'cannot be deleted');
@@ -102,7 +102,7 @@ it('cancels only documents with no posted effect, with a reason', function () {
     expect($doc->status)->toBe(DocumentStatus::CANCELLED)->and($doc->cancel_reason)->toBe('Duplicate entry');
 
     $posted = draftDocument();
-    $workflow->approve($posted);
+    approver(DocumentWorkflow::class)->approve($posted);
     $workflow->post($posted, fn () => null);
 
     expect(fn () => $workflow->cancel($posted, 'Too late'))->toThrow(DocumentException::class, 'Reverse it');
@@ -114,12 +114,12 @@ it('blocks posting into a locked period', function () {
 
     $this->actingAs(userWith(['test_documents.post', 'test_documents.approve']));
     $old = draftDocument('2026-10-15');
-    $workflow->approve($old);
+    approver(DocumentWorkflow::class)->approve($old);
 
     expect(fn () => $workflow->post($old, fn () => null))->toThrow(DocumentException::class, 'locked');
 
     $new = draftDocument('2026-11-01');
-    $workflow->approve($new);
+    approver(DocumentWorkflow::class)->approve($new);
     $workflow->post($new, fn () => null);
     expect($new->isPosted())->toBeTrue();
 });
@@ -130,7 +130,7 @@ it('lets a user with the override permission post into a locked period with a re
 
     $this->actingAs(userWith(['period_lock.override']));
     $doc = draftDocument('2026-10-15');
-    $workflow->approve($doc);
+    approver(DocumentWorkflow::class)->approve($doc);
 
     expect(fn () => $workflow->post($doc, fn () => null))->toThrow(DocumentException::class, 'Give a reason');
 
@@ -139,4 +139,40 @@ it('lets a user with the override permission post into a locked period with a re
     expect($doc->isPosted())->toBeTrue()
         ->and(Activity::where('log_name', 'period_lock')->where('event', 'override')->first()->properties['reason'])
         ->toBe('Late supplier invoice approved by owner');
+});
+
+it('never lets the creator approve their own document, Super Admin included', function () {
+    $doc = draftDocument();
+    expect($doc->created_by)->toBe(auth()->id());
+
+    expect(fn () => app(DocumentWorkflow::class)->approve($doc))->toThrow(DocumentException::class, 'another user must approve');
+    expect($doc->fresh()->status)->toBe(DocumentStatus::DRAFT);
+
+    // The creator is recorded even when the caller does not set it.
+    $unset = DB::transaction(fn () => TestDocument::create(['number' => 'TD-X1', 'document_date' => '2026-11-05', 'title' => 'x']));
+    expect($unset->created_by)->toBe(auth()->id())
+        ->and(fn () => app(DocumentWorkflow::class)->approve($unset))->toThrow(DocumentException::class);
+
+    $other = userWith(['test_documents.approve']);
+    $this->actingAs($other);
+    app(DocumentWorkflow::class)->approve($doc);
+    expect($doc->fresh()->status)->toBe(DocumentStatus::APPROVED)->and($doc->fresh()->approved_by)->toBe($other->id);
+});
+
+it('does not check the creator when the document type needs no approval', function () {
+    app(Approvals::class)->set('test_document', false);
+    $doc = draftDocument();
+
+    app(DocumentWorkflow::class)->approve($doc);
+    expect($doc->fresh()->status)->toBe(DocumentStatus::APPROVED);
+});
+
+it('approves documents created inside an approved batch without a second approver', function () {
+    $batch = draftDocument();
+    approver(DocumentWorkflow::class)->approve($batch);
+    $child = draftDocument();
+
+    app(DocumentWorkflow::class)->approveAsPartOf($child, $batch);
+    expect($child->fresh()->status)->toBe(DocumentStatus::APPROVED)
+        ->and(Activity::where('subject_id', $child->id)->where('event', 'approved')->latest('id')->first()->properties['as_part_of'])->toBe($batch->number);
 });

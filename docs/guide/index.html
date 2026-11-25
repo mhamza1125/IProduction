@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>IProduction Guide</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
 <style>
 /* Layout: a reference manual. Sticky contents rail on the left, a reading column
    of about 68ch, screenshots allowed to run wider than the text. */
@@ -235,7 +233,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
             <div class="cards">
                 <div class="card"><h3>Sales</h3><p>Customers, sales orders, planning, deliveries with packing lists, invoices, returns and credit notes.</p></div>
                 <div class="card"><h3>Purchasing</h3><p>Vendors, purchase orders, goods receipts with rejected quantities, vendor bills and purchase returns.</p></div>
-                <div class="card"><h3>Production</h3><p>PTCs that follow each batch through its route of stages, contractor jobs, material processing, rejections and wage work.</p></div>
+                <div class="card"><h3>Production</h3><p>PTCs that follow each batch through its route of stages, contractor jobs, material processing, rejections and piece work.</p></div>
                 <div class="card"><h3>Inventory</h3><p>Stock by item, stage, status, location and lot; reservations for orders; counts and adjustments.</p></div>
                 <div class="card"><h3>Finance</h3><p>Cash and bank accounts in any currency, receipts, payments, conversions, transfers, expenses, journal vouchers, ledgers and assets.</p></div>
                 <div class="card"><h3>HR and payroll</h3><p>Employees and contractors, attendance, loans, salary advances and a monthly payroll with payslips.</p></div>
@@ -306,7 +304,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
             <ul>
                 <li><strong>Sidebar.</strong> Areas are grouped as Sales, Purchasing, Production, Inventory, Catalog, Finance, HR, Reports and Settings. Groups open and close and remember their state. You only see links you have permission for.</li>
                 <li><strong>Lists.</strong> Every list has a search box (press <kbd>/</kbd> to jump to it), filters, a date range, sortable columns, paging and an Export button for Excel or CSV.</li>
-                <li><strong>Document pages.</strong> The top shows the number, the party and a status badge, with the buttons the document allows next (Approve, Post, Cancel, Print). The side shows details, linked documents, attachments, notes and the full history of who changed what.</li>
+                <li><strong>Document pages.</strong> The top shows the number, the party and a status badge, with the buttons the document allows next (Approve, Post, Cancel, Print). The person who created a document cannot approve it, whatever their role: another user does, and finds it in the <strong>Inbox</strong> (the bell at the top right), which also shows alerts such as a failed backup. The side shows details, linked documents, attachments, notes and the full history of who changed what.</li>
                 <li><strong>Forms.</strong> Press <kbd>Ctrl</kbd> + <kbd>S</kbd> (<kbd>⌘</kbd> + <kbd>S</kbd> on a Mac) to save. Dates are entered and shown as dd-mm-yyyy.</li>
                 <li><strong>Printing.</strong> Orders, receipts, delivery notes, packing lists, invoices, PTC cards, payslips and reports print on their own pages; add <code>?pdf=1</code> to download a PDF.</li>
                 <li><strong>Theme.</strong> The icon at the top right picks Light, Dim, Dark, or System to follow your computer.</li>
@@ -505,7 +503,8 @@ composer lint     # fix code style</code></pre>
                 <dt>Route</dt><dd>The ordered list of stages an item passes through, such as Cutting, Stitching, Logo Embossing and Packing.</dd>
                 <dt>Stage</dt><dd>One step of production. Stock in production is held by stage.</dd>
                 <dt>Worker rate</dt><dd>A worker's own piece rate for a stage (optionally one item) from a date, replacing the stage's standard rate.</dd>
-                <dt>Wage work</dt><dd>Pieces done by wage employees at a stage, approved before they are paid through payroll.</dd>
+                <dt>Piece work</dt><dd>Pieces done by wage employees or contractors at a stage. Nothing is owed until another user approves it: then wage employees are paid through payroll and contractors through the contractor payable.</dd>
+                <dt>Landed cost</dt><dd>Freight, delivery, duty and other charges paid for goods received, added to those goods' cost (Purchasing › Landed Costs) instead of being expensed.</dd>
             </dl>
         </section>
 

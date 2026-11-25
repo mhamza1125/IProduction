@@ -16,7 +16,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-#[Title('Wage work')]
+#[Title('Piece work')]
 class Index extends Component
 {
     use RunsActions, WithDataTable, WithExport;
@@ -58,11 +58,12 @@ class Index extends Component
     /** @return Builder<WageWork> */
     private function query(): Builder
     {
-        $query = WageWork::query()->with(['employee', 'ptc', 'stage'])->when($this->status !== '', fn ($q) => $q->where('status', $this->status));
+        $query = WageWork::query()->with(['employee', 'contractor', 'ptc', 'stage'])->when($this->status !== '', fn ($q) => $q->where('status', $this->status));
         $term = trim($this->search);
         if ($term !== '') {
             $like = '%'.addcslashes($term, '%_\\').'%';
-            $query->where(fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('name', 'like', $like)->orWhere('code', 'like', $like))->orWhereHas('ptc', fn ($p) => $p->where('number', 'like', $like)));
+            $query->where(fn ($q) => $q->whereHas('employee', fn ($e) => $e->where('name', 'like', $like)->orWhere('code', 'like', $like))
+                ->orWhereHas('contractor', fn ($e) => $e->where('name', 'like', $like)->orWhere('code', 'like', $like))->orWhereHas('ptc', fn ($p) => $p->where('number', 'like', $like)));
         }
 
         return $this->applyDateRange($query, 'work_date');
@@ -71,7 +72,7 @@ class Index extends Component
     public function approve(int $id, WageWorks $wages): void
     {
         $this->authorize('wage_work.approve');
-        $this->attempt(fn () => $wages->approve(WageWork::query()->findOrFail($id), (string) ($this->paidRejected[$id] ?? '0') ?: '0'), 'Approved and posted to the wages payable.');
+        $this->attempt(fn () => $wages->approve(WageWork::query()->findOrFail($id), (string) ($this->paidRejected[$id] ?? '0') ?: '0'), 'Approved and posted to the payable.');
     }
 
     public function reject(int $id, WageWorks $wages): void
@@ -92,7 +93,7 @@ class Index extends Component
 
     protected function exportColumns(): array
     {
-        $cols = ['Date' => fn (WageWork $w) => Format::date($w->work_date), 'Employee' => fn (WageWork $w) => $w->employee->name,
+        $cols = ['Date' => fn (WageWork $w) => Format::date($w->work_date), 'Worker' => fn (WageWork $w) => $w->worker()->name,
             'PTC' => fn (WageWork $w) => $w->ptc?->number, 'Stage' => fn (WageWork $w) => $w->stage?->name, 'Accepted' => 'quantity', 'Rejected' => 'rejected_qty', 'Status' => 'status'];
 
         return auth()->user()?->can('salary.view') ? $cols + ['Rate' => 'rate', 'Amount' => 'amount'] : $cols;

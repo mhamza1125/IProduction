@@ -308,6 +308,26 @@ class StockLedger
     /**
      * Available quantity (optionally one stage / location / lot).
      */
+    /**
+     * Adds a cost per unit to a lot (landed cost: freight, duty... paid after the
+     * goods arrived). Quantities do not change; the caller posts the matching
+     * journal in the same transaction. Returns the unit cost before and after.
+     *
+     * @return array{before: string|null, after: string, on_hand: string}
+     */
+    public function addLotCost(int $lotId, string $perUnit): array
+    {
+        $this->assertTransaction();
+        $lot = Lot::query()->lockForUpdate()->findOrFail($lotId);
+        $before = $lot->unit_cost;
+        $after = Decimal::add($before ?? '0', $perUnit, 4);
+        $lot->update(['unit_cost' => $after]);
+
+        $onHand = Decimal::sum(StockBalance::query()->where('lot_id', $lotId)->lockForUpdate()->pluck('quantity'), 4);
+
+        return ['before' => $before, 'after' => $after, 'on_hand' => $onHand];
+    }
+
     public function onHand(int $variantId, ?int $stageId = null, string $status = StockStatus::AVAILABLE, ?int $locationId = null, ?int $lotId = null): string
     {
         return Decimal::round((string) (StockBalance::query()

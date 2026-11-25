@@ -7,7 +7,7 @@
     <div class="mb-6 flex flex-wrap items-center gap-2">
         @if ($ptc->isDraft())
             @can('ptcs.edit') <x-button variant="secondary" :href="route('production.ptcs.edit', $ptc)" icon="pencil">Edit</x-button> @endcan
-            @can('ptcs.approve') <x-button wire:click="approve" wire:confirm="Approve {{ $ptc->number }}? This copies the route and BOM.">Approve</x-button> @endcan
+            @can('ptcs.approve') @if (\App\Support\Documents\SeparationOfDuties::blocks($ptc)) <span class="text-xs text-subtle" title="The person who created a document cannot approve it.">Awaiting approval by another user</span> @else <x-button wire:click="approve" wire:confirm="Approve {{ $ptc->number }}? This copies the route and BOM.">Approve</x-button> @endif @endcan
             @can('ptcs.delete') <x-button variant="ghost" icon="trash" wire:click="delete" wire:confirm="Delete draft?">Delete</x-button> @endcan
         @endif
         @if (in_array($ptc->status, ['approved', 'in_progress', 'on_hold'], true))

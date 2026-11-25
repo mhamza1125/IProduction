@@ -83,7 +83,7 @@ class OpenSalesOrders extends BaseType
                 'due_date' => collect($group)->pluck('data.due_date')->filter()->min() ?: null, 'notes' => "Opening order {$ref} ({$batch->number})"],
                 $group->map(fn ($r) => ['item_variant_id' => $this->variant($r->data['sku'])->id, 'description' => '', 'quantity' => (string) $r->data['remaining_qty'],
                     'unit_price' => (string) $r->data['price'], 'tax_rate' => '', 'due_date' => $r->data['due_date'] ?: null])->values()->all());
-            app(DocumentWorkflow::class)->approve($order);
+            app(DocumentWorkflow::class)->approveAsPartOf($order, $batch);
             foreach ($group as $r) {
                 $r->update(['result_type' => $order->getMorphClass(), 'result_id' => $order->id]);
                 $this->add((string) $customer->getAttribute('currency_code'), Decimal::mul((string) $r->data['remaining_qty'], (string) $r->data['price']));

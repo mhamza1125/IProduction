@@ -7,7 +7,6 @@ use App\Support\Livewire\WithDataTable;
 use App\Support\Livewire\WithExport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -45,18 +44,6 @@ class Index extends Component
         $user->update(['is_active' => ! $user->is_active]);
 
         $this->dispatch('toast', message: $user->is_active ? "{$user->name} activated." : "{$user->name} deactivated.");
-    }
-
-    public function sendResetLink(int $id): void
-    {
-        $this->authorize('users.edit');
-
-        $user = User::query()->findOrFail($id);
-        $status = Password::sendResetLink(['email' => $user->email]);
-
-        activity('users')->performedOn($user)->event('password_reset_sent')->log('Sent a password reset link');
-
-        $this->dispatch('toast', type: $status === Password::RESET_LINK_SENT ? 'success' : 'error', message: __($status));
     }
 
     /**

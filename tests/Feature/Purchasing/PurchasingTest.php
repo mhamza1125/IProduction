@@ -48,7 +48,7 @@ function approvedPo(string $qty = '100', string $rate = '20', ?int $unitId = nul
         'unit_id' => $unitId ?? Unit::where('symbol', 'pcs')->value('id'), 'rate' => $rate, 'expected_date' => null,
     ]]);
 
-    return app(DocumentWorkflow::class)->approve($po);
+    return approver(DocumentWorkflow::class)->approve($po);
 }
 
 function receive(PurchaseOrder $po, string $received, string $accepted, string $rejected = '0', array $extra = []): GoodsReceipt
@@ -64,7 +64,7 @@ function receive(PurchaseOrder $po, string $received, string $accepted, string $
 
         return $grn;
     });
-    app(DocumentWorkflow::class)->approve($grn);
+    approver(DocumentWorkflow::class)->approve($grn);
 
     return app(PostGoodsReceipt::class)($grn);
 }
@@ -98,7 +98,7 @@ it('receives part of an order: lot in, Dr Inventory / Cr Accounts Payable', func
 it('posts a receipt with several lines without lazy loading (strict mode is on outside production)', function () {
     $second = Item::factory()->rawMaterial('pcs')->create(['code' => 'THREAD'])->variants()->first();
     $pcs = Unit::where('symbol', 'pcs')->value('id');
-    $po = app(DocumentWorkflow::class)->approve(app(PurchaseOrders::class)->saveDraft(null, ['vendor_id' => $this->vendor->id, 'order_date' => '2026-11-01'], [
+    $po = approver(DocumentWorkflow::class)->approve(app(PurchaseOrders::class)->saveDraft(null, ['vendor_id' => $this->vendor->id, 'order_date' => '2026-11-01'], [
         ['item_variant_id' => $this->variant->id, 'stage_id' => null, 'description' => '', 'quantity' => '10', 'unit_id' => $pcs, 'rate' => '20', 'expected_date' => null],
         ['item_variant_id' => $second->id, 'stage_id' => null, 'description' => '', 'quantity' => '5', 'unit_id' => $pcs, 'rate' => '8', 'expected_date' => null],
     ]));
@@ -110,7 +110,7 @@ it('posts a receipt with several lines without lazy loading (strict mode is on o
             'received_qty' => $line->quantity, 'accepted_qty' => $line->quantity, 'rejected_qty' => '0', 'rate' => $line->rate, 'location_id' => Location::mainStore()->id,
         ]);
     }
-    app(PostGoodsReceipt::class)(app(DocumentWorkflow::class)->approve($grn));
+    app(PostGoodsReceipt::class)(approver(DocumentWorkflow::class)->approve($grn));
 
     expect($this->stock->onHand($this->variant->id))->toBe('10.0000')
         ->and($this->stock->onHand($second->id))->toBe('5.0000');
@@ -185,7 +185,7 @@ it('bills received goods, posts only extras, and blocks billing more than receiv
         'number' => 'BILL-26-0001', 'vendor_id' => $this->vendor->id, 'vendor_invoice_number' => 'INV-77', 'bill_date' => '2026-11-06',
         'goods_amount' => '2000', 'tax_amount' => '360', 'charges_amount' => '100', 'deductions_amount' => '60', 'total' => '2400',
     ]), fn ($b) => $b->lines()->create(['goods_receipt_line_id' => $line->id, 'item_variant_id' => $this->variant->id, 'quantity' => '100', 'rate' => '20', 'amount' => '2000'])));
-    app(DocumentWorkflow::class)->approve($bill);
+    approver(DocumentWorkflow::class)->approve($bill);
     app(PostVendorBill::class)($bill);
 
     // 2,000 from the receipt + 400 extras = 2,400 owed.
@@ -202,7 +202,7 @@ it('pays a bill from cash, keeps the rest as an advance, and applies the advance
     $line = $grn->lines()->first();
     $bill = DB::transaction(fn () => tap(VendorBill::create(['number' => 'BILL-1', 'vendor_id' => $this->vendor->id, 'vendor_invoice_number' => 'V1', 'bill_date' => '2026-11-06', 'goods_amount' => '2000', 'total' => '2000']),
         fn ($b) => $b->lines()->create(['goods_receipt_line_id' => $line->id, 'item_variant_id' => $this->variant->id, 'quantity' => '100', 'rate' => '20', 'amount' => '2000'])));
-    app(DocumentWorkflow::class)->approve($bill);
+    approver(DocumentWorkflow::class)->approve($bill);
     app(PostVendorBill::class)($bill);
 
     $cash = MoneyAccount::cashBook();
@@ -212,7 +212,7 @@ it('pays a bill from cash, keeps the rest as an advance, and applies the advance
         'number' => 'PAY-26-0001', 'payment_date' => '2026-11-07', 'payee_kind' => 'vendor', 'payee_type' => $this->vendor->getMorphClass(), 'payee_id' => $this->vendor->id,
         'money_account_id' => $cash->id, 'amount' => '2500', 'planned_allocations' => [['type' => $bill->getMorphClass(), 'id' => $bill->id, 'amount' => '1500']],
     ]));
-    app(DocumentWorkflow::class)->approve($payment);
+    approver(DocumentWorkflow::class)->approve($payment);
     app(PostPayment::class)($payment);
 
     expect($bill->fresh())->paid_amount->toBe('1500.00')->status->toBe('partly_paid')
@@ -232,7 +232,7 @@ it('does not let a payment exceed the cash balance', function () {
         'number' => 'PAY-X', 'payment_date' => '2026-11-07', 'payee_kind' => 'vendor', 'payee_type' => $this->vendor->getMorphClass(), 'payee_id' => $this->vendor->id,
         'money_account_id' => MoneyAccount::cashBook()->id, 'amount' => '10',
     ]));
-    app(DocumentWorkflow::class)->approve($payment);
+    approver(DocumentWorkflow::class)->approve($payment);
     app(PostPayment::class)($payment);
 })->throws(DocumentException::class, 'cannot pay');
 
@@ -248,7 +248,7 @@ it('returns goods from a lot, reducing stock and the vendor balance, and reopens
         'goods_receipt_line_id' => $line->id, 'item_variant_id' => $this->variant->id, 'lot_id' => $line->lot_id, 'status' => 'available',
         'location_id' => Location::mainStore()->id, 'quantity' => '10', 'rate' => '20', 'amount' => '200',
     ])));
-    app(DocumentWorkflow::class)->approve($return);
+    approver(DocumentWorkflow::class)->approve($return);
     app(PostPurchaseReturn::class)($return);
 
     expect($this->stock->onHand($this->variant->id))->toBe('90.0000')
@@ -282,7 +282,7 @@ it('creates orders and receipts through the screens', function () {
     $po = PurchaseOrder::firstOrFail();
     expect($po->number)->toBe('PO-26-0001')->and($po->total)->toBe('625.00');
 
-    app(DocumentWorkflow::class)->approve($po);
+    approver(DocumentWorkflow::class)->approve($po);
     $line = $po->lines()->first();
 
     $this->get(route('purchasing.receipts.create', ['order' => $po->id]))->assertOk()->assertSee('Receive goods');

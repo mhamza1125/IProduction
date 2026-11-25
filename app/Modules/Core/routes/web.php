@@ -3,6 +3,7 @@
 use App\Modules\Core\Http\AttachmentController;
 use App\Modules\Core\Livewire\AuditLog;
 use App\Modules\Core\Livewire\Currencies;
+use App\Modules\Core\Livewire\Inbox;
 use App\Modules\Core\Livewire\Lookups;
 use App\Modules\Core\Livewire\Roles;
 use App\Modules\Core\Livewire\Settings;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->name('core.')->group(function () {
     Route::get('attachments/{attachment}', AttachmentController::class)->name('attachments.download');
+    // Everyone signed in has an inbox; it lists only what they may approve.
+    Route::get('inbox', Inbox\Index::class)->name('inbox');
 
     Route::prefix('settings')->group(function () {
         Route::get('users', Users\Index::class)->middleware('can:users.view')->name('users.index');

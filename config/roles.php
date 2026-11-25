@@ -47,7 +47,7 @@ return [
 
         'Purchase' => [
             'allow' => [
-                ...$on(['vendors', 'purchase_orders', 'purchase_returns'], $documentWork),
+                ...$on(['vendors', 'purchase_orders', 'purchase_returns', 'landed_costs'], $documentWork),
                 'goods_receipts.view', 'goods_receipts.print', 'items.view', 'stock.view', 'planning.view', 'ledgers.view',
             ],
             'except' => ['*.approve', '*.override'],
@@ -72,7 +72,7 @@ return [
 
         'Accountant' => [
             'allow' => [
-                ...$on(['accounts', 'payments', 'receipts', 'transfers', 'currency_conversions', 'expenses', 'journal_vouchers', 'chart_of_accounts', 'invoices', 'vendor_bills', 'credit_notes', 'assets'], $documentWork),
+                ...$on(['accounts', 'payments', 'receipts', 'transfers', 'currency_conversions', 'expenses', 'journal_vouchers', 'chart_of_accounts', 'invoices', 'vendor_bills', 'credit_notes', 'assets', 'landed_costs'], $documentWork),
                 'ledgers.*', 'reports.*', 'bank_balance.view', 'cost.view', 'profit.view',
                 'customers.view', 'vendors.view', 'contractors.view', 'employees.view',
             ],
@@ -84,6 +84,8 @@ return [
                 ...$on(['employees', 'attendance', 'wage_work', 'loans', 'advances'], $documentWork),
                 'payroll.view', 'payroll.create', 'payroll.edit', 'payroll.delete', 'payroll.print', 'payroll.export',
                 'salary.view', 'ledgers.view', 'worker_rates.view', 'worker_rates.export',
+                // Piece rates are pay: HR sets them (they need salary.view to see them).
+                'worker_rates.create', 'worker_rates.edit', 'worker_rates.delete',
             ],
             'except' => ['*.approve', '*.override'],
         ],

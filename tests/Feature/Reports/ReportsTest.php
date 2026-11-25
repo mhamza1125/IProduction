@@ -46,7 +46,7 @@ beforeEach(function () {
     $this->leather = $leatherItem->variants()->first();
     $bom = app(BomService::class)->newVersion($glove);
     $bom->lines()->create(['component_item_id' => $leatherItem->id, 'quantity' => '0.2', 'unit_id' => Unit::where('symbol', 'kg')->value('id'), 'wastage_percent' => 0]);
-    app(BomService::class)->approve($bom);
+    approver(BomService::class)->approve($bom);
 
     DB::transaction(function () {
         $doc = TestDocument::create(['number' => 'TD-1', 'document_date' => '2026-11-01']);
@@ -55,13 +55,13 @@ beforeEach(function () {
     });
 
     $this->customer = Customer::factory()->create(['name' => 'Hamburg Sports', 'currency_code' => 'USD']);
-    $this->order = app(DocumentWorkflow::class)->approve(app(SalesOrders::class)->save(null, ['customer_id' => $this->customer->id, 'order_date' => '2026-11-01', 'due_date' => '2026-11-03'], [[
+    $this->order = approver(DocumentWorkflow::class)->approve(app(SalesOrders::class)->save(null, ['customer_id' => $this->customer->id, 'order_date' => '2026-11-01', 'due_date' => '2026-11-03'], [[
         'item_variant_id' => $this->glove->id, 'description' => '', 'quantity' => '100', 'unit_price' => '10', 'tax_rate' => '', 'due_date' => null]]));
     $line = $this->order->lines()->first();
 
     $ptcs = app(Ptcs::class);
     $tx = app(PtcTransactions::class);
-    $ptc = $ptcs->approve($ptcs->save(null, ['item_variant_id' => $this->glove->id, 'planned_qty' => '100', 'route_id' => $route->id, 'sales_order_line_id' => $line->id, 'start_date' => '2026-11-02']));
+    $ptc = approver(Ptcs::class)->approve($ptcs->save(null, ['item_variant_id' => $this->glove->id, 'planned_qty' => '100', 'route_id' => $route->id, 'sales_order_line_id' => $line->id, 'start_date' => '2026-11-02']));
     $cutter = Worker::from('employee', Employee::factory()->create(['employee_type' => Employee::TYPE_SALARY])->id, null);
     $tx->issueMaterial($ptc, null, $this->leather->id, '20', $cutter, $this->day);
     $tx->issueStage($ptc, $ptc->stages()->first(), '100', $cutter, $this->day);
@@ -73,7 +73,7 @@ beforeEach(function () {
     app(Packing::class)->addCarton($d, ['gross_weight' => '20'], [$d->lines()->value('id') => '100']);
     app(Packing::class)->complete($d);
     $this->delivery = app(Deliveries::class)->dispatch($d->fresh());
-    app(Invoices::class)->post(app(DocumentWorkflow::class)->approve(app(Invoices::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-07'], [['delivery_line_id' => $this->delivery->lines()->value('id')]])));
+    app(Invoices::class)->post(approver(DocumentWorkflow::class)->approve(app(Invoices::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-07'], [['delivery_line_id' => $this->delivery->lines()->value('id')]])));
 });
 
 it('shows the actual direct cost of an order against its planned cost, and estimates profit', function () {

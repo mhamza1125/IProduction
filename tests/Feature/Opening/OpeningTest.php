@@ -75,7 +75,7 @@ function importAndPost(string $type, array $rows, array $controls = []): Opening
         app(Openings::class)->setControlTotals($batch, $controls);
     }
 
-    return app(Openings::class)->post(app(DocumentWorkflow::class)->approve($batch));
+    return app(Openings::class)->post(approver(DocumentWorkflow::class)->approve($batch));
 }
 
 it('loads cash, bank, stock and party balances against Opening Balance by currency', function () {
@@ -117,7 +117,7 @@ it('shows row errors in the preview and does not post a batch with errors', func
     expect($errors[0])->toContain('currency is USD')
         ->and($errors[1])->toContain('Unknown code')->toContain('Side must be')->toContain('above zero')
         ->and($errors[2])->toContain('twice');
-    expect(fn () => $this->openings->post($this->openings->post(app(DocumentWorkflow::class)->approve($batch))))->toThrow(DocumentException::class, 'errors');
+    expect(fn () => $this->openings->post($this->openings->post(approver(DocumentWorkflow::class)->approve($batch))))->toThrow(DocumentException::class, 'errors');
     expect($this->ledgers->partyBalance($this->customer))->toBe('0.00');
 
     expect(fn () => $this->openings->import('stock', openingCsv([['sku' => 'x']]), 'x.csv', '2026-10-31'))->toThrow(DocumentException::class, 'Missing columns');
@@ -198,7 +198,7 @@ it('imports from the screen, previews, downloads templates and protects access',
     Livewire::test(Screens\Index::class)->set('type', 'cash_banks')->set('file', $file)->call('upload')->assertHasNoErrors()->assertRedirect();
     $batch = OpeningBatch::query()->sole();
     $this->get(route('opening.show', $batch))->assertOk()->assertSee('Cash Book')->assertSee('OK');
-    Livewire::test(Screens\Show::class, ['batch' => $batch])->call('approveDocument')->call('postDocumentAction');
+    asApprover(fn () => Livewire::test(Screens\Show::class, ['batch' => $batch])->call('approveDocument')->call('postDocumentAction'));
     expect($batch->fresh()->isPosted())->toBeTrue();
 
     $viewer = userWith(['opening.view']);

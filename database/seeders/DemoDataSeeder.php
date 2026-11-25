@@ -55,12 +55,16 @@ use App\Modules\Purchasing\Models\GoodsReceipt;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\PurchaseReturn;
 use App\Modules\Purchasing\Models\VendorBill;
+use App\Modules\Purchasing\Services\LandedCosts;
 use App\Modules\Purchasing\Services\PurchaseOrders;
 use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Services\SalesOrders;
 use App\Support\Decimal;
+use App\Support\Documents\Document;
 use App\Support\Documents\DocumentWorkflow;
 use Carbon\Carbon;
+use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -95,6 +99,9 @@ class DemoDataSeeder extends Seeder
     private DocumentWorkflow $workflow;
 
     private DocumentNumber $numbers;
+
+    /** The demo manager approves what the admin creates: nobody approves their own documents. */
+    private ?User $approver = null;
 
     /** @var array<string, ItemVariant> */
     private array $variants = [];
@@ -163,6 +170,36 @@ class DemoDataSeeder extends Seeder
         $this->command?->table(['Email', 'Role'], collect(self::USERS)->map(fn ($u, $email) => [$email, $u[1]])->values()->all());
     }
 
+    /**
+     * @template T of Model&Document
+     *
+     * @param  T  $document
+     * @return T
+     */
+    private function approve(Model&Document $document): Model&Document
+    {
+        return $this->asApprover(fn () => $this->workflow->approve($document));
+    }
+
+    /**
+     * @template T
+     *
+     * @param  Closure(): T  $action
+     * @return T
+     */
+    private function asApprover(Closure $action): mixed
+    {
+        $me = Auth::guard()->user();
+        Auth::guard()->setUser($this->approver ??= User::query()->where('email', 'manager@demo.test')->firstOrFail());
+        try {
+            return $action();
+        } finally {
+            if ($me !== null) {
+                Auth::guard()->setUser($me);
+            }
+        }
+    }
+
     private function seedUsers(): void
     {
         foreach (self::USERS as $email => [$name, $role]) {
@@ -221,6 +258,7 @@ class DemoDataSeeder extends Seeder
             'trims' => ['Punjab Thread and Trims', 'Bilal Ahmed'],
             'balls' => ['Ball Components Co', 'Usman Ghani'],
             'utility' => ['City Power Services', 'Billing Desk'],
+            'cargo' => ['Fast Cargo Transport', 'Dispatch Desk'],
         ] as $key => [$name, $contact]) {
             $this->vendors[$key] = Vendor::query()->create(['name' => $name, 'contact_person' => $contact, 'phone' => '+92 300 0000000', 'payment_terms' => 'Net 30', 'is_active' => true]);
         }
@@ -317,7 +355,7 @@ class DemoDataSeeder extends Seeder
         foreach ($components as [$component, $quantity, $symbol]) {
             $bom->lines()->create(['component_item_id' => $this->items[$component]->id, 'quantity' => $quantity, 'unit_id' => Unit::query()->where('symbol', $symbol)->value('id'), 'wastage_percent' => 0]);
         }
-        app(BomService::class)->approve($bom);
+        $this->asApprover(fn () => app(BomService::class)->approve($bom));
     }
 
     private function seedMoney(): void
@@ -329,7 +367,7 @@ class DemoDataSeeder extends Seeder
         $this->money['eur'] = $accounts->create(['name' => 'Meezan Bank EUR', 'type' => MoneyAccount::BANK, 'currency_code' => 'EUR', 'bank_name' => 'Meezan Bank', 'account_number' => '0000-0000003']);
 
         $moves = app(MoneyMovements::class);
-        $moves->postVoucher($this->workflow->approve($moves->saveVoucher(null, ['voucher_date' => '2026-09-01', 'description' => 'Owner capital introduced'], [
+        $moves->postVoucher($this->approve($moves->saveVoucher(null, ['voucher_date' => '2026-09-01', 'description' => 'Owner capital introduced'], [
             ['account' => 'money:'.$this->money['pkr']->id, 'debit' => '8000000'],
             ['account' => 'money:'.$this->money['cash']->id, 'debit' => '500000'],
             ['account' => 'gl:'.GlAccount::system('owner_capital')->id, 'credit' => '8500000'],
@@ -355,7 +393,7 @@ class DemoDataSeeder extends Seeder
             'goods_receipt_line_id' => $line->id, 'item_variant_id' => $line->item_variant_id, 'lot_id' => $line->lot_id, 'status' => 'available',
             'location_id' => Location::mainStore()->id, 'quantity' => '10', 'rate' => '1800', 'amount' => '18000',
         ]);
-        $this->workflow->approve($return);
+        $this->approve($return);
         app(PostPurchaseReturn::class)($return);
 
         // Received and billed with tax, part paid: leaves a payable.
@@ -367,10 +405,15 @@ class DemoDataSeeder extends Seeder
         // Partly received, some rejected and sent back, not billed yet.
         $po = $this->purchaseOrder('balls', '2026-09-20', [['panel', '12000', 'pcs', '18'], ['bladder', '400', 'pcs', '95']]);
         $reason = Lookup::query()->where('type', 'rejection_reason')->value('id');
-        $this->receiveGoods($po, '2026-09-28', [
+        $grn = $this->receiveGoods($po, '2026-09-28', [
             ['10000', '9900', '100', ['rejected_action' => 'return', 'reject_reason_id' => $reason]],
             ['400', '400', '0'],
         ]);
+
+        // Delivery charges for that receipt, added to the panels' and bladders' cost (payable to the transporter).
+        $landed = app(LandedCosts::class);
+        $landed->post($this->approve($landed->save(null, ['cost_date' => '2026-09-29', 'vendor_id' => $this->vendors['cargo']->id, 'method' => 'value', 'reference' => 'Bilty 7781'],
+            [['charge_type' => 'freight', 'description' => 'Truck from Lahore', 'amount' => '18000'], ['charge_type' => 'loading', 'description' => 'Unloading', 'amount' => '2500']], [$grn->id])));
 
         // One sent and waiting, one draft, one cancelled.
         $sent = $this->purchaseOrder('leather', '2026-11-02', [['leather', '150', 'kg', '1850']]);
@@ -387,7 +430,7 @@ class DemoDataSeeder extends Seeder
             'unit_id' => Unit::query()->where('symbol', $l[2])->value('id'), 'rate' => $l[3], 'expected_date' => null,
         ], $lines));
 
-        return $approve ? $this->workflow->approve($po) : $po;
+        return $approve ? $this->approve($po) : $po;
     }
 
     /** @param list<array<int, mixed>> $receipts received, accepted, rejected, extra columns; one per order line */
@@ -402,7 +445,7 @@ class DemoDataSeeder extends Seeder
                 'rate' => $line->rate, 'location_id' => Location::mainStore()->id,
             ]);
         }
-        $this->workflow->approve($grn);
+        $this->approve($grn);
 
         return app(PostGoodsReceipt::class)($grn);
     }
@@ -419,7 +462,7 @@ class DemoDataSeeder extends Seeder
         foreach ($lines as $line) {
             $bill->lines()->create(['goods_receipt_line_id' => $line->id, 'item_variant_id' => $line->item_variant_id, 'quantity' => $line->accepted_qty, 'rate' => $line->rate, 'amount' => Decimal::mul($line->accepted_qty, $line->rate)]);
         }
-        $this->workflow->approve($bill);
+        $this->approve($bill);
         app(PostVendorBill::class)($bill);
 
         return $bill->fresh();
@@ -433,7 +476,7 @@ class DemoDataSeeder extends Seeder
             'payee_type' => $payee->getMorphClass(), 'payee_id' => $payee->id, 'money_account_id' => $this->money[$account]->id, 'amount' => $amount,
         ]);
 
-        return app(PostPayment::class)($this->workflow->approve($payment), $allocations);
+        return app(PostPayment::class)($this->approve($payment), $allocations);
     }
 
     private function seedSalesOrders(): void
@@ -455,7 +498,7 @@ class DemoDataSeeder extends Seeder
             'item_variant_id' => $this->variants[$l[0]]->id, 'description' => '', 'quantity' => $l[1], 'unit_price' => $l[2], 'tax_rate' => $tax, 'due_date' => null,
         ], $lines));
 
-        return $approve ? $this->workflow->approve($order) : $order;
+        return $approve ? $this->approve($order) : $order;
     }
 
     private function worker(string $employee): Worker
@@ -491,7 +534,7 @@ class DemoDataSeeder extends Seeder
         $ptcs->complete($ptc->fresh());
 
         foreach (WageWork::query()->where('status', 'pending')->get() as $work) {
-            app(WageWorks::class)->approve($work);
+            $this->asApprover(fn () => app(WageWorks::class)->approve($work));
         }
 
         // Still on the floor: stitching is half done and its wage work waits for review.
@@ -510,9 +553,10 @@ class DemoDataSeeder extends Seeder
 
         // Footballs made outside by a contractor, part delivered back.
         $jobs = app(ContractorJobs::class);
-        $job = $jobs->approve($jobs->save(null, ['contractor_id' => $this->contractors['balls']->id, 'job_date' => '2026-09-29'],
+        $draft = $jobs->save(null, ['contractor_id' => $this->contractors['balls']->id, 'job_date' => '2026-09-29'],
             [['item_variant_id' => $this->variants['football']->id, 'stage_id' => null, 'quantity' => '300', 'rate' => '85']],
-            [['item_variant_id' => $this->variants['panel']->id, 'expected_qty' => '32'], ['item_variant_id' => $this->variants['bladder']->id, 'expected_qty' => '1']]));
+            [['item_variant_id' => $this->variants['panel']->id, 'expected_qty' => '32'], ['item_variant_id' => $this->variants['bladder']->id, 'expected_qty' => '1']]);
+        $job = $this->asApprover(fn () => $jobs->approve($draft));
         $jobs->issueMaterial($job, $this->variants['panel']->id, '9600', Carbon::parse('2026-09-30'));
         $jobs->issueMaterial($job, $this->variants['bladder']->id, '300', Carbon::parse('2026-09-30'));
         $jobs->receive($job->fresh(), $job->lines()->firstOrFail(), '250', '248', '2', Carbon::parse('2026-10-02'), rejectReason: 'Seams open');
@@ -526,7 +570,7 @@ class DemoDataSeeder extends Seeder
             'sales_order_line_id' => $order?->lines()->orderBy('id')->value('id'), 'responsible_employee_id' => $this->employees['supervisor']->id,
         ]);
 
-        return $approve ? app(Ptcs::class)->approve($ptc) : $ptc;
+        return $approve ? $this->asApprover(fn () => app(Ptcs::class)->approve($ptc)) : $ptc;
     }
 
     /** @param list<array{string, string}> $materials */
@@ -566,28 +610,28 @@ class DemoDataSeeder extends Seeder
             'final_destination' => 'New York, USA', 'vessel_flight' => 'MSC AURORA V.0427E', 'container_no' => 'MSCU 1234565', 'bl_awb_no' => 'MEDUKH000427',
             'bl_awb_date' => '2026-10-05', 'fi_number' => 'MEZN-EXP-2026-00118', 'gd_number' => 'KEXP-HC-0099812', 'gd_date' => '2026-10-03',
             'shipping_marks' => "NORTHFIELD / NF-PO-8812\nNEW YORK\nC/NO. 1-2"]);
-        $receipts->post($this->workflow->approve($receipts->save(null, ['receipt_date' => '2026-10-15', 'customer_id' => $this->customers['northfield']->id, 'amount' => (string) $invoice->total, 'money_account_id' => $this->money['usd']->id],
+        $receipts->post($this->approve($receipts->save(null, ['receipt_date' => '2026-10-15', 'customer_id' => $this->customers['northfield']->id, 'amount' => (string) $invoice->total, 'money_account_id' => $this->money['usd']->id],
             [['gl_account_id' => GlAccount::system('bank_charges')->id, 'amount' => '50']],
             [['type' => $invoice->getMorphClass(), 'id' => $invoice->id, 'amount' => (string) $invoice->total]])));
 
         // Advance from the same customer, not yet set against an invoice.
-        $receipts->post($this->workflow->approve($receipts->save(null, ['receipt_date' => '2026-11-03', 'customer_id' => $this->customers['northfield']->id, 'amount' => '1500', 'money_account_id' => $this->money['usd']->id], [], [])));
+        $receipts->post($this->approve($receipts->save(null, ['receipt_date' => '2026-11-03', 'customer_id' => $this->customers['northfield']->id, 'amount' => '1500', 'money_account_id' => $this->money['usd']->id], [], [])));
 
         // Part shipped and part paid, with a return and a credit note.
         $partial = $this->orders['partial']->lines()->orderBy('id')->get();
         $delivery = $this->dispatch('rheinland', '2026-10-18', [[$partial[0]->id, '96'], [$partial[1]->id, '100']]);
         $invoice = $this->invoice('rheinland', '2026-10-19', $delivery);
-        $receipts->post($this->workflow->approve($receipts->save(null, ['receipt_date' => '2026-11-02', 'customer_id' => $this->customers['rheinland']->id, 'amount' => '2000', 'money_account_id' => $this->money['eur']->id], [],
+        $receipts->post($this->approve($receipts->save(null, ['receipt_date' => '2026-11-02', 'customer_id' => $this->customers['rheinland']->id, 'amount' => '2000', 'money_account_id' => $this->money['eur']->id], [],
             [['type' => $invoice->getMorphClass(), 'id' => $invoice->id, 'amount' => '2000']])));
 
         $returns = app(DeliveryReturns::class);
-        $return = $returns->post($this->workflow->approve($returns->save(null, ['delivery_line_id' => $delivery->lines()->orderBy('id')->value('id'), 'quantity' => '6', 'reason' => 'Wrong weight packed', 'return_date' => '2026-10-28'])));
+        $return = $returns->post($this->approve($returns->save(null, ['delivery_line_id' => $delivery->lines()->orderBy('id')->value('id'), 'quantity' => '6', 'reason' => 'Wrong weight packed', 'return_date' => '2026-10-28'])));
         $day = Carbon::parse('2026-10-30');
         $returns->restock($return->fresh(), '4', null, $day);
         $returns->reject($return->fresh(), '2', 'Stitching open', $day);
 
         $notes = app(CreditNotes::class);
-        $notes->post($this->workflow->approve($notes->save(null, ['customer_id' => $this->customers['rheinland']->id, 'invoice_id' => $invoice->id, 'credit_date' => '2026-10-31', 'reason' => 'Returned pairs'], [['description' => '6 pairs returned', 'amount' => '174']])));
+        $notes->post($this->approve($notes->save(null, ['customer_id' => $this->customers['rheinland']->id, 'invoice_id' => $invoice->id, 'credit_date' => '2026-10-31', 'reason' => 'Returned pairs'], [['description' => '6 pairs returned', 'amount' => '174']])));
 
         // Packed and ready to dispatch.
         $packed = app(Deliveries::class)->allocate(app(Deliveries::class)->save(null, ['customer_id' => $this->customers['albion']->id, 'delivery_date' => '2026-11-08'],
@@ -618,7 +662,7 @@ class DemoDataSeeder extends Seeder
     {
         $invoices = app(Invoices::class);
 
-        return $invoices->post($this->workflow->approve($invoices->save(null, ['customer_id' => $this->customers[$customer]->id, 'invoice_date' => $date],
+        return $invoices->post($this->approve($invoices->save(null, ['customer_id' => $this->customers[$customer]->id, 'invoice_date' => $date],
             $delivery->lines()->orderBy('id')->pluck('id')->map(fn ($id) => ['delivery_line_id' => $id])->all())));
     }
 
@@ -626,22 +670,22 @@ class DemoDataSeeder extends Seeder
     {
         $moves = app(MoneyMovements::class);
 
-        $moves->postConversion($this->workflow->approve($moves->saveConversion(null, ['conversion_date' => '2026-10-20', 'from_account_id' => $this->money['usd']->id, 'from_amount' => '5000', 'to_account_id' => $this->money['pkr']->id, 'pkr_received' => '1395000'])));
-        $moves->postTransfer($this->workflow->approve($moves->saveTransfer(null, ['transfer_date' => '2026-10-01', 'from_account_id' => $this->money['pkr']->id, 'to_account_id' => $this->money['cash']->id, 'amount' => '300000'])));
-        $this->workflow->approve($moves->saveTransfer(null, ['transfer_date' => '2026-11-07', 'from_account_id' => $this->money['pkr']->id, 'to_account_id' => $this->money['cash']->id, 'amount' => '100000']));
+        $moves->postConversion($this->approve($moves->saveConversion(null, ['conversion_date' => '2026-10-20', 'from_account_id' => $this->money['usd']->id, 'from_amount' => '5000', 'to_account_id' => $this->money['pkr']->id, 'pkr_received' => '1395000'])));
+        $moves->postTransfer($this->approve($moves->saveTransfer(null, ['transfer_date' => '2026-10-01', 'from_account_id' => $this->money['pkr']->id, 'to_account_id' => $this->money['cash']->id, 'amount' => '300000'])));
+        $this->approve($moves->saveTransfer(null, ['transfer_date' => '2026-11-07', 'from_account_id' => $this->money['pkr']->id, 'to_account_id' => $this->money['cash']->id, 'amount' => '100000']));
 
         $rent = GlAccount::system('rent')->id;
         foreach (['2026-09-05', '2026-10-05', '2026-11-05'] as $date) {
-            $moves->postExpense($this->workflow->approve($moves->saveExpense(null, ['expense_date' => $date, 'expense_account_id' => $rent, 'money_account_id' => $this->money['pkr']->id, 'amount' => '150000'])));
+            $moves->postExpense($this->approve($moves->saveExpense(null, ['expense_date' => $date, 'expense_account_id' => $rent, 'money_account_id' => $this->money['pkr']->id, 'amount' => '150000'])));
         }
 
-        $power = $moves->postExpense($this->workflow->approve($moves->saveExpense(null, ['expense_date' => '2026-10-10', 'expense_account_id' => GlAccount::system('utilities')->id, 'vendor_id' => $this->vendors['utility']->id, 'amount' => '48500'])));
+        $power = $moves->postExpense($this->approve($moves->saveExpense(null, ['expense_date' => '2026-10-10', 'expense_account_id' => GlAccount::system('utilities')->id, 'vendor_id' => $this->vendors['utility']->id, 'amount' => '48500'])));
         $this->pay('vendor', $this->vendors['utility'], '2026-10-22', '48500', 'cash', [['allocatable' => $power, 'amount' => '48500']]);
         $moves->saveExpense(null, ['expense_date' => '2026-11-09', 'expense_account_id' => GlAccount::system('other_expenses')->id, 'money_account_id' => $this->money['cash']->id, 'amount' => '7500']);
 
         // A fine taken through payroll.
         $stitcher = $this->employees['stitcher'];
-        $moves->postVoucher($this->workflow->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-20', 'description' => 'Damaged leather panels'], [
+        $moves->postVoucher($this->approve($moves->saveVoucher(null, ['voucher_date' => '2026-10-20', 'description' => 'Damaged leather panels'], [
             ['account' => 'gl:'.GlAccount::system('wages_payable')->id, 'party' => $stitcher->getMorphClass().':'.$stitcher->id, 'debit' => '1500', 'deduct_from_payroll' => true],
             ['account' => 'gl:'.GlAccount::system('damage_recoveries')->id, 'credit' => '1500'],
         ])));
@@ -652,7 +696,7 @@ class DemoDataSeeder extends Seeder
             'reason_id' => Lookup::query()->where('type', 'adjustment_reason')->value('id'), 'notes' => 'Month-end count',
         ]);
         $adjustment->lines()->create(['item_variant_id' => $this->variants['leather']->id, 'stage_id' => null, 'status' => 'available', 'location_id' => Location::mainStore()->id, 'lot_id' => null, 'quantity' => '-2', 'unit_cost' => null]);
-        $this->workflow->approve($adjustment);
+        $this->approve($adjustment);
         app(PostStockAdjustment::class)($adjustment);
     }
 
@@ -664,8 +708,8 @@ class DemoDataSeeder extends Seeder
         $november = Carbon::parse('2026-11-01');
         $bank = $this->money['pkr']->id;
 
-        $loans->postLoan($this->workflow->approve($loans->saveLoan(null, ['employee_id' => $this->employees['cutter']->id, 'loan_date' => '2026-09-20', 'amount' => '100000', 'money_account_id' => $bank, 'installment' => '10000', 'start_month' => '2026-10-01'])));
-        $loans->postAdvance($this->workflow->approve($loans->saveAdvance(null, ['employee_id' => $this->employees['packer']->id, 'advance_date' => '2026-10-12', 'amount' => '15000', 'salary_month' => '2026-10-01', 'money_account_id' => $bank])));
+        $loans->postLoan($this->approve($loans->saveLoan(null, ['employee_id' => $this->employees['cutter']->id, 'loan_date' => '2026-09-20', 'amount' => '100000', 'money_account_id' => $bank, 'installment' => '10000', 'start_month' => '2026-10-01'])));
+        $loans->postAdvance($this->approve($loans->saveAdvance(null, ['employee_id' => $this->employees['packer']->id, 'advance_date' => '2026-10-12', 'amount' => '15000', 'salary_month' => '2026-10-01', 'money_account_id' => $bank])));
 
         app(Attendance::class)->saveMonth($october, [
             $this->employees['supervisor']->id => ['working_days' => '26', 'overtime_hours' => '6'],
@@ -676,7 +720,7 @@ class DemoDataSeeder extends Seeder
         ]);
 
         // October is posted and paid, except the last employee so an unpaid balance shows.
-        $run = $payrolls->post($this->workflow->approve($payrolls->create($october, null, null)));
+        $run = $payrolls->post($this->approve($payrolls->create($october, null, null)));
         $lines = $run->lines()->orderBy('id')->get()->filter(fn (PayrollLine $l) => Decimal::compare($l->net_payable, '0') > 0)->values();
         foreach ($lines->slice(0, max($lines->count() - 1, 0)) as $line) {
             $this->pay('employee', Employee::query()->findOrFail($line->employee_id), '2026-11-02', (string) $line->net_payable, 'pkr', [['allocatable' => $line, 'amount' => (string) $line->net_payable]]);

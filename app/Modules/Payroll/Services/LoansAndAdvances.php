@@ -13,10 +13,12 @@ use App\Modules\Payroll\Models\PayrollLine;
 use App\Modules\Payroll\Models\SalaryAdvance;
 use App\Modules\People\Models\Employee;
 use App\Support\Decimal;
+use App\Support\Documents\Document;
 use App\Support\Documents\DocumentException;
 use App\Support\Documents\DocumentWorkflow;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -74,9 +76,9 @@ class LoansAndAdvances
      * Posts a loan or advance carried over from the old system (go-live):
      * against Opening Balance instead of a cash/bank account.
      */
-    public function postOpening(EmployeeLoan|SalaryAdvance $doc, string $description): EmployeeLoan|SalaryAdvance
+    public function postOpening(EmployeeLoan|SalaryAdvance $doc, string $description, Model&Document $partOf): EmployeeLoan|SalaryAdvance
     {
-        $doc = $this->workflow->approve($doc);
+        $doc = $this->workflow->approveAsPartOf($doc, $partOf);
 
         return $this->workflow->post($doc, function (EmployeeLoan|SalaryAdvance $d) use ($description) {
             $account = $d instanceof EmployeeLoan ? 'employee_loans' : 'employee_advances';

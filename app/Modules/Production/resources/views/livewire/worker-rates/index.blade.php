@@ -1,8 +1,8 @@
 <div>
     <x-page-header title="Worker rates" description="Individual piece rates. A worker's own rate for a stage replaces the route's standard rate from its effective date; an item-specific rate beats an all-items rate. Work already recorded keeps the rate it was paid at.">
-        @can('worker_rates.create')
+        @if (auth()->user()->can('worker_rates.create') && auth()->user()->can('salary.view'))
             <x-button wire:click="create" icon="plus">New rate</x-button>
-        @endcan
+        @endif
     </x-page-header>
 
     <x-card :padding="false">
@@ -23,7 +23,7 @@
                 <x-table.th>Worker</x-table.th>
                 <x-table.th>Stage</x-table.th>
                 <x-table.th>Item</x-table.th>
-                <x-table.th sortable="rate" :sort-field="$sortField" :sort-direction="$sortDirection" align="right">Rate per piece</x-table.th>
+                @can('salary.view') <x-table.th sortable="rate" :sort-field="$sortField" :sort-direction="$sortDirection" align="right">Rate per piece</x-table.th> @endcan
                 <x-table.th sortable="effective_from" :sort-field="$sortField" :sort-direction="$sortDirection">From</x-table.th>
                 <x-table.th>Status</x-table.th>
                 <x-table.th><span class="sr-only">Actions</span></x-table.th>
@@ -33,12 +33,12 @@
                     <x-table.td class="font-medium text-fg">{{ $r->workerName() }} <x-badge :color="$r->worker_type === 'employee' ? 'blue' : 'amber'">{{ $r->worker_type === 'employee' ? 'Employee' : 'Contractor' }}</x-badge></x-table.td>
                     <x-table.td>{{ $r->stage->name }}</x-table.td>
                     <x-table.td wide>{{ $r->item ? $r->item->code.' · '.$r->item->name : 'All items' }}</x-table.td>
-                    <x-table.td align="right">@qty($r->rate)</x-table.td>
+                    @can('salary.view') <x-table.td align="right">@qty($r->rate)</x-table.td> @endcan
                     <x-table.td>@date($r->effective_from)</x-table.td>
                     <x-table.td><x-status :status="$r->is_active ? 'active' : 'inactive'" /></x-table.td>
                     <x-table.td align="right">
-                        @can('worker_rates.edit') <x-button variant="ghost" size="sm" wire:click="edit({{ $r->id }})">Edit</x-button> @endcan
-                        @can('worker_rates.delete') <x-button variant="ghost" size="sm" wire:click="delete({{ $r->id }})" wire:confirm="Delete this rate? Work already recorded is not changed.">Delete</x-button> @endcan
+                        @if (auth()->user()->can('worker_rates.edit') && auth()->user()->can('salary.view')) <x-button variant="ghost" size="sm" wire:click="edit({{ $r->id }})">Edit</x-button> @endif
+                        @if ($r->is_active) @can('worker_rates.delete') <x-button variant="ghost" size="sm" wire:click="deactivate({{ $r->id }})" wire:confirm="Deactivate this rate? It stops applying to new work; work already recorded is not changed.">Deactivate</x-button> @endcan @endif
                     </x-table.td>
                 </tr>
             @endforeach

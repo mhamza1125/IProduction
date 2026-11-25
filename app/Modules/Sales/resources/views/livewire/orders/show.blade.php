@@ -7,7 +7,7 @@
     <div class="mb-6 flex flex-wrap items-center gap-2">
         @if ($order->isDraft())
             @can('sales_orders.edit') <x-button variant="secondary" :href="route('sales.orders.edit', $order)" icon="pencil">Edit</x-button> @endcan
-            @can('sales_orders.approve') <x-button wire:click="approve" wire:confirm="Approve {{ $order->number }}?">Approve</x-button> @endcan
+            @can('sales_orders.approve') @if (\App\Support\Documents\SeparationOfDuties::blocks($order)) <span class="text-xs text-subtle" title="The person who created a document cannot approve it.">Awaiting approval by another user</span> @else <x-button wire:click="approve" wire:confirm="Approve {{ $order->number }}?">Approve</x-button> @endif @endcan
             @can('sales_orders.delete') <x-button variant="ghost" icon="trash" wire:click="delete" wire:confirm="Delete draft?">Delete</x-button> @endcan
         @elseif ($order->isOpen())
             @can('sales_orders.override') <x-button variant="secondary" :href="route('sales.orders.edit', $order)" icon="pencil">Edit (approved)</x-button> @endcan

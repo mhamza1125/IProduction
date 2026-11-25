@@ -8,7 +8,7 @@
 
         <div class="flex items-center justify-between">
             <x-checkbox name="remember" label="Remember me" />
-            <a href="{{ route('password.request') }}" class="text-sm text-link hover:underline">Forgot password?</a>
+            <span class="text-sm text-subtle">Forgot your password? Ask an administrator.</span>
         </div>
 
         <x-button type="submit" class="w-full">Sign in</x-button>

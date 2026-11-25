@@ -163,7 +163,9 @@ return [
 
     'features' => [
         // Registration is disabled: users are created by an admin (Administration > Users).
-        Features::resetPasswords(),
+        // No password reset by email: the system sends no email (standalone).
+        // An administrator sets a new password in Settings › Users.
+        // Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),

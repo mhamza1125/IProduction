@@ -34,9 +34,34 @@ class DocumentWorkflow
     {
         return $this->transition($document, function (Model&Document $doc) {
             $this->expectStatus($doc, [DocumentStatus::DRAFT], 'approved');
+            // When the document type needs approval, the approval is a control:
+            // the creator cannot give it, whatever their role (Super Admin too).
+            if ($this->approvals->required($doc->documentType())) {
+                SeparationOfDuties::assertNotCreator($doc->getAttribute('created_by'), (string) $doc->getAttribute('number'));
+            }
 
             $doc->forceFill(['status' => DocumentStatus::APPROVED, 'approved_by' => auth()->id(), 'approved_at' => now()])->save();
             $this->log($doc, 'approved');
+        });
+    }
+
+    /**
+     * Approves a document created inside another one that went through its own
+     * approval, such as orders and loans imported by an opening batch: the
+     * batch was the control, so the person importing it is not the approver.
+     *
+     * @template T of Model&Document
+     *
+     * @param  T  $document
+     * @return T
+     */
+    public function approveAsPartOf(Model&Document $document, Model&Document $parent): Model&Document
+    {
+        return $this->transition($document, function (Model&Document $doc) use ($parent) {
+            $this->expectStatus($doc, [DocumentStatus::DRAFT], 'approved');
+
+            $doc->forceFill(['status' => DocumentStatus::APPROVED, 'approved_by' => auth()->id(), 'approved_at' => now()])->save();
+            $this->log($doc, 'approved', ['as_part_of' => (string) $parent->getAttribute('number')]);
         });
     }
 

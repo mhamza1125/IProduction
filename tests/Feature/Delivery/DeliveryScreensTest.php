@@ -38,7 +38,7 @@ beforeEach(function () {
     });
     $order = app(SalesOrders::class)->save(null, ['customer_id' => $this->customer->id, 'order_date' => '2026-11-01'], [[
         'item_variant_id' => $this->variant->id, 'description' => '', 'quantity' => '100', 'unit_price' => '5', 'tax_rate' => '', 'due_date' => null]]);
-    $this->line = app(DocumentWorkflow::class)->approve($order)->lines()->first();
+    $this->line = approver(DocumentWorkflow::class)->approve($order)->lines()->first();
 });
 
 it('runs a delivery from the screens: lines, allocate, carton, pack, dispatch, invoice', function () {
@@ -63,7 +63,7 @@ it('runs a delivery from the screens: lines, allocate, carton, pack, dispatch, i
     $invoice = Invoice::query()->sole();
     expect($invoice->total)->toBe('500.00')->and($invoice->tax_total)->toBe('0.00');
 
-    Livewire::test(Invoices\Show::class, ['invoice' => $invoice])->call('approveDocument')->call('postDocumentAction');
+    asApprover(fn () => Livewire::test(Invoices\Show::class, ['invoice' => $invoice])->call('approveDocument')->call('postDocumentAction'));
     expect($invoice->fresh()->isPosted())->toBeTrue();
 });
 
@@ -73,9 +73,9 @@ it('renders every delivery and billing screen and print', function () {
     app(Packing::class)->addCarton($d, [], [$d->lines()->value('id') => '10']);
     app(Packing::class)->complete($d);
     $d = app(App\Modules\Delivery\Services\Deliveries::class)->dispatch($d->fresh());
-    $invoice = app(InvoiceService::class)->post(app(DocumentWorkflow::class)->approve(app(InvoiceService::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-11'], [['delivery_line_id' => $d->lines()->value('id')]])));
-    $return = app(DeliveryReturns::class)->post(app(DocumentWorkflow::class)->approve(app(DeliveryReturns::class)->save(null, ['delivery_line_id' => $d->lines()->value('id'), 'quantity' => '1', 'reason' => 'Torn', 'return_date' => '2026-11-12'])));
-    $note = app(CreditNoteService::class)->post(app(DocumentWorkflow::class)->approve(app(CreditNoteService::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_id' => $invoice->id, 'delivery_return_id' => $return->id, 'credit_date' => '2026-11-12', 'reason' => 'Return'], [['description' => 'Return', 'amount' => '5']])));
+    $invoice = app(InvoiceService::class)->post(approver(DocumentWorkflow::class)->approve(app(InvoiceService::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-11'], [['delivery_line_id' => $d->lines()->value('id')]])));
+    $return = app(DeliveryReturns::class)->post(approver(DocumentWorkflow::class)->approve(app(DeliveryReturns::class)->save(null, ['delivery_line_id' => $d->lines()->value('id'), 'quantity' => '1', 'reason' => 'Torn', 'return_date' => '2026-11-12'])));
+    $note = app(CreditNoteService::class)->post(approver(DocumentWorkflow::class)->approve(app(CreditNoteService::class)->save(null, ['customer_id' => $this->customer->id, 'invoice_id' => $invoice->id, 'delivery_return_id' => $return->id, 'credit_date' => '2026-11-12', 'reason' => 'Return'], [['description' => 'Return', 'amount' => '5']])));
 
     foreach ([
         route('delivery.deliveries.index'), route('delivery.deliveries.create'), route('delivery.deliveries.show', $d), route('delivery.deliveries.print', $d), route('delivery.deliveries.packing', $d),

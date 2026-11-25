@@ -21,7 +21,11 @@
         <x-button variant="secondary" :href="$editRoute" icon="pencil">Edit</x-button>
     @endif
     @if ($document->isDraft() && $needsApproval && $user->can("$key.approve"))
-        <x-button variant="secondary" wire:click="approveDocument" wire:confirm="Approve {{ $document->number }}?">Approve</x-button>
+        @if (\App\Support\Documents\SeparationOfDuties::isCreator($document->getAttribute('created_by')))
+            <span class="text-xs text-subtle" title="The person who created a document cannot approve it.">Awaiting approval by another user</span>
+        @else
+            <x-button variant="secondary" wire:click="approveDocument" wire:confirm="Approve {{ $document->number }}?">Approve</x-button>
+        @endif
     @endif
     @if ($document->isApproved() && ! $document->isPosted() && $user->can("$key.approve"))
         <x-button variant="ghost" x-on:click="ask = 'draft'">Return to draft</x-button>

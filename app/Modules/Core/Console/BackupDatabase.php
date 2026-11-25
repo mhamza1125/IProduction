@@ -2,15 +2,18 @@
 
 namespace App\Modules\Core\Console;
 
+use App\Modules\Core\Services\Alerts;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 /**
  * Daily MySQL backup (scheduled in routes/console.php): a gzipped mysqldump in
- * storage/app/private/backups, keeping the last N days. Copy the folder off
- * the server (or point BACKUP_PATH at a mounted drive) so a disk failure does
- * not take the backups with it.
+ * storage/app/private/backups, keeping the last N days. Set BACKUP_COPY_PATH to
+ * a second disk (another drive, USB or network share mounted on this machine)
+ * so a disk failure does not take the backups with it.
+ *
+ * Any failure raises an alert in the app's notification bell (no email).
  */
 class BackupDatabase extends Command
 {
@@ -48,15 +51,38 @@ class BackupDatabase extends Command
 
         if ($result->failed()) {
             File::delete($file);
-            $this->error('Backup failed: '.trim($result->errorOutput()));
 
-            return self::FAILURE;
+            return $this->failWithAlert('Backup failed', trim($result->errorOutput()));
         }
 
         $this->info('Backup written to '.$file);
-        $this->prune($dir, (int) ($this->option('keep') ?? config('iproduction.backup.keep_days')));
+        $keep = (int) ($this->option('keep') ?? config('iproduction.backup.keep_days'));
+        $this->prune($dir, $keep);
+
+        $copyDir = (string) config('iproduction.backup.copy_path');
+        if ($copyDir !== '') {
+            try {
+                File::ensureDirectoryExists($copyDir, 0750);
+                $copy = $copyDir.'/'.basename($file);
+                if (! File::copy($file, $copy) || File::size($copy) !== File::size($file)) {
+                    throw new \RuntimeException("could not write {$copy}");
+                }
+                $this->info('Copied to '.$copy);
+                $this->prune($copyDir, $keep);
+            } catch (\Throwable $e) {
+                return $this->failWithAlert('Backup copy failed', 'The backup was made on this disk but not copied to '.$copyDir.': '.$e->getMessage());
+            }
+        }
 
         return self::SUCCESS;
+    }
+
+    private function failWithAlert(string $title, string $detail): int
+    {
+        $this->error("{$title}: {$detail}");
+        app(Alerts::class)->toAdmins($title, $detail.' Run "php artisan db:backup" on the server to retry.', key: 'backup');
+
+        return self::FAILURE;
     }
 
     private function prune(string $dir, int $keepDays): void

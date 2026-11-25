@@ -18,9 +18,11 @@ use App\Modules\Production\Models\PtcTransaction;
 use App\Modules\Sales\Models\SalesOrderLine;
 use App\Modules\Sales\Services\SupplyLinks;
 use App\Support\Decimal;
+use App\Support\Documents\Document;
 use App\Support\Documents\DocumentException;
 use App\Support\Documents\DocumentWorkflow;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -126,10 +128,13 @@ class Ptcs
         });
     }
 
-    public function approve(Ptc $ptc): Ptc
+    /**
+     * @param  (Model&Document)|null  $partOf  the approved document this PTC was created by (an opening batch)
+     */
+    public function approve(Ptc $ptc, (Model&Document)|null $partOf = null): Ptc
     {
-        return DB::transaction(function () use ($ptc) {
-            $ptc = $this->workflow->approve($ptc);
+        return DB::transaction(function () use ($ptc, $partOf) {
+            $ptc = $partOf ? $this->workflow->approveAsPartOf($ptc, $partOf) : $this->workflow->approve($ptc);
             $ptc->load(['route.stages', 'variant.item']);
 
             $stages = $ptc->route->stages->sortBy('sequence')->values();

@@ -3,6 +3,7 @@
 namespace App\Modules\Production\Models;
 
 use App\Modules\Core\Models\Stage;
+use App\Modules\People\Models\Contractor;
 use App\Modules\People\Models\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,11 +12,15 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * Pieces accepted from a wage employee at a stage, at the route rate.
- * Rejected units are unpaid unless approved (paid_rejected_qty).
+ * Piece work: pieces accepted from a wage employee or a contractor at a stage,
+ * at the rate in force. Pending until another user approves it; only then is it
+ * owed (wages payable or contractor payable). Rejected units are unpaid unless
+ * approved (paid_rejected_qty).
  *
  * @property int $id
- * @property int $employee_id
+ * @property int|null $employee_id
+ * @property int|null $contractor_id
+ * @property int|null $created_by
  * @property int|null $ptc_id
  * @property int|null $ptc_stage_id
  * @property int|null $stage_id
@@ -29,7 +34,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $journal_id
  * @property int|null $payroll_line_id
  * @property string|null $description
- * @property-read Employee $employee
+ * @property-read Employee|null $employee
+ * @property-read Contractor|null $contractor
  * @property-read Ptc|null $ptc
  * @property-read Stage|null $stage
  */
@@ -51,6 +57,18 @@ class WageWork extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    /** @return BelongsTo<Contractor, $this> */
+    public function contractor(): BelongsTo
+    {
+        return $this->belongsTo(Contractor::class);
+    }
+
+    /** The employee or contractor who did the work. */
+    public function worker(): Employee|Contractor
+    {
+        return $this->employee ?? $this->contractor ?? throw new \LogicException("Wage work {$this->id} has no worker.");
     }
 
     /** @return BelongsTo<Ptc, $this> */

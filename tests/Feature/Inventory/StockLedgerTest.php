@@ -185,10 +185,11 @@ it('creates a location for every contractor automatically', function () {
 });
 
 it('refuses stock changes outside a transaction', function () {
+    $demand = demand('X');
     DB::rollBack();
 
     try {
-        app(StockLedger::class)->reserve(demand('X'), $this->glove->id, '1');
+        app(StockLedger::class)->reserve($demand, $this->glove->id, '1');
     } finally {
         DB::beginTransaction();
     }

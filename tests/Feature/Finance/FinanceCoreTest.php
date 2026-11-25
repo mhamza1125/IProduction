@@ -114,7 +114,7 @@ it('posts the stock adjustment journal with the stock in one transaction', funct
 
         return $adj;
     });
-    app(DocumentWorkflow::class)->approve($adjustment);
+    approver(DocumentWorkflow::class)->approve($adjustment);
     app(PostStockAdjustment::class)($adjustment);
 
     $inventory = GlAccount::system('inventory');

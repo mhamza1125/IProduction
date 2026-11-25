@@ -60,7 +60,7 @@ function dbOrder(?Customer $customer = null, array $lines = [], array $extra = [
         'item_variant_id' => $l[0]->id, 'description' => '', 'quantity' => $l[1], 'unit_price' => $l[2], 'tax_rate' => '', 'due_date' => null,
     ], $lines));
 
-    return app(DocumentWorkflow::class)->approve($order);
+    return approver(DocumentWorkflow::class)->approve($order);
 }
 
 /** Saves, allocates, packs (one carton per line) and dispatches. */
@@ -216,7 +216,7 @@ it('invoices dispatched lines once, in the customer currency, with optional tax 
     expect(fn () => $this->invoices->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-12'], [['delivery_line_id' => $l1->id]]))
         ->toThrow(DocumentException::class, 'already invoiced');
 
-    $this->invoices->post(app(DocumentWorkflow::class)->approve($invoice));
+    $this->invoices->post(approver(DocumentWorkflow::class)->approve($invoice));
     $ledgers = app(Ledgers::class);
     expect($ledgers->partyBalance($this->customer))->toBe('956.30')
         ->and($invoice->fresh()->balance())->toBe('956.30')
@@ -231,7 +231,7 @@ it('returns goods to Returned status, reopens the line for a replacement and ins
 
     expect(fn () => $returns->save(null, ['delivery_line_id' => $d->lines()->first()->id, 'quantity' => '101', 'reason' => 'x', 'return_date' => '2026-11-15']))->toThrow(DocumentException::class);
     $r = $returns->save(null, ['delivery_line_id' => $d->lines()->first()->id, 'quantity' => '10', 'reason' => 'Wrong size', 'return_date' => '2026-11-15', 'replacement_required' => true]);
-    $returns->post(app(DocumentWorkflow::class)->approve($r));
+    $returns->post(approver(DocumentWorkflow::class)->approve($r));
 
     expect($this->stock->onHand($this->glove->id, null, StockStatus::RETURNED))->toBe('10.0000')
         ->and($line->fresh()->remaining())->toBe('10.0000')
@@ -253,7 +253,7 @@ it('closes the returned quantity when no replacement is needed', function () {
     $line = dbOrder()->lines()->first();
     $d = dispatchLines([['sales_order_line_id' => $line->id, 'quantity' => '100']]);
     $returns = app(DeliveryReturns::class);
-    $returns->post(app(DocumentWorkflow::class)->approve($returns->save(null, ['delivery_line_id' => $d->lines()->first()->id, 'quantity' => '5', 'reason' => 'Damaged', 'return_date' => '2026-11-15'])));
+    $returns->post(approver(DocumentWorkflow::class)->approve($returns->save(null, ['delivery_line_id' => $d->lines()->first()->id, 'quantity' => '5', 'reason' => 'Damaged', 'return_date' => '2026-11-15'])));
 
     expect($line->fresh()->remaining())->toBe('0.0000')->and($line->order->fresh()->status)->toBe('delivered');
 });
@@ -261,17 +261,17 @@ it('closes the returned quantity when no replacement is needed', function () {
 it('posts credit notes in the customer currency against an invoice, keeping the rest as credit', function () {
     dbStock($this->glove, '100', '2');
     $d = dispatchLines([['sales_order_line_id' => dbOrder()->lines()->first()->id, 'quantity' => '100']]);
-    $invoice = $this->invoices->post(app(DocumentWorkflow::class)->approve($this->invoices->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-12'], [['delivery_line_id' => $d->lines()->first()->id]])));
+    $invoice = $this->invoices->post(approver(DocumentWorkflow::class)->approve($this->invoices->save(null, ['customer_id' => $this->customer->id, 'invoice_date' => '2026-11-12'], [['delivery_line_id' => $d->lines()->first()->id]])));
     $notes = app(CreditNotes::class);
 
     expect(fn () => $notes->save(null, ['customer_id' => $this->customer->id, 'credit_date' => '2026-11-20', 'reason' => ''], [['description' => 'x', 'amount' => '1']]))->toThrow(DocumentException::class, 'reason');
 
     $cn = $notes->save(null, ['customer_id' => $this->customer->id, 'invoice_id' => $invoice->id, 'credit_date' => '2026-11-20', 'reason' => 'Price correction'], [['description' => 'Price 5 → 4.5', 'amount' => '50']]);
-    $notes->post(app(DocumentWorkflow::class)->approve($cn));
+    $notes->post(approver(DocumentWorkflow::class)->approve($cn));
     expect($invoice->fresh()->balance())->toBe('450.00')
         ->and(app(Ledgers::class)->partyBalance($this->customer))->toBe('450.00');
 
-    $big = $notes->post(app(DocumentWorkflow::class)->approve($notes->save(null, ['customer_id' => $this->customer->id, 'invoice_id' => $invoice->id, 'credit_date' => '2026-11-21', 'reason' => 'Settlement'], [['description' => 'Goodwill', 'amount' => '500']])));
+    $big = $notes->post(approver(DocumentWorkflow::class)->approve($notes->save(null, ['customer_id' => $this->customer->id, 'invoice_id' => $invoice->id, 'credit_date' => '2026-11-21', 'reason' => 'Settlement'], [['description' => 'Goodwill', 'amount' => '500']])));
     expect($invoice->fresh()->balance())->toBe('0.00')
         ->and($big->fresh()->unallocated())->toBe('50.00')
         ->and(app(Ledgers::class)->partyBalance($this->customer))->toBe('-50.00');
