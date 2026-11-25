@@ -9,6 +9,7 @@ use App\Modules\Inventory\Models\Location;
 use App\Modules\Inventory\Models\Reservation;
 use App\Modules\Inventory\Models\StockBalance;
 use App\Modules\Inventory\Models\StockStatus;
+use App\Modules\Inventory\Services\StockValuation;
 use App\Support\Decimal;
 use App\Support\Livewire\WithDataTable;
 use App\Support\Livewire\WithExport;
@@ -166,8 +167,8 @@ class Index extends Component
         ];
 
         if (auth()->user()?->can('cost.view')) {
-            $columns['Unit cost'] = fn (StockBalance $b) => $b->lot->unit_cost;
-            $columns['Value'] = fn (StockBalance $b) => $b->lot->unit_cost !== null ? Decimal::mul($b->quantity, $b->lot->unit_cost) : null;
+            $columns['Unit cost'] = fn (StockBalance $b) => StockValuation::unitCost($b);
+            $columns['Value'] = fn (StockBalance $b) => ($cost = StockValuation::unitCost($b)) !== null ? Decimal::mul($b->quantity, $cost) : null;
         }
 
         return $columns;

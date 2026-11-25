@@ -10,10 +10,12 @@ use App\Modules\Finance\Services\Ledgers;
 use App\Modules\Inventory\Models\Location;
 use App\Modules\Inventory\Models\Lot;
 use App\Modules\Inventory\Models\Reservation;
+use App\Modules\Inventory\Models\StockBalance;
 use App\Modules\Inventory\Models\StockStatus;
 use App\Modules\Inventory\Services\StockBucket;
 use App\Modules\Inventory\Services\StockLedger;
 use App\Modules\Inventory\Services\StockSource;
+use App\Modules\Inventory\Services\StockValuation;
 use App\Modules\People\Models\Contractor;
 use App\Modules\People\Models\Customer;
 use App\Modules\People\Models\Employee;
@@ -298,6 +300,57 @@ it('decides rejections: rework, scrap, sell and recover, keeping history', funct
         ->and($rejection->fresh()->status)->toBe('decided')
         ->and($rejection->decisions()->where('status', 'posted')->count())->toBe(4)
         ->and(app(Ledgers::class)->partyBalance($this->stitcher))->toBe('150.00');
+});
+
+it('keeps rejected pieces in a zero-cost rejects lot so their cost is not counted twice', function () {
+    prodStock($this->leather, '30', '500');
+    $ptc = newPtc('100');
+    $this->tx->issueMaterial($ptc, $ptc->stages()->first(), $this->leather->id, '20', emp($this->cutter), $this->day);
+    $ptc = runThrough($ptc, '100', '4');
+    $this->tx->release($ptc, '96', $this->day);
+    $ptc->refresh();
+
+    $rejection = Rejection::query()->sole();
+    expect($ptc->reject_lot_id)->not->toBeNull()
+        ->and($rejection->lot_id)->toBe($ptc->reject_lot_id)
+        ->and($ptc->rejectLot->origin)->toBe('ptc_reject')
+        ->and($ptc->rejectLot->unit_cost)->toBe('0.0000')
+        ->and($this->stock->onHand($this->variant->id, $this->stages[1]->id, StockStatus::REJECTED, null, $ptc->output_lot_id))->toBe('0.0000')
+        ->and($this->stock->onHand($this->variant->id, $this->stages[1]->id, StockStatus::REJECTED, null, $ptc->reject_lot_id))->toBe('4.0000');
+
+    // Scrapping them writes off nothing more: the loss is already in the good pieces.
+    $scrap = app(Rejections::class)->decide($rejection, ['decision' => 'scrap', 'quantity' => '4', 'reason' => 'Beyond repair']);
+    app(Rejections::class)->post(app(DocumentWorkflow::class)->approve($scrap));
+    expect($scrap->fresh()->journal_id)->toBeNull();
+
+    // Rejecting pieces found later at a stage moves them to the same rejects lot.
+    $other = newPtc('10');
+    $s = $other->stages()->get()->keyBy(fn ($st) => $st->stage->name);
+    $this->tx->issueStage($other, $s['Cutting'], '10', emp($this->cutter), $this->day);
+    $this->tx->receiveStage($other, $s['Cutting'], emp($this->cutter), '10', '0', $this->day);
+    $this->tx->rejectAtStage($other->fresh(), $s['Cutting'], '2', 'Torn', $this->day);
+    $other->refresh();
+    expect($this->stock->onHand($this->variant->id, $this->stages[0]->id, StockStatus::REJECTED, null, $other->reject_lot_id))->toBe('2.0000')
+        ->and(Rejection::query()->latest('id')->first()->lot_id)->toBe($other->reject_lot_id);
+});
+
+it('values pieces still inside a PTC at zero after a partial release', function () {
+    prodStock($this->leather, '30', '500');
+    $ptc = newPtc('100');
+    $this->tx->issueMaterial($ptc, $ptc->stages()->first(), $this->leather->id, '20', emp($this->cutter), $this->day);
+    $ptc = runThrough($ptc, '100');
+    $this->tx->release($ptc, '40', $this->day);
+    $ptc->refresh();
+
+    $lastStage = $this->stages[3]->id;
+    $released = StockBalance::query()->where('lot_id', $ptc->output_lot_id)->where('location_id', Location::mainStore()->id)->where('quantity', '>', 0)->sole();
+    $inside = StockBalance::query()->where('lot_id', $ptc->output_lot_id)->where('stage_id', $lastStage)->where('location_id', Location::productionFloor()->id)->where('status', StockStatus::AVAILABLE)->sole();
+
+    expect($inside->quantity)->toBe('60.0000')
+        ->and(StockValuation::unitCost($inside))->toBe('0.0000')
+        ->and(StockValuation::unitCost($released))->toBe($ptc->outputLot->unit_cost)
+        // Released pieces left the PTC even though they sit at a stage: only floor pieces share the pool.
+        ->and($this->costing->unitsInPipeline($ptc))->toBe('60.0000');
 });
 
 it('never uses rejected stock in normal issues', function () {

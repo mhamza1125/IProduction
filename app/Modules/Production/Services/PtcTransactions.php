@@ -196,10 +196,11 @@ class PtcTransactions
                 : null;
 
             if (Decimal::compare($rejected, '0') > 0) {
-                $tx = $this->record($ptc, $stage, 'reject', $date, $worker, $ptc->item_variant_id, $ptc->output_lot_id, $floor->id, $rejected, reason: $rejectReason);
+                $rejectLotId = $this->toRejectLot($ptc, $stage->stage_id, $floor->id, $rejected, $source, $date);
+                $tx = $this->record($ptc, $stage, 'reject', $date, $worker, $ptc->item_variant_id, $rejectLotId, $floor->id, $rejected, reason: $rejectReason);
                 $this->rejections->record($tx, [
                     'rejection_date' => $date, 'ptc_id' => $ptc->id, 'item_variant_id' => $ptc->item_variant_id, 'stage_id' => $stage->stage_id,
-                    'lot_id' => $ptc->output_lot_id, 'location_id' => $floor->id, 'quantity' => $rejected, 'reason' => (string) $rejectReason,
+                    'lot_id' => $rejectLotId, 'location_id' => $floor->id, 'quantity' => $rejected, 'reason' => (string) $rejectReason,
                     'responsible_type' => $worker->model->getMorphClass(), 'responsible_id' => $worker->model->id,
                 ]);
             }
@@ -228,9 +229,10 @@ class PtcTransactions
             $source = new StockSource($ptc, $date, salesOrderLineId: $ptc->sales_order_line_id, notes: $reason);
             foreach ($this->stock->allocate($ptc->item_variant_id, $quantity, $stage->stage_id, StockStatus::AVAILABLE, null, null, $ptc->output_lot_id) as $a) {
                 $this->stock->transfer($a['bucket'], $a['bucket']->with(StockStatus::REJECTED), $a['quantity'], $source);
-                $tx = $this->record($ptc, $stage, 'reject', $date, null, $ptc->item_variant_id, $ptc->output_lot_id, $a['bucket']->locationId, $a['quantity'], reason: $reason);
+                $rejectLotId = $this->toRejectLot($ptc, $stage->stage_id, $a['bucket']->locationId, $a['quantity'], $source, $date);
+                $tx = $this->record($ptc, $stage, 'reject', $date, null, $ptc->item_variant_id, $rejectLotId, $a['bucket']->locationId, $a['quantity'], reason: $reason);
                 $this->rejections->record($tx, ['rejection_date' => $date, 'ptc_id' => $ptc->id, 'item_variant_id' => $ptc->item_variant_id, 'stage_id' => $stage->stage_id,
-                    'lot_id' => $ptc->output_lot_id, 'location_id' => $a['bucket']->locationId, 'quantity' => $a['quantity'], 'reason' => $reason, 'found_by' => $foundBy]);
+                    'lot_id' => $rejectLotId, 'location_id' => $a['bucket']->locationId, 'quantity' => $a['quantity'], 'reason' => $reason, 'found_by' => $foundBy]);
             }
             $stage->update(['rejected_qty' => Decimal::add($stage->rejected_qty, $quantity, 4)]);
         });
@@ -346,6 +348,26 @@ class PtcTransactions
                 $this->moveToStore($ptc, $stage, $qty, $date, "Closed early: {$reason}");
             }
         }
+    }
+
+    /**
+     * Rejected pieces leave the output lot for the PTC's rejects lot, which has no
+     * cost: their cost is an allowed loss carried by the good pieces. Valuing them
+     * at the output lot's cost would count that cost twice, and scrapping them
+     * would write it off twice. Returns the rejects lot id.
+     */
+    private function toRejectLot(Ptc $ptc, ?int $stageId, int $locationId, string $quantity, StockSource $source, CarbonInterface $date): int
+    {
+        if ($ptc->reject_lot_id === null) {
+            $lot = $this->stock->createLot($ptc->item_variant_id, 'ptc_reject', '0', $date, $ptc, ['notes' => "Pieces rejected in {$ptc->number}"]);
+            $ptc->forceFill(['reject_lot_id' => $lot->id])->save();
+        }
+        $this->stock->remove(new StockBucket($ptc->item_variant_id, $stageId, StockStatus::REJECTED, $locationId, (int) $ptc->output_lot_id), $quantity, $source);
+        $this->stock->receive(new StockBucket($ptc->item_variant_id, $stageId, StockStatus::REJECTED, $locationId, (int) $ptc->reject_lot_id), $quantity, $source, '0');
+        LotLink::query()->create(['lot_id' => $ptc->reject_lot_id, 'source_lot_id' => $ptc->output_lot_id, 'quantity' => $quantity,
+            'document_type' => $ptc->getMorphClass(), 'document_id' => $ptc->id]);
+
+        return (int) $ptc->reject_lot_id;
     }
 
     private function moveToStore(Ptc $ptc, PtcStage $stage, string $quantity, CarbonInterface $date, ?string $note): void

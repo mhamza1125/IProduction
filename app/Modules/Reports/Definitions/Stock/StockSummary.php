@@ -4,6 +4,7 @@ namespace App\Modules\Reports\Definitions\Stock;
 
 use App\Modules\Catalog\Models\Item;
 use App\Modules\Inventory\Models\Location;
+use App\Modules\Inventory\Services\StockValuation;
 use App\Modules\Reports\Support\Column;
 use App\Modules\Reports\Support\Filter;
 use App\Modules\Reports\Support\Report;
@@ -57,12 +58,12 @@ class StockSummary extends Report
 
     protected function build(array $filters): iterable
     {
-        $balances = DB::table('stock_balances as b')->join('item_variants as v', 'v.id', '=', 'b.item_variant_id')->join('items as i', 'i.id', '=', 'v.item_id')->join('lots as l', 'l.id', '=', 'b.lot_id')
+        $balances = DB::table('stock_balances as b')->join('item_variants as v', 'v.id', '=', 'b.item_variant_id')->join('items as i', 'i.id', '=', 'v.item_id')->join('lots as l', 'l.id', '=', 'b.lot_id')->join('locations as loc', 'loc.id', '=', 'b.location_id')
             ->where('b.quantity', '>', 0)
             ->when($filters['type'] ?? null, fn ($q, $t) => $q->where('i.type', $t))
             ->when($filters['location'] ?? null, fn ($q, $l) => $q->where('b.location_id', $l))
             ->groupBy('b.item_variant_id', 'v.sku', 'v.label', 'i.name', 'i.type', 'b.status')
-            ->get(['b.item_variant_id', 'v.sku', 'v.label', 'i.name', 'i.type', 'b.status', DB::raw('SUM(b.quantity) as qty'), DB::raw('SUM(b.quantity * COALESCE(l.unit_cost, 0)) as value')]);
+            ->get(['b.item_variant_id', 'v.sku', 'v.label', 'i.name', 'i.type', 'b.status', DB::raw('SUM(b.quantity) as qty'), DB::raw('SUM(b.quantity * '.StockValuation::unitCostSql().') as value')]);
         $reserved = DB::table('reservations')->where('status', 'active')->groupBy('item_variant_id')
             ->pluck(DB::raw('SUM(quantity - consumed_quantity) as q'), 'item_variant_id');
 
@@ -79,6 +80,6 @@ class StockSummary extends Report
 
     public function note(): ?string
     {
-        return 'Value = quantity × lot unit cost. Pieces still inside a PTC carry no lot cost until released; their material is valued as In production.';
+        return 'Value = quantity × lot unit cost, so it agrees with the Inventory account. Pieces still inside a PTC are valued at zero until released (their material is valued as In production and their labour sits in the PTC). Pieces rejected in production are valued at zero: their cost stays with the good pieces.';
     }
 }

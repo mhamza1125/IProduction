@@ -41,6 +41,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $target_date
  * @property string|null $notes
  * @property int|null $output_lot_id
+ * @property int|null $reject_lot_id zero-cost lot holding pieces rejected in this PTC
  * @property string $released_qty
  * @property string $merged_out_qty
  * @property string|null $close_reason
@@ -81,7 +82,7 @@ class Ptc extends Model implements Attachable, Document
     /** @return list<string> */
     public function mutableWhenLocked(): array
     {
-        return ['output_lot_id', 'released_qty', 'merged_out_qty', 'close_reason', 'completed_at', 'responsible_employee_id', 'target_date', 'notes'];
+        return ['output_lot_id', 'reject_lot_id', 'released_qty', 'merged_out_qty', 'close_reason', 'completed_at', 'responsible_employee_id', 'target_date', 'notes'];
     }
 
     public function documentType(): string
@@ -177,6 +178,12 @@ class Ptc extends Model implements Attachable, Document
     public function outputLot(): BelongsTo
     {
         return $this->belongsTo(Lot::class, 'output_lot_id');
+    }
+
+    /** @return BelongsTo<Lot, $this> zero-cost lot for pieces rejected in this PTC */
+    public function rejectLot(): BelongsTo
+    {
+        return $this->belongsTo(Lot::class, 'reject_lot_id');
     }
 
     /** @return HasMany<PtcStage, $this> */

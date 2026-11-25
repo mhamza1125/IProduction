@@ -31,6 +31,7 @@ class Lot extends Model
     public const ORIGINS = [
         'purchased' => 'Purchased',
         'made' => 'Made',
+        'ptc_reject' => 'Rejected in production',
         'contractor_made' => 'Contractor Made',
         'customer_return' => 'Customer Return',
         'rejection_recovery' => 'Rejection Recovery',

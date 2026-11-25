@@ -2,8 +2,12 @@
 
 use App\Models\User;
 use App\Modules\Core\Console\SyncPermissions;
+use App\Modules\Finance\Models\GlAccount;
+use App\Modules\Finance\Services\Ledgers;
+use App\Modules\Inventory\Services\StockValuation;
 use App\Modules\Payroll\Models\PayrollLine;
 use App\Modules\Reports\Services\Reports;
+use App\Support\Decimal;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +31,18 @@ it('loads the demo company with balanced books', function () {
     expect(User::query()->where('email', 'manager@demo.test')->exists())->toBeTrue()
         ->and($unbalanced)->toBe(0)
         ->and(DB::table('stock_balances')->where('quantity', '<', 0)->count())->toBe(0);
+
+    // Stock value agrees with the Inventory account (audit F-01/F-02): stock at
+    // lot cost, with pieces still inside a PTC and pieces rejected in production
+    // at zero. Lot costs carry 4 decimals and journals 2, so allow paisa.
+    // Labour approved on a PTC that has not been released yet is in the Inventory
+    // account but in no stock bucket; the demo's running PTCs have none. If that
+    // changes, add it to the stock side here.
+    $valuation = (string) DB::table('stock_balances as b')->join('lots as l', 'l.id', '=', 'b.lot_id')->join('locations as loc', 'loc.id', '=', 'b.location_id')
+        ->sum(DB::raw('b.quantity * '.StockValuation::unitCostSql()));
+    $inventory = app(Ledgers::class)->accountBalance(GlAccount::system('inventory'));
+    $difference = ltrim(Decimal::sub($inventory, $valuation, 4), '-');
+    expect(Decimal::compare($difference, '1.00'))->toBeLessThanOrEqual(0, "Inventory {$inventory}, stock {$valuation}");
 
     // Running it again changes nothing.
     $this->seed(DemoDataSeeder::class);

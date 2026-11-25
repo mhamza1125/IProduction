@@ -2,6 +2,7 @@
 
 namespace App\Modules\Reports\Definitions\Stock;
 
+use App\Modules\Inventory\Services\StockValuation;
 use App\Modules\Reports\Support\Column;
 use App\Modules\Reports\Support\Report;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +49,7 @@ class ContractorStock extends Report
         return DB::table('stock_balances as b')->join('locations as loc', 'loc.id', '=', 'b.location_id')->join('contractors as c', 'c.id', '=', 'loc.contractor_id')
             ->join('item_variants as v', 'v.id', '=', 'b.item_variant_id')->join('lots as l', 'l.id', '=', 'b.lot_id')->leftJoin('stages as s', 's.id', '=', 'b.stage_id')
             ->where('b.quantity', '>', 0)->orderBy('c.name')->orderBy('v.sku')
-            ->get(['c.name as contractor', 'v.sku', 's.name as stage', 'b.status', 'l.lot_number as lot', 'b.quantity', DB::raw('ROUND(b.quantity * COALESCE(l.unit_cost, 0), 2) as value')])
+            ->get(['c.name as contractor', 'v.sku', 's.name as stage', 'b.status', 'l.lot_number as lot', 'b.quantity', DB::raw('ROUND(b.quantity * '.StockValuation::unitCostSql().', 2) as value')])
             ->map(fn ($r) => (array) $r);
     }
 }

@@ -87,7 +87,7 @@
                         <x-table.td>{{ $b->stage?->name ?? '—' }}</x-table.td>
                         <x-table.td><x-badge :color="$b->status === 'available' ? 'green' : ($b->status === 'rejected' ? 'red' : 'amber')">{{ $statusLabels[$b->status] }}</x-badge></x-table.td>
                         <x-table.td align="right">@qty($b->quantity) {{ $b->variant->item->stockUnit->symbol }}</x-table.td>
-                        @can('cost.view') <x-table.td align="right">@money($b->lot->unit_cost, null, 4)</x-table.td> @endcan
+                        @can('cost.view') <x-table.td align="right">@money(\App\Modules\Inventory\Services\StockValuation::unitCost($b), null, 4)</x-table.td> @endcan
                     </tr>
                 @endforeach
             </x-table>

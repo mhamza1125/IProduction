@@ -2,6 +2,7 @@
 
 namespace App\Modules\Production\Services;
 
+use App\Modules\Inventory\Models\Location;
 use App\Modules\Inventory\Models\StockBalance;
 use App\Modules\Inventory\Models\StockStatus;
 use App\Modules\Production\Models\Ptc;
@@ -60,8 +61,11 @@ class PtcCosting
             return '0.0000';
         }
 
+        // Released pieces (main store or any other store) have left the PTC even
+        // when released mid-route with a stage; only floor and contractor stock counts.
         return Decimal::sum(StockBalance::query()->where('lot_id', $ptc->output_lot_id)->whereNotNull('stage_id')
             ->whereIn('status', [StockStatus::AVAILABLE, StockStatus::IN_PRODUCTION])
+            ->whereIn('location_id', Location::query()->whereIn('type', [Location::PRODUCTION, Location::CONTRACTOR])->select('id'))
             ->whereIn('stage_id', $ptc->stages()->pluck('stage_id'))->pluck('quantity'), 4);
     }
 
