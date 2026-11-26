@@ -56,3 +56,30 @@ it('renders the dashboard and profile pages', function () {
     $this->get('/dashboard')->assertOk()->assertSee('Dashboard');
     $this->get('/profile')->assertOk()->assertSee('Two-factor authentication');
 });
+
+it('hides the demo login unless it is turned on', function () {
+    config(['iproduction.demo_login.enabled' => false]);
+
+    $this->get('/login')->assertDontSee('Sign in as demo admin');
+    $this->post('/demo-login')->assertNotFound();
+    $this->assertGuest();
+});
+
+it('signs in the demo account with one click when turned on', function () {
+    $user = User::factory()->create(['email' => 'demo@example.com']);
+    config(['iproduction.demo_login' => ['enabled' => true, 'email' => 'demo@example.com']]);
+
+    $this->get('/login')->assertSee('Sign in as demo admin');
+    $this->post('/demo-login')->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user);
+    expect($user->fresh()->last_login_at)->not->toBeNull();
+});
+
+it('does not demo-login a deactivated account', function () {
+    User::factory()->inactive()->create(['email' => 'demo@example.com']);
+    config(['iproduction.demo_login' => ['enabled' => true, 'email' => 'demo@example.com']]);
+
+    $this->post('/demo-login')->assertSessionHasErrors('login');
+    $this->assertGuest();
+});

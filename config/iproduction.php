@@ -16,6 +16,14 @@ return [
         'password' => env('ADMIN_PASSWORD'),
     ],
 
+    // One-click "Sign in as demo admin" button on the login page, for showing
+    // the system to prospects. It signs in this account without a password:
+    // keep it off (the default) on every real customer deployment.
+    'demo_login' => [
+        'enabled' => (bool) env('DEMO_LOGIN', false),
+        'email' => env('DEMO_LOGIN_EMAIL', env('ADMIN_EMAIL', 'admin@example.com')),
+    ],
+
     // `php artisan db:backup` runs daily (routes/console.php).
     'backup' => [
         'path' => env('BACKUP_PATH', storage_path('app/private/backups')),
